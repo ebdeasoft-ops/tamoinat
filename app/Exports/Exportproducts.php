@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\products;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+
+class Exportproducts implements FromCollection,WithHeadings
+{
+    /**
+    * @return \Illuminate\Support\Collection
+    */
+    public function collection()
+    {
+        return  products::where('branchs_id',Auth()->user()->branchs_id)->get();
+        ;
+    }
+    public function headings() :array
+    {
+        return ["NO", "NAME", "barcode","Product_Location", "All_QUENTITY"];
+    }
+}
