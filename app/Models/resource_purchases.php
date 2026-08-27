@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\branchs;
+use App\Models\orderTosupllier;
 
 class resource_purchases extends Model
 {
@@ -25,6 +26,7 @@ class resource_purchases extends Model
         'created_at',
         'branchs_id',
         'updated_at',
+        'attachments'
     ];
     public function supllier()
     {
@@ -34,4 +36,13 @@ class resource_purchases extends Model
     {
         return $this->belongsTo(branchs::class, 'branchs_id');
     }
+    public function order()
+    {
+        return $this->belongsTo(orderTosupllier::class, 'orderId');
+    }
+      public function orderDetails()
+    {
+        return $this->hasMany(orderDetails::class, 'order_owner', 'orderId');
+    }
+    
 }

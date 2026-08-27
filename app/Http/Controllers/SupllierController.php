@@ -1,204 +1,197 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\resource_purchases;
-use App\Models\supllier;
+use App\Models\supllier; // تم الإبقاء عليه كما هو حالياً منعاً لأخطاء النظام
 use App\Models\products;
 use App\Models\orderDetails;
 use App\Models\orderTosupllier;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
-
 use Illuminate\Http\Request;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use PDF;
 
 class SupllierController extends Controller
 {
+    public function __construct()
+    {
+        // توحيد اللغة على مستوى الكنترولر بالكامل لمنع التكرار
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+    }
+
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * عرض قائمة طلبات شراء الموارد
      */
     public function index()
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
 
-
-        $products =products::where('branchs_id',Auth()->User()->branchs_id)->paginate(20) ;
-
-     
-       // return $data;
-            return  view('products.Purchase_order_of_resources',compact('products'));
-        
-           }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return view('products.Purchase_order_of_resources', compact('products'));
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * جلب بيانات المورد كـ JSON (استجابة متوافقة مع الـ AJAX)
      */
-    public function store(Request $request)
+    public function show($id)
     {
-        //
+        $supplierData = supllier::findOrFail($id);
+
+        return response()->json($supplierData);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\supllier  $supllier
-     * @return \Illuminate\Http\Response
+     * طباعة أمر الشراء للمورد بصيغة PDF
      */
-    public function show( $supllier)
+    public function printProductToSupllierOrder_pdf($id)
     {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        $resourcePurchases = orderTosupllier::findOrFail($id);
+        $orderDetails = orderDetails::where('order_owner', $id)->get();
+        $supplierData = supllier::find($resourcePurchases->suplier_id);
 
-        $customerdata=supllier::find($supllier);
-
-        return   json_encode($customerdata);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\supllier  $supllier
-     * @return \Illuminate\Http\Response
-     */
-
-     
-     public function printProductToSupllierOrder(Request $request)
-     {
-         //
-         app()->setLocale(LaravelLocalization::getCurrentLocale());
- //return $request;
- if($request->show_invoice_number==null){
-    $products =products::where('branchs_id',Auth()->User()->branchs_id)->paginate(20) ;
-    session()->flash('nodataprint', '');
-
-     //return $data;
-         return  view('products.Purchase_order_of_resources',compact('products'));
- }
-         $orderdetails=orderDetails::where('order_owner',$request->show_invoice_number)->get();
-         $resource_purchases=orderTosupllier::where('id',$request->show_invoice_number)->first();
-       // return $resource_purchases;
-        $sepllierdata=supllier::find($orderdetails[0]->supllier->suplier_id);
-        $data=[
-         'pay'=> $resource_purchases->Limit_credit,
-         'resource_purchases'=>$resource_purchases,
-         'supllierdata'=>$sepllierdata,
-         'productsdata'=>$orderdetails
+        $data = [
+            'id'                 => $id,
+            'pay'                => $resourcePurchases->Limit_credit,
+            'resource_purchases' => $resourcePurchases,
+            'supllierdata'       => $supplierData,
+            'productsdata'       => $orderDetails
         ];
- //return $data;
-         return view('supplier.print_order_purchases_to_supplier',compact('data'))->with('order',1) ;
-     }
- 
 
+        $dateTime = now();
+        $html = view('pdf.order_purshace_from_supplier', ['data' => $data])->toArabicHTML();
+        $pdf = PDF::loadHTML($html)->output();
 
+        $headers = [
+            "Content-type" => "application/pdf",
+        ];
+
+        return response()->streamDownload(
+            fn () => print($pdf),
+            "Order_No_" . $id . "_" . $dateTime->format('Y-m-d_H-i-s') . ".pdf",
+            $headers
+        );
+    }
+
+    /**
+     * عرض صفحة معاينة طباعة طلب المشتريات من المورد
+     */
+    public function printProductToSupllierOrder(Request $request)
+    {
+        if (blank($request->OrderNoprint)) {
+            session()->flash('nodataprint', '');
+            return redirect()->route('suppliers.index'); // يفضل عمل ريديراكت بدلاً من إعادة استدعاء الفيو يدوياً
+        }
+
+        $orderDetails = orderDetails::with('supllier')->where('order_owner', $request->OrderNoprint)->get();
+
+        if ($orderDetails->isEmpty()) {
+            session()->flash('error', 'Invoice not found');
+            return redirect()->back();
+        }
+
+        $resourcePurchases = orderTosupllier::where('id', $request->OrderNoprint)->first();
+        
+        // التحقق الآمن من وجود العلاقة منعاً للـ Undefined Index
+        $supplierId = $orderDetails->first()->supllier->suplier_id ?? null;
+        $supplierData = supllier::find($supplierId);
+
+        $data = [
+            'pay'                => $resourcePurchases->Limit_credit ?? 0,
+            'resource_purchases' => $resourcePurchases,
+            'supllierdata'       => $supplierData,
+            'productsdata'       => $orderDetails
+        ];
+
+        return view('supplier.print_order_purchases_to_supplier', compact('data'))->with('order', 1);
+    }
+
+    /**
+     * واجهة تعديل الفاتورة وعرض بيانات الطباعة للمورد (سند الصرف الداخلي)
+     */
     public function edit(Request $request)
     {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-if($request->orderId==null){
-    $products =products::where('branchs_id',Auth()->User()->branchs_id)->paginate(20) ;
-    //return $data;
-    session()->flash('nodataprint', '');
-        return  view('products.purchases',compact('products'));
-}
-        $orderdetails=orderDetails::where('order_owner',$request->orderId)->get();
-        $resource_purchases=resource_purchases::where('orderId',$request->orderId)->first();
-       // return $orderdetails;
-       $sepllierdata=supllier::find($orderdetails[0]->supllier->suplier_id);
-       $data=[
-        'pay'=> $resource_purchases->Pay_Method_Name,
-        'resource_purchases'=>$resource_purchases,
-        'supllierdata'=>$sepllierdata,
-        'productsdata'=>$orderdetails
-       ];
-//return $data;
-        return view('supplier.print_products_to_supplier',compact('data'))->with('order',0) ;
-    }
+        if (blank($request->orderId)) {
+            session()->flash('nodataprint', '');
+            $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
+            return view('products.purchases', compact('products'));
+        }
 
+        $orderDetails = orderDetails::where('order_owner', $request->orderId)->get();
 
-    public function prindorderToSupplier( $id)
-    {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-//return $request;
-if($id==null){
-    $data=[
+        if ($orderDetails->isEmpty()) {
+            session()->flash('nodataprint', '');
+            return redirect()->back();
+        }
 
-    ];
-    //return $data;
-        return  view('products.purchases',compact('data'));
-}
-        $orderdetails=orderDetails::where('order_owner',$id)->get();
-        $resource_purchases=resource_purchases::where('orderId',$id)->first();
-       // return $orderdetails;
-       $sepllierdata=supllier::find($orderdetails[0]->supllier->suplier_id);
-       $data=[
-        'pay'=> $resource_purchases->Pay_Method_Name,
-        'resource_purchases'=>$resource_purchases,
-        'supllierdata'=>$sepllierdata,
-        'productsdata'=>$orderdetails
-       ];
-//return $data;
-        return view('supplier.print_products_to_supplier',compact('data'))->with('order',0) ;
-    }
+        $resourcePurchases = resource_purchases::where('orderId', $request->orderId)->first();
+        
+        $supplierId = $orderDetails->first()->supllier->suplier_id ?? null;
+        $supplierData = supllier::find($supplierId);
 
+        $data = [
+            'pay'                => $resourcePurchases->Pay_Method_Name ?? '',
+            'resource_purchases' => $resourcePurchases,
+            'supllierdata'       => $supplierData,
+            'productsdata'       => $orderDetails
+        ];
 
-
-    public function purchasesShow( $request)
-    {
-        //
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-    //return $data;
-
-        $orderdetails=orderDetails::where('order_owner',$request)->get();
-       // return $orderdetails;
-       $resource_purchases=resource_purchases::where('orderId',$request)->first();
-
-     
-       $sepllierdata=supllier::find($resource_purchases->suplier_id);
-       $data=[
-        'pay'=> $resource_purchases->Pay_Method_Name,
-        'supllierdata'=>$sepllierdata,
-        'productsdata'=>$orderdetails,
-        'resource_purchases'=>$resource_purchases
-       ];
-//return $data;
-        return view('supplier.print_products_to_supplier',compact('data'))->with('order',0) ;
-    }
-    
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\supllier  $supllier
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, supllier $supllier)
-    {
-        //
+        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\supllier  $supllier
-     * @return \Illuminate\Http\Response
+     * طباعة الفاتورة عبر الـ ID مباشرة
      */
-    public function destroy(supllier $supllier)
+    public function prindorderToSupplier($id)
     {
-        //
+        if (blank($id)) {
+            $data = [];
+            return view('products.purchases', compact('data'));
+        }
+
+        $orderDetails = orderDetails::where('order_owner', $id)->get();
+
+        if ($orderDetails->isEmpty()) {
+            return redirect()->back();
+        }
+
+        $resourcePurchases = resource_purchases::where('orderId', $id)->first();
+        
+        $supplierId = $orderDetails->first()->supllier->suplier_id ?? null;
+        $supplierData = supllier::find($supplierId);
+
+        $data = [
+            'pay'                => $resourcePurchases->Pay_Method_Name ?? '',
+            'resource_purchases' => $resourcePurchases,
+            'supllierdata'       => $supplierData,
+            'productsdata'       => $orderDetails
+        ];
+
+        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
     }
+
+    /**
+     * استعراض تفاصيل المشتريات
+     */
+    public function purchasesShow($id)
+    {
+        $orderDetails = orderDetails::where('order_owner', $id)->get();
+
+        if ($orderDetails->isEmpty()) {
+            return redirect()->back();
+        }
+
+        $resourcePurchases = resource_purchases::where('orderId', $id)->first();
+        $supplierData = supllier::find($resourcePurchases->suplier_id ?? null);
+
+        $data = [
+            'pay'                => $resourcePurchases->Pay_Method_Name ?? '',
+            'supllierdata'       => $supplierData,
+            'productsdata'       => $orderDetails,
+            'resource_purchases' => $resourcePurchases
+        ];
+
+        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
+    }
+
+    public function update(Request $request, supllier $supllier) {}
+    public function destroy(supllier $supllier) {}
 }

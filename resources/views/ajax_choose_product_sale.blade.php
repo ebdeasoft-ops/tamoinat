@@ -1,109 +1,83 @@
-@if (@isset($data) && !@empty($data) && count($data) >0 )
-@php
-$i=1;
-@endphp
-<div class="table-responsive">
-    <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
-        <col style="width:5%">
-        <col style="width:14%">
-        <col style="width:28%">
-        <col style="width:10%">
-        <col style="width:10%">
-        <col style="width:13%">
-        <col style="width:10%">
-        <col style="width:10%">
-
-        <thead>
-            <tr>
-                <th style="font-size: 15px" class="border-bottom-0">#</th>
-                <th style="font-size: 15px" class="border-bottom-0">{{__('home.productNo')}} </th>
-                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.product')}}</th>
-                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.branch')}}</th>
-                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.productlocation')}}</th>
-
-                <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}</th>
-                <th style="font-size: 13px" class="border-bottom-0">{{__('home.purchaseproductwithouttax')}}</th>
-                <th style="font-size: 13px" class="border-bottom-0">{{__('home.sellingproduct without tax')}}</th>
-                <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}</th>
-
-
-
-            </tr>
-        </thead>
-        <tbody class="">
-            <?php $i = 0;
-            ?>
-
-            @foreach ($data as $product)
-            <?php $i++ ?>
-
-            <tr id="<?php echo $product['id']; ?>">
-                <td id="tableData" dir=ltr>{{ $product->id }}</td>
-                <td id="tableData" dir=ltr>{{ $product->barcode }}</td>
-                <td id="tableData" data-target="product_name">{{ $product->name }}</td>
-                <td id="tableData" data-target="product_name">{{ $product->branch->name }}</td>
-                <td id="tableData" data-target="numberofpice">{{ $product->Product_Location }}</td>
-                <td id="tableData" data-target="numberofpice">
-                   
-                    @if( $product->All_QUENTITY<=0) <span style="color:red;font-size:14px">{{($product->All_QUENTITY)." / ".__("home.notavailable")}}</span>
-                    @if($product->parent_inv_itemcard_id==0)
-                            {{ $product->Parent_uom->name}}
-
+{{ app()->setLocale($getLocale) }}
+@if (isset($data) && $data->isNotEmpty())
+    <div class="table-responsive p-3">
+        <table class="table text-center our-table" id="SearchProductTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ __('home.productNo') }}</th>
+                    <th>{{ __('home.product') }}</th>
+                    <th>{{ __('home.branch') }}</th>
+                    <th>{{ __('home.productlocation') }}</th>
+                    <th>{{ __('home.quantity') }}</th>
+                    @can('System setting')
+                        <th>{{ __('home.purchaseproductwithouttax') }}</th>
+                        <th>{{ __('home.average_cost') }}</th>
+                    @endcan
+                    <th>{{ __('home.sellingproduct without tax') }}</th>
+                    <th>{{ __('home.refnumber') }}</th>
+                    <th>{{ __('home.notesClient') }}</th>
+                    <th>{{ __('home.Add') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($data as $product)
+                    <tr id="{{ $product->id }}">
+                        <td>{{ $loop->iteration }}</td>
+                        <td>
+                            <span class="badge {{ $product->products_mix != 0 ? 'bg-danger' : 'bg-success' }} text-white">
+                                {{ $product->Product_Code }}
+                            </span>
+                        </td>
+                        <td class="font-weight-bold">{{ $product->product_name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ $product->branch->name ?? '**' }}</span></td>
+                        <td>{{ $product->Product_Location }}</td>
+                        <td>
+                            @if($product->numberofpice <= 0)
+                                <span class="text-danger fw-bold">{{ __('home.notavailable') }}</span>
                             @else
-                            <?php
-                            $parentproduct = App\Models\products::find($product->parent_inv_itemcard_id);
-                            ?>
-                            {{ $parentproduct->retail_Uom->name}}
+                                <span class="text-success fw-bold" style="font-size: 1.1rem;">{{ $product->numberofpice }}</span>
+                            @endif
+                        </td>
+                        @can('System setting')
+                            <td>{{ number_format($product->purchasingـprice, 2) }}</td>
+                            <td>{{ number_format($product->average_cost, 2) }}</td>
+                        @endcan
+                        <td class="fw-bold text-primary">{{ number_format($product->sale_price, 2) }}</td>
+                        <td class="text-muted small">
+                            {{ $product->refnumber == null ? __('home.notdata') : str_replace("+", " - ", $product->refnumber) }}
+                        </td>
+                        <td class="text-muted small">{{ $product->notes ?? '-' }}</td>
+                        <td>
+                            <div class="d-flex flex-column align-items-center">
+                                <button class="btn btn-action btn-add" data-dismiss="modal"
+                                    onclick="chooseProduct('{{$product->id}}','{{$product->Product_Code}}','{{$product->product_name}}','{{$product->purchasingـprice}}','{{$product->sale_price}}','{{$product->Product_Location}}','{{$product->numberofpice}}','{{$currentrow}}')">
+                                    <i class="fa fa-plus-circle me-1"></i> {{ __('home.Add') }}
+                                </button>
 
-                            @endif</span>
-
-                        @else
-                        <span style="color:green;font-size:14px">{{$product->All_QUENTITY}}
-                            @if($product->parent_inv_itemcard_id==0)
-                            {{ $product->Parent_uom->name}}
-
-                            @else
-                            <?php
-                            $parentproduct = App\Models\products::find($product->parent_inv_itemcard_id);
-                            ?>
-                            {{ $parentproduct->retail_Uom->name}}
-
-                            @endif</span>
-
-
-                        @endif
-                    </td>
-
-                <td id="tableData" data-target="numberofpice">{{ $product->cost_price }}</td>
-                <td id="tableData" data-target="numberofpice">{{round( $product->price,2) }}</td>
-
-                <td id="tableData">
-
-                    @if($product->All_QUENTITY<=0) <button style="padding: 6px 12px" type="button" id="btn" name="btn" class="btn btn-danger" data-dismiss="modal" onclick="chooseProduct('{{$product->id}}','{{$product->barcode}}','{{$product->name}}','{{$product->cost}}','{{$product->price}}','{{$product->Product_Location}}','{{$product->All_QUENTITY}}','{{ $product->Parent_uom->id }}','{{$product->Parent_uom->name }}','{{ 1 }}','{{ 1}}','{{ $product->has_fixced_price}}')">{{__('home.Add')}}</button>
-
-                        @else
-
-                        <button style="padding: 6px 12px" type="button" id="btn" name="btn" class="btn btn-success" data-dismiss="modal" onclick="chooseProduct('{{$product->id}}','{{$product->barcode}}','{{$product->name}}','{{$product->cost}}','{{$product->price}}','{{$product->Product_Location}}','{{$product->All_QUENTITY}}','{{ $product->Parent_uom->id }}','{{ 1 }}','{{ 1}}','{{ $product->has_fixced_price}}')">{{__('home.Add')}}</button>
-
-
-                        @endif
-
-
-
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div>
-        <br>
-        <div class="justify-content-start" id="ajax_pagination_in_search">
+                                <div class="btn-group mt-1">
+                                    <button class="btn btn-action btn-warning" data-dismiss="modal" onclick="replaceproduct('{{$product->id}}')">
+                                        {{ __('home.transactions') }}
+                                    </button>
+                                    @php $count = App\Models\products::where('main_product', $product->main_product)->where('main_product', '!=', 0)->count(); @endphp
+                                    @if($count > 1)
+                                        <button class="btn btn-action btn-info" data-dismiss="modal" onclick="replaceproductorginal('{{$product->main_product}}')">
+                                            {{ __('home.replace') }}
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="mt-3" id="ajax_pagination_in_search">
             {{ $data->links() }}
         </div>
-
-
-
-        @else
-        <div class="alert alert-danger">
-        {{__('home.notfounddata')}}         </div>
-        @endif
+    </div>
+@else
+    <div class="alert alert-danger text-center">
+        <i class="fa fa-info-circle"></i> {{ __('home.notfounddata') }}
+    </div>
+@endif

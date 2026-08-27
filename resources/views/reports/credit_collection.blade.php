@@ -89,18 +89,36 @@
                             </div>
 
                             <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.searchbyclientname') }} </p>
+                                <p class="mg-b-10 parent-label"> {{ __('home.saerch_by_numberaccount_or_name') }} </p>
                                 <select class="form-control parent-input select2" name="UserId" required>
 
-                                    <option value="-"> {{ __('home.searchbyclientname') }}</option>
+                                    <option value="-"> {{ __('home.acount_name') }}</option>
 
-                                    @foreach (App\Models\customers::get() as $section)
+                                    @foreach (App\Models\financial_accounts::get() as $section)
                                     <option value="{{ $section->id }}"> {{ $section->name }} -
                                         {{ $section->id }}
                                     </option>
                                     @endforeach
                                 </select>
                             </div><!-- col-4 -->
+                                     <div class="col" id="type">
+                                    <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
+                                    <select class="form-control parent-input" name="branch" required>
+                                    @if(Auth()->user()->branchs_id==1)
+                                        <option value="-" selected>{{ __('users.allbranchs') }}
+                                        </option>
+                                            @endif
+                                        @foreach (App\Models\branchs::get() as $branch)
+                                        @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==$branch->id)
+
+                                            <option style="font-size:15px" value="{{ $branch->id }}"> {{ $branch->name }}</option>
+                                       @endif
+                                            @endforeach
+                                 
+                                    </select>
+
+                                </div>
+
                         </div><br>
                         <div class="d-flex justify-content-center">
                             <button class="btn btn-success print-style p-1">
@@ -166,7 +184,8 @@
 
                         </span> --}}
 
-                        <table class="table table-striped table-bordered text-center">
+     <div class="table-responsive  ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
 
                             <thead>
                                 <tr>
@@ -179,11 +198,11 @@
                                 </tr>
                                 <tr>
                                     <th class="border-bottom-0">{{ __('home.date') }} </th>
-                                    <th class="border-bottom-0"> {{ __('home.clientname') }}</th>
-                                    <th class="border-bottom-0">{{ __('accountes.limitCredit') }}</th>
-                                    <th class="border-bottom-0">{{ __('accountes.Remainingamount') }}</th>
+                                    <th class="border-bottom-0"> {{ __('home.acount_name') }}</th>
                                     <th class="border-bottom-0">{{ __('accountes.cashreceived') }}</th>
+
                                     <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
+                                    <th class="border-bottom-0">{{ __('home.attachments') }}</th>
 
                                 </tr>
                             </thead>
@@ -196,10 +215,9 @@
                             <tbody>
                                 <tr>
                                     <td>{{ $date[0] }}</td>
-                                    <td>{{ $invoice->customer->name }}</td>
-                                    <td>{{ $invoice->customer->Limit_credit }}</td>
-                                    <td>{{ $invoice->currentblance }}</td>
+                                    <td>{{ $invoice->financial_accounts_data->name }}</td>
                                     <td>{{ $invoice->recive_amount }}</td>
+
                                     <td>
                                     @if ($invoice->pay_method == 'Cash')
                                         <span class="text-success">{{ __('report.cash') }}</span>
@@ -209,7 +227,15 @@
                                         <span class="text-warning">{{ __('report.shabka') }}</span>
                                         @endif
                                     </td>
-
+    <?php
+                                       $path=$invoice->attachments;
+                                       ?>
+                                        <td><center>@if($path!=null)<a  target="_blank"
+href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
+                                    >{{  __('home.show')}}</a>
+                                    @else
+                                    -
+                                    @endif</td>
                                 </tr>
 
                             </tbody>
@@ -217,7 +243,7 @@
                         </table>
 
                       
-
+</div>
 
                         <br>
                         <br>

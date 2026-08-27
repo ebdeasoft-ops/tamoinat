@@ -207,7 +207,7 @@
                                                     <thead>
 
                                                         <tr>
-                                                            <th> {{__('home.Invoice_no')}}</th>
+                                                            <th>{{__('home.Invoice_no')}}</th>
                                                             <th>{{ $invoice->id }}</th>
                                                         </tr>
 
@@ -238,8 +238,8 @@
                                                                 <td>{{ $i }}</td>
                                                                 <td>{{ $date[0] }}</td>
 
-                                                                <td dir=ltr>{{ $product->productData->barcode }}</td>
-                                                                <td>{{ $product->productData->name }}</td>
+                                                                <td dir=ltr>{{ $product->productData->Product_Code }}</td>
+                                                                <td>{{ $product->productData->product_name }}</td>
                                                                 <td>{{ $product->quantity }}</td>
                                                             </tr>
 

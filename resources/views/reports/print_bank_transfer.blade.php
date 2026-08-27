@@ -42,40 +42,52 @@
                 <div class=" main-content-body-invoice" id="print">
                     <div class="card card-invoice p-3 pt-4">
                         <div class="card-body pt-3">
-                        <div class="invoice-header">
+     <div class="d-flex justify-content-center">
+                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
+                                {{ __('home.print') }}
+                                <i class="mdi mdi-printer ml-1"></i>
+                        </div>
+                        <br>
 
-<div class="billed-from">
-    <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-    <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <p dir=ltr> {{Taxen}} </p>
 
-</div>
-<div class="row">
-<?php
+
+                  <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+
+                        <div class="billed-from" style="width:33%;text-align: center;" >
+                            <br>
+                             <span style="font-size:25px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
+
+                        </div>
+                        <div class="row">
+                        <?php
 $logo=camplogo;
     ?>
     <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
 
-</div>
+                        </div>
 
 
-<div class="billed-from">
-    <br>
+                        <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
 
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-    <br>
-    <p> {{describtionar}}</p>
-    <p>{{STar}}</p>
-    <p>{{Taxar}}</p>
+                           <span style="font-size:25px">{{Namear}}</span>
+                            <br>
+                            <p> {{describtionar}}</p>
+                            <p>{{STar}}</p>
+                            <p>{{Taxar}}</p>
 
-</div><!-- billed-from -->
-</div><!-- invoice-header -->
+                        </div><!-- billed-from -->
+                    </div><!-- invoice-header -->
+                                                  <span> <center>{{ __('home.cach_from_bank') }}</center></span>
+
                             <div class="row mg-t-12">
                                 <br>
                                 <br>
+
                                 <br>
 
                             </div>
@@ -120,6 +132,8 @@ $logo=camplogo;
                                             <th class="border-bottom-0">{{ __('home.branch') }}</th>
                                             <th class="border-bottom-0">{{ __('home.the amount') }}</th>
                                             <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
+                                             <th class="border-bottom-0">{{ __('home.notesClient') }}</th>
+
                                         </tr>
                                     </thead>
 
@@ -144,6 +158,8 @@ $logo=camplogo;
 
                                             <td>{{ $operation->the_amount }}</td>
                                             <td>{{ $pay }}</td>
+                                                                                <td>{{$operation->notes }}</td>
+
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -156,11 +172,7 @@ $logo=camplogo;
                             </div>
 
                         </div>
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                        </div>
+                   
                     </div>
                     <hr class="mg-b-40">
 

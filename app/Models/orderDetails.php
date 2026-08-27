@@ -15,11 +15,11 @@ class orderDetails extends Model
        'product_name',
        'purchasingـprice',
        'numberofpice',
-       'sale_price',
-       'unit',
        'product_id',
        'Added_Value',
-       'save','expaire_date','prodyction_date'
+       'sale_price',
+       'save',
+       'reamingQuantity'
     ];
 
     public function supllier()
@@ -30,5 +30,13 @@ class orderDetails extends Model
 public function productData()
 {
     return $this->belongsTo(products::class,'product_id');
+}
+public function orderToSupplier()
+{
+    return $this->belongsTo(orderTosupllier::class, 'order_owner');
+}
+public function order()
+{
+    return $this->belongsTo(resource_purchases::class, 'order_owner', 'id');
 }
 }

@@ -89,17 +89,7 @@
                                 <input class="form-control parent-input" name="pay" title="يرجي ادخال مبلغ  النقدي  " id="pay" value=0>
 
                             </div>
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName" class="control-label parent-label"> {{ __('report.shabka') }}
-                                </label>
-                                <input type="number" value=0 class="form-control parent-input" id="cashreceived" name="cashreceived" title="يرجي ادخال مبلغ  الشبكة  ">
-                            </div>
-
-                            <div class="col-lg-3 mb-2">
-                                <label for="inputName" class="control-label parent-label"> {{ __('home.Bank_transfer') }}
-                                </label>
-                                <input type="number" value=0 class="form-control parent-input" id="Bank_transfer" name="Bank_transfer" title="يرجي ادخال مبلغ  الشبكة  ">
-                            </div>
+            
                             <br>
 
                         </div>
@@ -144,8 +134,8 @@
 
                             <th class="border-bottom-0"> {{ __('home.date') }}</th>
                             <th class="border-bottom-0">{{ __('report.cash') }}</th>
-                            <th class="border-bottom-0">{{ __('report.shabka') }}</th>
-                            <th class="border-bottom-0">{{ __('home.Bank_transfer') }}</th>
+                         
+                         
                             <th class="border-bottom-0">{{ __('home.total') }}</th>
                             <th class="border-bottom-0">{{ __('home.operations') }}</th>
 
@@ -154,8 +144,6 @@
                     <tbody>
                         <tr>
 
-                            <td>-</td>
-                            <td>-</td>
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
@@ -243,17 +231,7 @@
                         <input class="form-control parent-input" name="cashreceivedupdate" title="يرجي ادخال مبلغ  النقدي  " id="cashreceivedupdate" value=0>
 
                     </div>
-                    <div class="col-lg-3 mb-2">
-                        <label for="inputName" class="control-label parent-label"> {{ __('report.shabka') }}
-                        </label>
-                        <input type="number" value=0 class="form-control parent-input" id="payupdate" name="payupdate" title="يرجي ادخال مبلغ  الشبكة  ">
-                    </div>
-
-                    <div class="col-lg-3 mb-2">
-                        <label for="inputName" class="control-label parent-label"> {{ __('home.Bank_transfer') }}
-                        </label>
-                        <input type="number" value=0 class="form-control parent-input" id="Bank_transferupdate" name="Bank_transferupdate" title="يرجي ادخال مبلغ  الشبكة  ">
-                    </div>
+             
                 </div>
 
             </div>
@@ -267,6 +245,32 @@
         </div>
     </div>
 </div>
+
+  <div class="modal fade product-selection" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+            <div class="modal-dialog modal-xl" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" role="document">
+                <div class="modal-content">
+                  
+                    <div class="modal-body" style="justify-content: center;">
+
+
+ <center><img style="width:250px;height:250px;" class="custom_img" src="{{ asset('assets/admin/uploads/done.png') }}" >
+                        
+</center>
+
+
+
+                          
+                        </div>
+
+                     
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
 @endsection
 @section('js')
 <!-- Internal Data tables -->
@@ -346,8 +350,8 @@
                 _token: token_search,
                 userto: $('#userto').val(),
                 cashreceived: $('#pay').val(),
-                bank_transfer: $('#Bank_transfer').val(),
-                pay: $('#cashreceived').val(),
+                bank_transfer: 0,
+                pay: 0,
             },
 
 
@@ -370,23 +374,25 @@
                 let c3 = row.insertCell(2);
                 let c4 = row.insertCell(3);
                 let c5 = row.insertCell(4);
-                let c6 = row.insertCell(5);
-                let c7 = row.insertCell(6);
+              
 
                 c1.innerText = data['id']
                 c2.innerText = data['created_at']
                 c3.innerHTML = ' <span dir=ltr style="color:red">' + data['amount'] + '</span>'
-                c4.innerText = data['Pay_Method_Name']
-                c5.innerText = data['bank_transfer']
-                c6.innerText = (data['Pay_Method_Name'] * 1) + (data['amount'] * 1) + (data['bank_transfer'] * 1)
-                c7.innerHTML = update
+                c4.innerText = data['amount']
+                c5.innerHTML = update
 
                 $('#cashreceived').val(0)
-                $('#pay').val(0)
+                // $('#pay').val(0)
                 $('#id').val(data['id'])
+          $('#SearchProduct').modal().show();
+ setTimeout(() => {
+         $('#SearchProduct').modal('hide');
 
+        }, 1000);
             },
             error: function(response) {
+                console.log(response)
                 alert("{{ __('home.sorryerror') }}")
 
             }
@@ -421,8 +427,7 @@
                 transactionId: $('#transactionId').val(),
                 userto: $('#usertoupdate').val(),
                 cashreceived: $('#cashreceivedupdate').val(),
-                shabka: $('#payupdate').val(),
-                Bank_transferupdate: $('#Bank_transferupdate').val(),
+     
             },
 
 
@@ -445,16 +450,14 @@
                 let c3 = row.insertCell(2);
                 let c4 = row.insertCell(3);
                 let c5 = row.insertCell(4);
-                let c6 = row.insertCell(5);
-                let c7 = row.insertCell(6);
+            
 
                 c1.innerText = data['id']
                 c2.innerText = data['created_at']
                 c3.innerHTML = ' <span dir=ltr style="color:red">' + data['amount'] + '</span>'
-                c4.innerText = data['Pay_Method_Name']
-                c5.innerText = data['bank_transfer']
-                c6.innerText = (data['Pay_Method_Name'] * 1) + (data['amount'] * 1) + (data['bank_transfer'] * 1)
-                c7.innerHTML = update
+      
+                c4.innerText =  (data['amount'] * 1) 
+                c5.innerHTML = update
 
                 $('#cashreceived').val(0)
                 $('#pay').val(0)
@@ -462,6 +465,7 @@
 
             },
             error: function(response) {
+                console.log(response)
                 alert("{{ __('home.sorryerror') }}")
 
             }

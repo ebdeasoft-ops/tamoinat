@@ -10,7 +10,7 @@
 <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
 
 @section('title')
-{{ __('home.shabka_bank') }}@stop
+{{ __('home.cach_from_bank') }}@stop
 @endsection
 @section('page-header')
 <div class="main-parent">
@@ -18,7 +18,7 @@
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.shabka_bank') }}
+                <h4 class="content-title mb-0 my-auto">{{ __('home.cach_from_bank') }}
 
                 </h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
                 </span>
@@ -130,16 +130,16 @@
                         ?>
 
 
-                        <div class="table-responsive pt-4 pb-2 mt-4">
-                            <table id="example" class="table key-buttons text-md-nowrap table-bordered table-striped text-center">
-                                <thead>
+                         <div class="table-responsive mg-t-20 mt-3 mr-2 d-flex ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+  <thead>
                                     <tr>
                                         <th class="border-bottom-0"> {{ __('home.date') }}</th>
                                         <th class="border-bottom-0">{{ __('home.employee') }}</th>
                                         <th class="border-bottom-0">{{ __('home.branch') }}</th>
                                         <th class="border-bottom-0">{{ __('home.the amount') }}</th>
                                         <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                        <th class="border-bottom-0">-</th>
+                                        <th class="border-bottom-0">{{ __('home.notesClient') }}</th>
                                     </tr>
                                 </thead>
 
@@ -170,7 +170,7 @@
 
                                     <td>{{ $operation->the_amount }}</td>
                                     <td>{{ $pay }}</td>
-                                    <td>-</td>
+                                    <td>{{$operation->notes }}</td>
 </tr>
 @endforeach
                                 </tbody>

@@ -5,6 +5,34 @@
         #print_Button {
             display: none;
         }
+                  @page
+        {
+            size: auto; /* auto is the initial value */
+            margin: 2mm 2mm 10mm 2mm; /* this affects the margin in the printer settings */
+                font-size:30px!important;
+
+        }
+        .tx-18{
+                            font-size:15px!important;
+
+        }
+         .tx-16{
+                            font-size:13px!important;
+
+        }
+                .text {
+  display: block;
+  width: 350px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+        .double{
+            border: 3px solid grey;
+            border-radius: 5px;
+            width:200px;
+
+        }
     }
 
     body {
@@ -30,31 +58,38 @@
     <div class="col-md-12 col-xl-12">
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
-                <div class="card-body">
-                <div class="invoice-header">
+                   <div class="d-flex justify-content-center">
+                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
+                                {{ __('home.print') }}
+                                <i class="mdi mdi-printer ml-1"></i>
+                        </div>
+                        <br>
 
-<div class="billed-from">
+                <div class="card-body">
+                               <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+
+<div class="billed-from" style="width:33%;text-align: center;" >
     <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
+     <span style="font-size:25px">{{Nameen}}</span>
     <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <p dir=ltr> {{describtionen}} </p>
+    <span dir=ltr>{{STen}} </span>
     <p dir=ltr> {{Taxen}} </p>
 
 </div>
 <div class="row">
 <?php
 $logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+?>
+<a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
 
 </div>
 
 
-<div class="billed-from">
+<div class="billed-from" style="width:33%;text-align: center;">
     <br>
 
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
+   <span style="font-size:25px">{{Namear}}</span>
     <br>
     <p> {{describtionar}}</p>
     <p>{{STar}}</p>
@@ -63,6 +98,8 @@ $logo=camplogo;
 </div><!-- billed-from -->
 </div><!-- invoice-header -->
                     <br>
+                                                                                    <p><center>{{ __('home.bankDecument') }}</center></p>
+
                     <br>
                     <div class="col-lg-3" id="start_at">
                         <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} : </label>
@@ -194,12 +231,7 @@ $logo=camplogo;
                                                         </thead>
                                                     </table>
                                                 </div>
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                            </button>
-                        </div>
+                    
 
 
 

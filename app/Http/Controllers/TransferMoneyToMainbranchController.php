@@ -55,18 +55,15 @@ return view('acountes.pendingtransfers');
        // return $request;
        $transferMoney_to_mainbranch =transferMoney_to_mainbranch::find($request->transactionId);
             $data=transferMoney_to_mainbranch::find($request->transactionId)->update([
-            'Pay_Method_Name'=>$request->payupdate,
             'amount'=>$request->cashreceivedupdate,
             'to_user_id'=>$request->usertoupdate,
-            'bank_transfer'=>$request->Bank_transferupdate,
+    
             'created_at'=> \Carbon\Carbon::now()->addHours(3),
         ]);
         $data =transferMoney_to_mainbranch::find($request->transactionId);
 
         $data=[
-            'Pay_Method_Name'=>$request->shabka,
             'amount'=>$request->cashreceived,
-            'bank_transfer'=>$request->Bank_transferupdate,
             'created_at'=>$data->created_at->format('d/m/Y'),
             'id'=> $data->id
         ];
@@ -79,10 +76,8 @@ return view('acountes.pendingtransfers');
         //
        $transferMoney_to_mainbranch =transferMoney_to_mainbranch::find($request->transactionId);
             $data=transferMoney_to_mainbranch::find($request->transactionId)->update([
-            'Pay_Method_Name'=>$request->shabka,
             'amount'=>$request->cashreceived,
             'to_user_id'=>$request->userto,
-            'bank_transfer'=>$request->Bank_transferupdate,
             'created_at'=> \Carbon\Carbon::now()->addHours(3),
         ]);
         $data =transferMoney_to_mainbranch::find($request->transactionId);
@@ -107,7 +102,6 @@ return view('acountes.pendingtransfers');
             'amount'=>$request->cashreceived,
             'to_user_id'=>$request->userto,
             'from_user_id'=>Auth()->user()->id,
-            'bank_transfer'=>$request->bank_transfer,
             'branchs_id'=>Auth()->user()->branchs_id,
             'created_at'=> \Carbon\Carbon::now()->addHours(3),
         ]);
@@ -115,7 +109,6 @@ return view('acountes.pendingtransfers');
         $data=[
             'Pay_Method_Name'=>$request->pay,
             'amount'=>$request->cashreceived,
-            'bank_transfer'=>$request->bank_transfer,
             'created_at'=>$data->created_at->format('d/m/Y'),
             'id'=> $data->id
         ];

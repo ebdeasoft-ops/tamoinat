@@ -124,6 +124,7 @@
                             </div>
                             <div style="flex-direction: row;border-radius:5px" class="card p-1 m-1 mt-0 d-flex justify-content-around row m-1">
                                 <div class="choose-product">
+
                                     <button style="background-color: #23395D;" class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#createcustomer" title="تحديد"><i style=" height: 100;
                          width: 65px;
                          font-size:13px" class="las"> {{ __('home.addnewcustomer') }}</i>
@@ -158,13 +159,13 @@
                             ?>
                             <input type="text" class="form-control " id="avtValue" name="avtValue" value="{{$avtSaleRate}}" hidden>
 
-                            <div class="col-lg-5 mg-t-20 mg-lg-t-0">
+                            <div class="col-lg-3 mg-t-20 mg-lg-t-0">
                                 <label for="inputName" class="control-label parent-label"> {{ __('home.product') }} </label>
                                 <input type="text" class="form-control parent-input" id="product_name" name="product_name" title="  يرجي ادخال رقم المنتج  " value="{{ $data['supllier']->supllier->comp_name ?? '' }}">
                             </div>
-                            <div class="col-lg-3 mg-t-20 mg-lg-t-0">
+                            <div class="col-lg-2 mg-t-20 mg-lg-t-0">
                                 <label for="inputName" class="control-label parent-label"> {{ __('home.productNo') }} </label>
-                                <input type="text" class="form-control parent-input" id="product_code" name="product_code" title="  يرجي ادخال رقم المنتج  " readonly>
+                                <input type="text" class="form-control parent-input" dir=ltr id="product_code" name="product_code" title="  يرجي ادخال رقم المنتج  " readonly>
                             </div>
 
                             <div class="col-lg-2 ">
@@ -178,7 +179,11 @@
                                 <input type="text" class="form-control parent-input" id="avaliable_quentity" name="avaliable_quentity" readonly>
                             </div>
 
-
+                            <div class="col-lg-3">
+                                <label for="inputName" class="control-label parent-label">
+                                    {{ __('home.purchaseproductwithouttax') }}</label>
+                                <input type="text" class="form-control parent-input " id="purchase_price" name="purchase_price" readonly required>
+                            </div>
                             <?php
                             $avtSaleRate = App\Models\Avt::find(1);
                             $avtSaleRate = $avtSaleRate->AVT;
@@ -245,11 +250,7 @@
                                 <div class="col-lg-4 mg-lg-t-0" id="type">
                                     <p class="mg-b-10"> {{ __('home.chooseclient') }} </p>
                                     <select class="form-control select2" name="clientnamesearch" id="clientnamesearch">
-                                        <option value="{{ $data['customer']->id ?? 1 }}">
-                                            {{ $data['customer']->name ?? __('home.Cash Custome') }}
-                                            {{ $data['customer']->phone ?? '' }}
-                                        </option>
-
+                                 
                                         @foreach (App\Models\customers::get() as $customer)
                                         <option value="{{ $customer->id }}"> {{ $customer->name }}
                                             {{ $customer->phone }}
@@ -411,26 +412,25 @@
                                     </button>
                                 </div>
                                 <br>
-                                <div class=' justify-content-end' id="printdiv">
-
-                                <input type="number" class="form-control " name="show_invoice_number" id="show_invoice_number" title=" رقم الفاتورة " readonly required hidden>
-
-                                    <button style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px" id="printReciept" class="btn btn-success p-1 px-2 fw-bolder">
-                                        {{ __('home.print') }}
-
-                                        <svg style="width: 15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                            <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
-                                        </svg>
-                                    </button>
-
-
-
-
-
-
-                                </div>
                                 <div class="row  d-flex justify-content-end mt-3">
-                           
+                                    <div class=' justify-content-end' id="printdiv">
+
+                                        <input type="number" class="form-control " name="show_invoice_number" id="show_invoice_number" title=" رقم الفاتورة " readonly required hidden>
+
+                                        <button style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px" id="printReciept" class="btn btn-success p-1 px-2 fw-bolder">
+                                            {{ __('home.print') }}
+
+                                            <svg style="width: 15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
+                                                <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
+                                            </svg>
+                                        </button>
+
+
+
+
+
+
+                                    </div>
 
                                     <form action="{{ '/' . ($page = 'returnAll') }}" method="POST" role="search" autocomplete="off">
                                         {{ csrf_field() }}
@@ -474,6 +474,32 @@
                 </div>
                 <!-- Container closed -->
             </div>
+            
+ <div class="modal fade product-selection" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" id="massagesave" name="massagesave" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+            <div class="modal-dialog modal-xl" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" role="document">
+                <div class="modal-content">
+                  
+                    <div class="modal-body" style="justify-content: center;">
+
+
+ <center><img style="width:250px;height:250px;" class="custom_img" src="{{ asset('assets/admin/uploads/done.png') }}" >
+                        
+</center>
+
+
+
+                          
+                        </div>
+
+                     
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
             <div class="modal" id="paymentmethod">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content modal-content-demo">
@@ -728,7 +754,7 @@
                                 <div class="col">
                                     <label for="inputName" class="control-label parent-label">
                                         {{ __('home.sellingproduct without tax') }}</label>
-                                    <input type="number" class="form-control parent-input" id="product_price_update" name="product_price_update" onchange="changeAvtValue('{{ $avtSaleRate }}')" onkeyup="changeAvtValuempdale()" required>
+                                    <input type="number" class="form-control parent-input" id="product_price_update" name="product_price_update" onchange="changeAvtValueupdatewithodtax('{{ $avtSaleRate }}')" onkeyup="changeAvtValuempdale()" required>
                                 </div>
                                 <div class="col">
                                     <label for="inputName" class="control-label parent-label"> {{ __('home.avt') }} </label>
@@ -793,6 +819,25 @@
 
         <!-- main-content closed -->
     </div>
+
+    <div class="modal" id="updateRecieptmodalId">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content modal-content-demo">
+                <div class="modal-header">
+                    <h6 class="modal-title"> {{ __('roles.update') }} </h6><button aria-label="Close" class="close" data-dismiss="modal" type="button"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ __('home.enterinvoicenumber') }}</p><br>
+                    <input class="form-control parent-input" name="invoice_number_updateReciept" id="invoice_number_updateReciept" type="number">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">الغاء</button>
+                    <button id="updateReciept" name="updateReciept" class="btn btn-danger">{{ __('home.confirm') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @endsection @section('js')
     <!-- Internal Data tables -->
 
@@ -837,38 +882,6 @@
             //  strNum = strNum.replace(/[^\d]/g, '');
             return strNum;
         }
-        $("#printReciept").click(function(e) {
-            var url = " {{ URL::to('printInvoice') }}";
-            var token_search = $("#token_search").val();
-            $.ajax({
-                url: url,
-                type: 'post',
-                cache: false,
-                dataType: 'html',
-                data: {
-                    _token: token_search,
-                    show_invoice_number: $('#show_invoice_number').val(),
-                },
-                success: function(data) {
-                    console.log(data)
-                    const winUrl = URL.createObjectURL(
-                        new Blob([data], {
-                            type: "text/html"
-                        })
-                    );
-                    const win = window.open(
-                        winUrl,
-                        "win",
-                        `width=800,height=700,screenX=100,screenY=400`
-                    );
-
-                },
-                error: function(response) {
-                    alert("{{ __('home.sorryerror') }}")
-
-                }
-            });
-        });
     </script>
     <script>
         var barcode = '';
@@ -1288,6 +1301,17 @@
 
 
         }
+
+        function changeAvtValueupdatewithodtax(avt) {
+
+            avt = $('#avtValue').val();
+            price = $('#product_price_update').val();
+            $('#priceWithTax_update').val(((Math.round((price * avt) * 1000) / 1000) + price * 1).toFixed(2));
+            $('#avt').val((Math.round((price * avt) * 1000) / 1000).toFixed(2));
+
+
+
+        }
     </script>
 
     <script>
@@ -1330,7 +1354,7 @@
     {{-- Update ( 24/4/2023 ) --}}
 
     <script>
-        function chooseProduct(code, productcode, name, price, sale_price, location, availablequantity, z, cb, c, has_fixced_price) {
+        function chooseProduct(code, productcode, name, price, sale_price, location, availablequantity) {
             $('#SearchProduct').modal().hide();
             $('#searchaboutproduct').val('');
             name = name.replaceAll("<", " ");
@@ -1344,17 +1368,7 @@
             $('#avaliable_quentity').val(availablequantity);
             $('#quantity').val(1);
             $('#product_code').val(productcode);
-            if (has_fixced_price==0) {
-                document.getElementById("product_price").readOnly = false;
-                document.getElementById("priceWithTax").readOnly = false;
 
-
-            } else {
-
-                document.getElementById("product_price").readOnly = true;
-                document.getElementById("priceWithTax").readOnly = true;
-
-            }
             $('#product_price').val(sale_price);
             $('#purchase_price').val(price);
             avtsale = $('#avtValue').val();
@@ -1859,6 +1873,265 @@
     </script>
 
     <script>
+       document.addEventListener('keydown', (e) => {
+    if (e.key === "+") {                   event.preventDefault();
+
+        
+                var url = $(this).attr('data-action');
+                let table = document.getElementById("example");
+
+
+                var token_search = $("#token_search").val();
+
+                console.log(" {{ URL::to('AddInvoices') }}");
+
+                var url = " {{ URL::to('AddInvoices') }}";
+                token_search = $('#token_search').val();
+                productNo = $('#productNo').val();
+                invoice_number = $('#invoice_number').val();
+                product_name = $('#product_name').val();
+                product_price_after_dis = $('#product_price_after_dis').val();
+                quantity = $('#quantity').val();
+                avaliablequantity = $('#avaliable_quentity').val();
+                pay = $('#pay').val();
+                clientnamesearch = $('#clientnamesearch').val();
+                creditlimit = $('#creditlimit').val();
+                purchase_price = $('#purchase_price').val();
+                if ($('#saveinvice').val() == 1) {
+                    alert("{{ __('home.recentsave') }}")
+
+                } else if (product_name == '') {
+                    alert("{{ __('home.pleaseChooseProduct') }}")
+
+                } else {
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        cache: false,
+
+                        data: {
+                            _token: token_search,
+                            productNo: $('#productNo').val(),
+                            invoice_number: $('#invoice_number').val(),
+                            product_name: $('#product_name').val(),
+                            product_price_after_dis: $('#product_price_after_dis').val(),
+                            quantity: $('#quantity').val(),
+                            pay: $('#pay').val(),
+                            clientnamesearch: $('#clientnamesearch').val(),
+                            creditlimit: $('#creditlimit').val(),
+                            product_price: $('#product_price').val(),
+                            purchase_price: $('#purchase_price').val(),
+                            note: $('#notes').val() ?? '-',
+
+
+                        },
+
+
+                        success: function(data) {
+                            $('#saveinvice').val(2)
+                            $('#product_code').val('');
+
+                            // const map =(JSON.parse(response));
+                            if (data[0] == "notfount") {
+                                alert("{{ __('home.stocknotAvailable') }}");
+                            } else {
+
+
+
+                                $('#show_invoice_number').val(data['invoice_number'])
+                                $('#invoice_number').val(data['invoice_number']);
+                                $('#showInvoiceNumber').val(data['invoice_number']);
+                                $('#invoice_no_delete_All').val(data['invoice_number']);
+
+
+
+                                var tableHeaderRowCount = 1;
+
+                                var rowCount = table.rows.length;
+
+                                for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                                    table.deleteRow(tableHeaderRowCount);
+                                }
+                                count1 = 0;
+                                added_value_total = 0;
+                                total_sales = 0;
+
+                                data['product'].forEach(async (product) => {
+
+
+                                    sales_id = product['id'],
+                                        count1 = product['count'],
+                                        product_code = product['Product_Code']
+                                    product_name = product['product_name']
+                                    quentity = product['quantity']
+                                    price = product['Unit_Price']
+                                    discount = product['Discount_Value']
+                                    addedvalue = product['Added_Value']
+                                    total = product['Unit_Price'] * product[
+                                            'quantity'] + product['Added_Value'] *
+                                        product['quantity']
+                                    added_value_total = added_value_total + (
+                                        product['Added_Value'] * product[
+                                            'quantity'])
+                                    total_sales = total_sales + (price * product[
+                                        'quantity'])
+                                    console.log(product_name);
+                                    text1 =
+                                        '<button style="height:20px;width:20px;background-color: #419BB2" type="button"  class="btn btn-success mb-1 minus-plus-buttons" data-dismiss="modal"'
+                                    result = text1.concat("onclick=", "decreaseProduct(", sales_id, ",", "1",
+                                        ")>",
+                                        '<i " class="las la-minus"></i>',
+                                        "</button> ")
+                                    product_name_update = product_name.replaceAll(" ", "?")
+                                    text2 =
+                                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
+                                    result2 = text2.concat(sales_id, "  ", "data-section_name=", product_name_update,
+                                        "  ", "data-return_quentity=", quentity, '  ',
+                                        '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
+                                    )
+
+                                    update =
+                                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
+                                    update = update.concat(sales_id, "  ", "data-section_name=", product_name_update, "  ", "data-section_price=", price, "  ", "data-section_discount=", discount,
+                                        "  ", "data-return_quentity=", quentity, '  ',
+                                        '  data-toggle="modal"   href="#increaseProduct"   title="حذف"><i class="las la-align-justify"></i></a>'
+                                    )
+                                    text3 =
+                                        '<button style="height:20px;width:20px;background-color: #419BB2" type="button"  class="btn btn-success mb-1 minus-plus-buttons" data-dismiss="modal"'
+                                    result3 = text3.concat("onclick=", "increaseProduct(", sales_id, ",", "1",
+                                        ")>",
+                                        '<i class="las la-plus"></i>',
+                                        "</button> ")
+
+                                    if (quentity > 0) {
+
+
+                                        let table = document.getElementById("example");
+                                        let row = table.insertRow(-1); // We are adding at the end
+
+                                        let c1 = row.insertCell(0);
+                                        let c2 = row.insertCell(1);
+                                        let c3 = row.insertCell(2);
+                                        let c4 = row.insertCell(3);
+                                        let c5 = row.insertCell(4);
+                                        let c6 = row.insertCell(5);
+                                        let c7 = row.insertCell(6);
+                                        let c8 = row.insertCell(7);
+                                        let c9 = row.insertCell(8);
+
+                                        // Add data to c1 and c2
+
+                                        c1.innerText = count1
+                                        c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
+                                        c3.innerText = product_name
+                                        c4.innerText = ((Math.round(price * 100) / 100).toFixed(2))
+                                        c5.innerText = quentity
+                                        c6.innerText = ((Math.round((price * quentity) * 1000) / 1000).toFixed(2))
+                                        c7.innerText = ((Math.round(discount * 100) / 100).toFixed(2))
+                                        c8.innerText = ((Math.round((price * quentity) * 100) / 100).toFixed(2)) - discount
+                                        c9.innerHTML = result + ' ' + result3 + ' ' + ' ' + update + result2
+
+
+
+
+
+
+
+                                    }
+
+
+                                });
+
+
+                                //    update3/3/2023
+
+
+                                let tableTotalPrice = document.getElementById(
+                                    "tableTotalPrice");
+                                var tableHeaderRowCount = 1;
+
+                                var rowCount = tableTotalPrice.rows.length;
+
+                                for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                                    tableTotalPrice.deleteRow(tableHeaderRowCount);
+                                }
+                                let row = tableTotalPrice.insertRow(-
+                                    1); // We are adding at the end
+
+                                let c1 = row.insertCell(0);
+                                let c2 = row.insertCell(1);
+                                let c3 = row.insertCell(2);
+                                let c4 = row.insertCell(3);
+
+
+                                // Add data to c1 and c2
+
+
+                                c1.innerText = (Math.round(data['invoicetotal_price'] * 100) / 100).toFixed(2);
+                                c2.innerText = (Math.round(data['invoicetotal_addedvalue'] * 100) / 100).toFixed(2);
+                                c3.innerText = (Math.round(data['invoicetotal_discount'] * 100) / 100).toFixed(2);
+                                c4.innerText = (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+
+
+
+
+
+                                document.getElementById('totalvalue').innerHTML = (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+                                (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+                                $('#totalvalueinvoice').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                $('#totalvalueinvoice').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+                                if ($('#pay').val() == "Cash") {
+                                    $('#cashamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+                                } else if (('#pay').val() == "Shabka") {
+                                    $('#bankamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                } else {
+                                    $('#creaditamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                }
+
+
+                                var rowCount = table.rows.length;
+
+                                for (var i = 0; i < rowCount; i++) {
+                                    var data = table.rows[i].innerText.innerText;
+                                    console.log('end');
+
+                                }
+
+
+
+
+                                $('#product_name').val('');
+                                $('#product_price_after_dis').val(0);
+                                $('#quantity').val(1);
+                                $('#avaliable_quentity').val('');
+                                $('#product_location').val('');
+                                $('#product_price').val('');
+                                $('#purchase_price').val('');
+                                $('#productNo').val("__('home.searchbyproductnumber')");
+                                $('#priceWithTax').val('');
+
+                            }
+
+
+                            $('#saveinvice').val(0)
+
+                        },
+                        error: function(response) {
+                            alert("{{ __('home.sorryerror') }}")
+
+                        }
+                    });
+                }
+         } });
+ document.addEventListener('keydown', (e) => {
+    if (e.key === "F9") {
+        $('#SearchProduct').modal().show();
+
+    }})
+
         //increaseproduct
 
 
@@ -2061,6 +2334,39 @@
         //endincrease product
     </script>
     <script>
+        $("#printReciept").click(function(e) {
+            var url = " {{ URL::to('printReceiptToStorehouse') }}";
+            var token_search = $("#token_search").val();
+            $.ajax({
+                url: url,
+                type: 'post',
+                cache: false,
+                dataType: 'html',
+                data: {
+                    _token: token_search,
+                    show_invoice_number: $('#show_invoice_number').val(),
+                },
+                success: function(data) {
+                    console.log(data)
+                    const winUrl = URL.createObjectURL(
+                        new Blob([data], {
+                            type: "text/html"
+                        })
+                    );
+                    const win = window.open(
+                        winUrl,
+                        "win",
+                        `width=800,height=700,screenX=100,screenY=400`
+                    );
+
+                },
+                error: function(response) {
+                console.log(response)
+                    alert("{{ __('home.sorryerror') }}")
+
+                }
+            });
+        });
         $(document).ready(function() {
             document.getElementById('printdiv').hidden = true
             document.getElementById('returnAlldiv').hidden = true
@@ -2103,18 +2409,22 @@
 
                 if (Number(text) == (Number($('#cashamount').val()) + Number($('#Bank_transfer').val()) + Number($('#bankamount').val()) + Number($('#creaditamount').val()))) {
                     $('#saveinvice').val(1);
-
+                    console.log(" {{URL::to('confirmpaymentconfirmpayment')}}/" + $('#invoice_number').val() + '/' + $('#cashamount').val() + '/' + $('#bankamount').val() + '/' + $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' + $('#paymodal').val()+ '/' + $('#clientnamesearch').val()+ '/' +'0')
                     $.ajax({
-                        url: " {{URL::to('confirmpaymentconfirmpayment')}}/" + $('#invoice_number').val() + '/' + $('#cashamount').val() + '/' + $('#bankamount').val() + '/' + $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' + $('#paymodal').val(),
+                        url: " {{URL::to('confirmpaymentconfirmpayment')}}/" + $('#invoice_number').val() + '/' + $('#cashamount').val() + '/' + $('#bankamount').val() + '/' + $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' + $('#paymodal').val()+ '/' + $('#clientnamesearch').val()+ '/' +'1'+ '/' +'0',
                         type: "GET",
                         dataType: "json",
                         success: function(data) {
-                            if (data == 1) {
+                              if (data >= 1) {
+                                  $('#show_invoice_number').val(data);
                                 document.getElementById('printdiv').hidden = false
                                 document.getElementById('returnAlldiv').hidden = false
 
-                                alert("{{__('home.seccesSave')}}")
-                            } else {
+    $('#massagesave').modal().show();
+ setTimeout(() => {
+         $('#massagesave').modal('hide');
+
+        }, 1000);                             } else {
                                 alert("{{ __('home.sorryerror') }}")
                             }
 
@@ -2444,6 +2754,7 @@
 
                         },
                         error: function(response) {
+                            console.log(response)
                             alert("{{ __('home.sorryerror') }}")
 
                         }
@@ -2828,6 +3139,34 @@
 
 
 
+    
+        function doc_keyUp(e) {
+
+    // this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
+    if (e.ctrlKey && e.code === 'ArrowDown') {
+        // call your function to do the thing
+
+        $('#SearchProduct').modal().show();
+        
+    }
+}
+// register the handler 
+document.addEventListener('keyup', doc_keyUp, false);
+
+
+
+
+    $('#SearchProduct').on('shown.bs.modal', function () {
+
+    $('#searchaboutproduct').focus();
+    $('#searchaboutproduct').val($('#product_code').val());
+           $('#searchaboutproduct').keyup()
+
+
+
+}) 
+
+
 
 
 
@@ -2837,6 +3176,238 @@
 
 
 
+            $("#updateRecieptmodal").click(function(e) {
+
+                $('#updateRecieptmodalId').modal('show');
+
+
+
+            })
+
+            $("#updateReciept").click(function(e) {
+                $('#updateRecieptmodalId').modal('hide');
+
+                var url = " {{ URL::to('updateReciept') }}";
+                token_search = $('#token_search').val();
+
+                if ($('#invoice_number_updateReciept').val() == '') {
+                    alert("{{ __('home.enterinvoicenumber') }}")
+
+                } else {
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        cache: false,
+
+                        data: {
+                            _token: token_search,
+                            invoice_number: $('#invoice_number_updateReciept').val(),
+
+
+
+                        },
+
+
+                        success: function(data) {
+                            $('#saveinvice').val(2)
+                            $('#product_code').val('');
+                            let table = document.getElementById("example");
+                            // document.getElementById('printdiv').hidden = false
+
+                            // const map =(JSON.parse(response));
+                            {
+
+
+
+                                $('#show_invoice_number').val(data['invoice_number'])
+                                $('#invoice_number').val(data['invoice_number']);
+                                $('#showInvoiceNumber').val(data['invoice_number']);
+                                $('#invoice_no_delete_All').val(data['invoice_number']);
+
+
+
+                                var tableHeaderRowCount = 1;
+
+                                var rowCount = table.rows.length;
+
+                                for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                                    table.deleteRow(tableHeaderRowCount);
+                                }
+                                count1 = 0;
+                                added_value_total = 0;
+                                total_sales = 0;
+
+                                data['product'].forEach(async (product) => {
+
+
+                                    sales_id = product['id'],
+                                        count1 = product['count'],
+                                        product_code = product['Product_Code']
+                                    product_name = product['product_name']
+                                    quentity = product['quantity']
+                                    price = product['Unit_Price']
+                                    discount = product['Discount_Value']
+                                    addedvalue = product['Added_Value']
+                                    reamingquantity = product['reamingquantity']
+                                    total = product['Unit_Price'] * product[
+                                            'quantity'] + product['Added_Value'] *
+                                        product['quantity']
+                                    added_value_total = added_value_total + (
+                                        product['Added_Value'] * product[
+                                            'quantity'])
+                                    total_sales = total_sales + (price * product[
+                                        'quantity'])
+                                    console.log(product_name);
+                                    text1 =
+                                        '<button style="height:20px;width:20px;background-color: #419BB2" type="button"  class="btn btn-success mb-1 minus-plus-buttons" data-dismiss="modal"'
+                                    result = text1.concat("onclick=", "decreaseProduct(", sales_id, ",", "1",
+                                        ")>",
+                                        '<i " class="las la-minus"></i>',
+                                        "</button> ")
+                                    product_name_update = product_name.replaceAll(" ", "?")
+                                    text2 =
+                                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-danger mb-1" data-effect="effect-scale" data-id='
+                                    result2 = text2.concat(sales_id, "  ", "data-section_name=", product_name_update,
+                                        "  ", "data-return_quentity=", quentity, '  ',
+                                        '  data-toggle="modal"   href="#modaldemo9"   title="حذف"><i class="las la-trash"></i></a>'
+                                    )
+
+                                    update =
+                                        ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
+                                    update = update.concat(sales_id, "  ", "data-section_name=", product_name_update, "  ", "data-section_price=", price, "  ", "data-section_discount=", discount,
+                                        "  ", "data-return_quentity=", quentity, '  ',
+                                        '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
+                                    )
+                                    text3 =
+                                        '<button style="height:20px;width:20px;background-color: #419BB2" type="button"  class="btn btn-success mb-1 minus-plus-buttons" data-dismiss="modal"'
+                                    result3 = text3.concat("onclick=", "increaseProduct(", sales_id, ",", "1",
+                                        ")>",
+                                        '<i class="las la-plus"></i>',
+                                        "</button> ")
+
+                                    if (quentity > 0) {
+
+
+                                        let table = document.getElementById("example");
+                                        let row = table.insertRow(-1); // We are adding at the end
+
+                                        let c1 = row.insertCell(0);
+                                        let c2 = row.insertCell(1);
+                                        let c3 = row.insertCell(2);
+                                        let c4 = row.insertCell(3);
+                                        let c5 = row.insertCell(4);
+                                        let c6 = row.insertCell(5);
+                                        let c7 = row.insertCell(6);
+                                        let c8 = row.insertCell(7);
+                                        let c9 = row.insertCell(8);
+
+                                        // Add data to c1 and c2
+
+                                        c1.innerText = count1
+                                        c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
+                                        c3.innerText = product_name
+                                        c4.innerText = ((Math.round(price * 100) / 100).toFixed(2))
+                                        c5.innerText = quentity
+                                        c6.innerText = ((Math.round((price * quentity) * 1000) / 1000).toFixed(2))
+                                        c7.innerText = ((Math.round(discount * 100) / 100).toFixed(2))
+                                        c8.innerText = ((Math.round((price * quentity) * 100) / 100).toFixed(2)) - discount
+                                        c9.innerHTML = result + ' ' + result3 + ' ' + ' ' + update + result2
+
+
+
+
+
+
+
+                                    }
+
+
+                                });
+
+
+                                //    update3/3/2023
+
+
+                                let tableTotalPrice = document.getElementById(
+                                    "tableTotalPrice");
+                                var tableHeaderRowCount = 1;
+
+                                var rowCount = tableTotalPrice.rows.length;
+
+                                for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                                    tableTotalPrice.deleteRow(tableHeaderRowCount);
+                                }
+                                let row = tableTotalPrice.insertRow(-
+                                    1); // We are adding at the end
+
+                                let c1 = row.insertCell(0);
+                                let c2 = row.insertCell(1);
+                                let c3 = row.insertCell(2);
+                                let c4 = row.insertCell(3);
+
+
+                                // Add data to c1 and c2
+
+
+                                c1.innerText = (Math.round(data['invoicetotal_price'] * 100) / 100).toFixed(2);
+                                c2.innerText = (Math.round(data['invoicetotal_addedvalue'] * 100) / 100).toFixed(2);
+                                c3.innerText = (Math.round(data['invoicetotal_discount'] * 100) / 100).toFixed(2);
+                                c4.innerText = (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+
+
+
+                                document.getElementById('totalvalue').innerHTML = (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+                                (Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2);
+                                $('#totalvalueinvoice').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                $('#totalvalueinvoice').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+                                if ($('#pay').val() == "Cash") {
+                                    $('#cashamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+                                } else if (('#pay').val() == "Shabka") {
+                                    $('#bankamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                } else {
+                                    $('#creaditamount').val((Math.round((data['invoicetotal_addedvalue'] + data['invoicetotal_price']) * 100) / 100).toFixed(2))
+
+                                }
+
+
+                                var rowCount = table.rows.length;
+
+                                for (var i = 0; i < rowCount; i++) {
+                                    var data = table.rows[i].innerText.innerText;
+                                    console.log('end');
+
+                                }
+
+
+
+
+                                $('#product_name').val('');
+                                $('#product_price_after_dis').val(0);
+                                $('#quantity').val(1);
+                                $('#avaliable_quentity').val('');
+                                $('#product_location').val('');
+                                $('#product_price').val('');
+                                $('#purchase_price').val('');
+                                $('#productNo').val("__('home.searchbyproductnumber')");
+                                $('#priceWithTax').val('');
+
+                            }
+
+                            $('#saveinvice').val(0);
+
+
+
+                        },
+                        error: function(response) {
+                            console.log(response.responseJSON)
+                            alert("{{ __('home.sorryerror') }}")
+
+                        }
+                    });
+                }
+            });
 
 
 

@@ -179,7 +179,6 @@ class Client
                 throw new Exception('Client postal number required .');
             }
         }
-        
         return [
             'name' => 'Party',
             'value' => null,
@@ -187,7 +186,31 @@ class Client
             'namespace' => null,
             'prefix' => 'cac',
             'childs' => [
-              
+                [
+                    'name' => 'PartyIdentification',
+                    'value' => null,
+                    'namespaced' => true,
+                    'namespace' => null,
+                    'prefix' => 'cac',
+                    'childs' => [
+                        [
+                            'name' => 'ID',
+                            'value' => $this->vatNumber,
+                            'namespaced' => true,
+                            'namespace' => null,
+                            'prefix' => 'cbc',
+                            'attributes' => [
+                                [
+                                    'name' => 'schemeID',
+                                    'value' => 'NAT',
+                                    'namespaced' => false,
+                                    'namespace' => null,
+                                    'prefix' => null,
+                                ],
+                            ],
+                        ]
+                    ]
+                ],
                 [
                     'name' => 'PostalAddress',
                     'value' => null,
@@ -263,13 +286,6 @@ class Client
                     'prefix' => 'cac',
                     'childs' => [
                         [
-                            'name' => 'CompanyID',
-                            'value' => $this->vatNumber,
-                            'namespaced' => true,
-                            'namespace' => null,
-                            'prefix' => 'cbc',
-                        ],
-                        [
                             'name' => 'TaxScheme',
                             'value' => null,
                             'namespaced' => true,
@@ -305,6 +321,5 @@ class Client
                 ]
             ]
         ];
-        
     }
 }

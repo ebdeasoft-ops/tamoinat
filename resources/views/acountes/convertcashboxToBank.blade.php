@@ -63,7 +63,7 @@
 
                 <div class="card-header pb-0">
 
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'convertcashboxToBank')) }}" method="POST" role="search" autocomplete="off">
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'convertcashboxToBank1')) }}" method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
 
@@ -312,6 +312,7 @@
                     $('#cashreceived').val(0)
                 },
                 error: function(response) {
+                    console.log(response)
                     alert("{{ __('home.sorryerror') }}")
 
                 }

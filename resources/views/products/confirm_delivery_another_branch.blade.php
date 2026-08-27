@@ -152,8 +152,8 @@
                             $invoiceId = $product->invoice_id; ?>
                             <tr>
                                 <td>{{ $i }}</td>
-                                <td dir=ltr>{{ $product->productData->barcode }}</td>
-                                <td>{{ $product->productData->name }}</td>
+                                <td dir=ltr>{{ $product->productData->Product_Code }}</td>
+                                <td>{{ $product->productData->product_name }}</td>
                                 <td>{{ $product->quantity }}</td>
                                 <td>{{ $product->productData->Product_Location }}</td>
 

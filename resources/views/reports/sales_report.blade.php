@@ -1,373 +1,296 @@
 @extends('layouts.master')
+
 @section('css')
-<!-- Internal Data table css -->
-<link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
-
-<!-- Internal Spectrum-colorpicker css -->
-<link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
-
-<!-- Internal Select2 css -->
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <!-- Internal Data table css -->
+    <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
+@endsection
 
 @section('title')
-{{ __('home.Historyـofـproductـsales') }}@stop
+    {{ __('home.Historyـofـproductـsales') }}
 @endsection
+
 @section('page-header')
-<div class="main-parent">
     <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between parent-heading">
+    <div class="breadcrumb-header justify-content-between">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.Historyـofـproductـsales') }}
-
-                </h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                </span>
+                <h4 class="content-title mb-0 my-auto">{{ __('home.Historyـofـproductـsales') }}</h4>
             </div>
         </div>
     </div>
     <!-- breadcrumb -->
-    @endsection
-    @section('content')
+@endsection
 
-    @if (count($errors) > 0)
-    <div class="alert alert-danger">
-        <button aria-label="Close" class="close" data-dismiss="alert" type="button">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <strong>خطا</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+@section('content')
+
+    <!-- عرض الأخطاء -->
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <strong>خطأ!</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <!-- row -->
     <div class="row">
-
         <div class="col-xl-12">
-            <div class="card mg-b-20">
-
-
-                <div class="card-header pb-0">
-
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'salesReport')) }}" method="POST" role="search" autocomplete="off">
+            <div class="card shadow-sm mg-b-20" style="border-radius: 12px; border: none;">
+                
+                <!-- نموذج البحث -->
+                <div class="card-header bg-transparent pb-3 pt-4 border-bottom-0">
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/salesReport') }}" 
+                          method="POST" role="search" autocomplete="off">
                         {{ csrf_field() }}
 
-                        <div class="row">
-
-                            <div class="col-lg-3 parent-label" id="start_at">
-                                <label for="exampleFormControlSelect1"> {{ __('report.fromdate') }}</label>
+                        <div class="row align-items-end">
+                            <!-- من تاريخ -->
+                            <div class="col-lg-2 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('report.fromdate') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="fas fa-calendar-alt"></i>
+                                        <div class="input-group-text bg-light">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
                                         </div>
-                                    </div><input class="form-control parent-input fc-datepicker" value="{{ $start_at ?? '' }}" name="start_at" placeholder="YYYY-MM-DD" type="text" required>
-                                </div><!-- input-group -->
+                                    </div>
+                                    <input class="form-control fc-datepicker" value="{{ $start_at ?? '' }}" 
+                                           name="start_at" placeholder="YYYY-MM-DD" type="text" required>
+                                </div>
                             </div>
 
-                            <div class="col-lg-3 parent-label" id="end_at">
-                                <label for="exampleFormControlSelect1"> {{ __('report.todate') }}</label>
+                            <!-- إلى تاريخ -->
+                            <div class="col-lg-2 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('report.todate') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <i class="fas fa-calendar-alt"></i>
+                                        <div class="input-group-text bg-light">
+                                            <i class="fas fa-calendar-alt text-primary"></i>
                                         </div>
-                                    </div><input class="form-control parent-input fc-datepicker" name="end_at" value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
-                                </div><!-- input-group -->
-
+                                    </div>
+                                    <input class="form-control fc-datepicker" name="end_at" 
+                                           value="{{ $end_at ?? '' }}" placeholder="YYYY-MM-DD" type="text" required>
+                                </div>
                             </div>
-                            <div class="col" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
-                                <select class="form-control parent-input" name="branch" required>
-                                    <option value="-" selected>{{ __('users.allbranchs') }}
-                                    </option>
-                                    @foreach (App\Models\branchs::get() as $branch)
-                                    <option style="font-size: 15px" value="{{ $branch->id }}">
-                                        {{ $branch->name }}
-                                    </option>
+
+                            <!-- البحث باسم العميل -->
+                            <div class="col-lg-3 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('home.searchbyclientname') }}</label>
+                                <select class="form-control select2" name="UserId" required>
+                                    <option value="-">{{ __('home.searchbyclientname') }}</option>
+                                    @foreach (App\Models\customers::all() as $customer)
+                                        <option value="{{ $customer->id }}" {{ (isset($customer_id) && $customer_id == $customer->id) ? 'selected' : '' }}>
+                                            {{ $customer->name }}
+                                        </option>
                                     @endforeach
                                 </select>
-
                             </div>
-                            <div class="col" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.paymentmethod') }} </p>
-                                <select class="form-control parent-input" name="pay" required>
-                                    <option value="-" selected>{{ __('home.paymentmethod') }}
-                                    </option>
-                                    <option style="font-size: 15px" value="Cash"> {{ __('report.cash') }}</option>
-                                    <option style="font-size: 15px" value="Shabka "> {{ __('report.shabka') }}
-                                    </option>
-                                    <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
 
-                                    <option style="font-size: 15px" value="Credit "> {{ __('report.credit') }}
-                                    </option>
-                                    <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
-
-
+                            <!-- الفرع -->
+                            <div class="col-lg-2 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('users.branch') }}</label>
+                                <select class="form-control" name="branch" required>
+                                    <option value="{{ Auth()->user()->branch->id }}">{{ Auth()->user()->branch->name }}</option>
+                                    @can('System setting')
+                                        <option value="-">{{ __('users.allbranchs') }}</option>
+                                        @foreach (App\Models\branchs::all() as $branch)
+                                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                        @endforeach
+                                    @endcan
                                 </select>
+                            </div>
 
+                            <!-- طريقة الدفع -->
+                            <div class="col-lg-3 mg-t-10">
+                                <label class="form-label font-weight-bold text-muted">{{ __('home.paymentmethod') }}</label>
+                                <select class="form-control" name="pay" required>
+                                    <option value="-">{{ __('home.paymentmethod') }}</option>
+                                    <option value="Cash">{{ __('report.cash') }}</option>
+                                    <option value="Shabka">{{ __('report.shabka') }}</option>
+                                    <option value="Bank_transfer">{{ __('home.Bank_transfer') }}</option>
+                                    <option value="Credit">{{ __('report.credit') }}</option>
+                                    <option value="Partition">{{ __('home.Partition of the amount') }}</option>
+                                </select>
                             </div>
                         </div>
-                        <br>
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-success print-style p-1">
+
+                        <!-- زر البحث -->
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-success px-4 py-2 shadow-sm" style="border-radius: 8px;">
                                 {{ __('home.search') }}
-                                <i style=" height: 100;
-                                                 
-                                                 font-size:15px" class="las la-search"></i>
+                                <i class="las la-search ml-1" style="font-size: 16px;"></i>
                             </button>
                         </div>
-
-
                     </form>
-
                 </div>
-                <div style="border-radius: 10px" class="card-body mt-5">
-                    <div class="table-striped">
-                        @if (isset($Invoices))
-                        <?php
-                        $userId = 0;
-                        $count = 0;
-                        ?>
-                        <?php
-                        $userId = 0;
-                        $startat = '';
-                        $endat = '';
-                        $totalpriceall = 0;
-                        $totaladdedvalue = 0;
-                        $totaldiscount = 0;
-                        $totalpricefinal = 0;
-                        ?>
 
+                <!-- محتوى الجدول والنتائج -->
+                @if (isset($Invoices))
+                    <div class="card-body pt-0">
+                        @php
+                            $userId = 0;
+                            $count = 0;
+                            $startat = '';
+                            $endat = '';
+                            $total = 0;
+                            $totaldiscount = 0;
+                            $avt = App\Models\Avt::find(1);
+                            $saleavt = $avt ? $avt->AVT : 0;
+                        @endphp
 
-                        <br>
-
-
-
-
-                        <br>
-
-                        </span>
-                        <div class="card-body">
-                            <div class="table-responsive hoverable-table">
-                                <table class="table table-hover" id="example1" data-page-length='50' style=" text-align: center;">
-                                    <thead>
-                                        <tr>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.Invoice_no') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.sallerName') }} </th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.clietName') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.date') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.branch') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.total') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                            <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.operations') }}</th>
-
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $i = 0; ?>
-
-                                        @foreach ($Invoices as $product)
-                                        @if($product->Price!=0)
-                                        <?php
-                                        $totaldiscount += $product->discount;
-
-                                        $i = 0;
-
-                                        $totalpriceall += $product->Price;
-                                        if ($count == 0) {
-                                            $userId = $product->user_id;
-                                            $startat = $product->created_at;
-                                        }
-                                        $endat = $product->created_at;
-                                        $count++;
-                                        $avt = App\Models\Avt::find(1);
-                                        $saleavt = $avt->AVT;
-                                        $totalPriceDay = ($product->Price - $product->discount) + (($product->Price - $product->discount) * $saleavt);
-
-                                        ?> <?php $i++; ?>
-
-                                        <tr id="<?php echo $product['id']; ?>">
-                                            <td data-target="id">{{ $product->id }}</td>
-                                            <td data-target="id">{{ $product->user->name }}</td>
-                                            <td dir="ltr" data-target="id">
-                                                {{ $product->customer->name }}
-                                            </td>
-                                            <td data-target="numberofpice">{{ $product->created_at }}</td>
-                                            <td data-target="numberofpice">{{ $product->branch->name }}
-                                            </td>
-                                            <td data-target="numberofpice">
-                                                <?php
-                                                $avt = App\Models\Avt::find(1);
-                                                $saleavt = $avt->AVT;
-                                                ?>
-                                                {{ ($product->Price) + ($product->Added_Value) }}
-                                            </td>
-
-                                            <?php
-                                            $pays = '';
-                                            if ($product->Pay == 'Cash') {
-                                                $pays = __('report.cash');
-                                            } elseif ($product->Pay == 'Shabka') {
-                                                $pays = __('report.shabka');
-                                            } elseif ($product->Pay == "Credit") {
-                                                $pays = __('report.credit');
-                                            }elseif($product->Pay == "Bank_transfer") {
-                                                $pays = __('home.Bank_transfer');
-                                            } else {
-                                                $pays = __('home.Partition of the amount');
-                                            }
-
-                                            ?>
-                                            <td data-target="numberofpice">{{ $pays }}</td>
-                                            <td> <a style="color: #23395D" class="dropdown-item" href="showInvoiceRecent/{{ $product->id }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
-                                                    {{ __('home.show') }}
-                                                </a></td>
-
-                                        </tr>
-                                        @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-
-                            </div>
-                        </div>
-
-                        <div class="table-padding">
-                            <table class="table table-bordered table-hover text-center table-striped mt-5">
+                        <!-- جدول عرض الفواتير -->
+                        <div class="table-responsive hoverable-table mt-3">
+                            <table class="table text-md-nowrap table-hover border-top-0" id="example1" data-page-length='50' style="text-align: center;">
                                 <thead>
-                                    <tr>
-                                        <th scope="col"></th>
-                                        <th scope="col">{{ __('report.totalprice') }}</th>
-                                        <th>{{ __('home.the amount') }}</th>
+                                    <tr class="bg-light">
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.Invoice_no') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.sallerName') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.clietName') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.date') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.branch') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.total') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.paymentmethod') }}</th>
+                                        <th style="color: #FF4F1F; font-weight: bold;">{{ __('home.operations') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <th scope="row">1</th>
-                                        <td>{{ __('report.totalpricewithoudtax') }}</td>
-                                        <td>{{ $totalpriceall-$totaldiscount }}</td>
-                                    </tr>
-                                    <?php
-                                    $avt = App\Models\Avt::find(1);
-                                    $saleavt = $avt->AVT;
-                                    ?>
-                                     <tr>
-                                        <th scope="row">2</th>
-                                        <td>{{ __('home.totaldiscount') }}</td>
-                                        <td> {{ $totaldiscount }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">2</th>
-                                        <td>{{ __('report.totaltax') }}</td>
-                                        <td> {{ round(($totalpriceall-$totaldiscount )*$saleavt,2) }}</td>
-                                    </tr>
-                                   
+                                    @foreach ($Invoices as $product)
+                                        @php
+                                            $totaldiscount += $product->discount;
+                                            $invoiceTotal = ($product->cashamount + $product->bankamount + $product->Bank_transfer + $product->creaditamount);
+                                            $total += $invoiceTotal;
 
-                                    <tr>
-                                        <th scope="row">3</th>
-                                        <td>{{ __('report.totalallprice') }}</td>
-                                        <td>{{round(($totalpriceall-$totaldiscount )+(($totalpriceall-$totaldiscount )*$saleavt) ,2) }}</td>
-                                    </tr>
+                                            if ($count == 0) {
+                                                $userId = $product->user_id;
+                                                $startat = $product->created_at;
+                                            }
+                                            $endat = $product->created_at;
+                                            $count++;
+
+                                            // تحديد طريقة الدفع بالعربية أو الترجمة المناسبة
+                                            $pays = match($product->Pay) {
+                                                'Cash' => __('report.cash'),
+                                                'Shabka' => __('report.shabka'),
+                                                'Credit' => __('report.credit'),
+                                                'Bank_transfer' => __('home.Bank_transfer'),
+                                                default => __('home.Partition of the amount'),
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $product->id }}</td>
+                                            <td>{{ $product->user->name ?? '-' }}</td>
+                                            <td dir="ltr">{{ $product->customer->name ?? '-' }}</td>
+                                            <td>{{ $product->created_at }}</td>
+                                            <td>{{ $product->branch->name ?? '-' }}</td>
+                                            <td class="font-weight-bold text-success">{{ round($invoiceTotal, 2) }}</td>
+                                            <td>
+                                                <span class="badge badge-pill badge-light px-2 py-1">{{ $pays }}</span>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" href="{{ url('printInvoicesAllItemsWithReturned/' . $product->id) }}">
+                                                    <i class="fas fa-print ml-1"></i> {{ __('home.show') }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
 
-                        <br>
+                        <!-- جدول إجمالي المبالغ -->
+                        <div class="row justify-content-end mt-4">
+                            <div class="col-md-5">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center bg-light" style="border-radius: 8px; overflow: hidden;">
+                                        <thead class="bg-primary text-white">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ __('report.totalprice') }}</th>
+                                                <th>{{ __('home.the amount') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>{{ __('report.totalallprice') }}</td>
+                                                <td class="text-success font-weight-bold">{{ round($total, 2) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- أزرار الطباعة -->
+                        @php
+                            // معالجة آمنة لتفادي أخطاء الـ Array في روابط الطباعة إذا لم يتم تمريرهم بشكل مصفوفة
+                            $printPay = is_array($pay ?? null) ? $pay : [0 => ($pay ?? '-'), 1 => '-'];
+                            $printCustomerId = $customer_id ?? ($UserId ?? '-');
+                        @endphp
 
-
-                        <br>
-
-                        <div class="d-flex justify-content-center">
-
-                            <a style="background-color: #419BB2;font-size:17px" class="btn btn-success p-1" href="{{ url('/' . ($page = 'printInvoicesReport') . '/' . $pay[1] . '/' . $pay[0] . '/' . $startat . '/' . $endat) }}">
+                        <div class="d-flex justify-content-center mt-4 mb-3">
+                            <a class="btn btn-info px-4 py-2 shadow-sm text-white d-flex align-items-center ml-2" 
+                               style="background-color: #419BB2; border-radius: 8px; font-size: 16px;"
+                               href="{{ url('printInvoicesReport/' . ($printPay[1] ?? '-') . '/' . ($printPay[0] ?? '-') . '/' . $startat . '/' . $endat . '/' . $printCustomerId) }}">
+                                <i class="fas fa-print ml-2" style="font-size: 18px;"></i>
                                 {{ __('home.print') }}
-                                <svg style="width: 20px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                    <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555">
-                                    </path>
-                                </svg>
+                            </a>
+
+                            <a class="btn btn-info px-4 py-2 shadow-sm text-white d-flex align-items-center" 
+                               style="background-color: #419BB2; border-radius: 8px; font-size: 16px;"
+                               href="{{ url('printInvoicesReportdetails/' . ($printPay[1] ?? '-') . '/' . ($printPay[0] ?? '-') . '/' . $startat . '/' . $endat . '/' . $printCustomerId) }}">
+                                <i class="fas fa-print ml-2" style="font-size: 18px;"></i>
+                                {{ __('home.Print_without_details') }}
                             </a>
                         </div>
-                        <br>
-                        @endif
                     </div>
+                @endif
 
-                </div>
             </div>
         </div>
-        <!-- row closed -->
     </div>
-    <!-- Container closed -->
-</div>
-<!-- main-content closed -->
-</div>
+    <!-- row closed -->
+
 @endsection
+
 @section('js')
-<!-- Internal Data tables -->
-<script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/responsive.dataTables.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap4.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.buttons.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/buttons.bootstrap4.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/jszip.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/pdfmake.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/vfs_fonts.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/buttons.html5.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/buttons.print.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/buttons.colVis.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/responsive.bootstrap4.min.js') }}"></script>
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
+    <!-- Internal Data tables -->
+    <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datative/js/dataTables.dataTables.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap4.js') }}"></script>
+    <script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
 
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
-<script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
-</script>
+    <!-- Plugins -->
+    <script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
+            // تهيئة حقول التاريخ
+            $('.fc-datepicker').datepicker({
+                dateFormat: 'yy-mm-dd'
+            });
 
-        $(function() {
-            var timeout = 4000; // in miliseconds (3*1000)
-            $('.alert').delay(timeout).fadeOut(500);
+            // تفعيل Select2
+            $('.select2').select2({
+                width: '100%'
+            });
+
+            // إخفاء التنبيهات تلقائياً
+            setTimeout(function() {
+                $('.alert').fadeOut(500);
+            }, 4000);
         });
-
-    });
-</script>
-
-
+    </script>
 @endsection

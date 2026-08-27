@@ -7,100 +7,241 @@
 <link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
 <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
 <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
-<style>
-    .body_calculator {
-        font-family: Arial, sans-serif;
-        position: fixed;
-        top: initial;
-        bottom: 0;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        width: 390px;
-        background-color: #f4f4f4;
+ <style>
+    /* ==========================================================================
+       شاشة مرتجع المبيعات — تصميم احترافي (Scoped, لا يعدّل أي أسماء/معرّفات
+       يعتمد عليها الجافاسكريبت أسفل الصفحة)
+       ========================================================================== */
+    :root {
+        --brand-navy: #1b3358;
+        --brand-navy-light: #23395D;
+        --brand-teal: #2f97ac;
+        --brand-teal-dark: #1f7a8c;
+        --accent-blue: #3d7bff;
+        --success: #16a34a;
+        --danger: #e0293f;
+        --border: #e3e7ee;
+        --border-strong: #cfd6e2;
+        --bg-soft: #f8fafc;
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --shadow-sm: 0 1px 3px rgba(16, 24, 40, .06);
+        --shadow-md: 0 6px 16px rgba(16, 24, 40, .08);
+        --shadow-lg: 0 14px 34px rgba(16, 24, 40, .14);
     }
 
-    .calculator {
-        border: 2px solid #ccc;
-        border-radius: 8px;
-        padding: 20px;
-        background-color: white;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        width: 360px;
-    }
-
-    #display {
-        width: 100%;
-        height: 40px;
-        text-align: right;
-        font-size: 24px;
-        margin-bottom: 20px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .buttons {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-    }
-
-    .button {
-        padding: 20px;
-        font-size: 20px;
-        border: none;
-        background-color: #f0f0f0;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: background-color 0.3s;
-    }
-
-    .button:hover {
-        background-color: #ddd;
-    }
-
-    button:active {
-        background-color: #ccc;
-    }
-
-    /* Basic styling for loading screen */
+    /* ---------- شاشة التحميل ---------- */
     #loading-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        color: white;
-        font-size: 24px;
-        display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(2px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
     }
 
     #loading-animation {
-        border: 4px solid white;
-        border-radius: 50%;
-        border-top: 4px solid #3498db;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
+      border: 4px solid rgba(255,255,255,.25);
+      border-radius: 50%;
+      border-top: 4px solid var(--brand-teal);
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        100% {
-            transform: rotate(360deg);
+    /* ---------- هيدر الصفحة ---------- */
+    .breadcrumb-header.parent-heading {
+        background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%);
+        border-radius: var(--radius-md);
+        padding: 26px 22px;
+        min-height: 90px;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    .breadcrumb-header .content-title {
+        color: #fff !important;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 19px;
+    }
+
+    /* ---------- التنبيهات ---------- */
+    .alert {
+        border: none !important;
+        border-radius: var(--radius-md) !important;
+        box-shadow: var(--shadow-sm);
+        font-weight: 600;
+    }
+
+    /* ---------- الكروت ---------- */
+    .card {
+        border: 1px solid var(--border) !important;
+        border-radius: var(--radius-lg) !important;
+        box-shadow: var(--shadow-sm) !important;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: none !important;
+    }
+
+    /* ---------- نموذج البحث برقم الفاتورة ---------- */
+    #invoice_no {
+        border-radius: var(--radius-sm) !important;
+        border: 1px solid var(--border-strong) !important;
+        height: 42px;
+    }
+
+    #invoice_no:focus {
+        border-color: var(--accent-blue) !important;
+        box-shadow: 0 0 0 3px rgba(61, 123, 255, .18);
+        outline: none;
+    }
+
+    /* ---------- الأزرار العامة ---------- */
+    .btn {
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        border: none !important;
+        transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.06);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* ---------- شارة طريقة الدفع (مرتجع) ---------- */
+    .pro-sr-payment-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--brand-navy) !important;
+        font-weight: 800 !important;
+        font-size: 14px !important;
+    }
+
+    .pro-sr-payment-select {
+        background: #f2faf4 !important;
+        border: 1px solid #bfe6c9 !important;
+        border-radius: var(--radius-sm) !important;
+        color: #1e7e34 !important;
+        font-weight: 700 !important;
+        height: 40px;
+    }
+
+    /* ---------- جدول المنتجات المرتجعة ---------- */
+    table.table-invoice thead th {
+        background: linear-gradient(180deg, #f4f6fb 0%, #eef1f8 100%) !important;
+        color: var(--brand-navy) !important;
+        font-weight: 700 !important;
+        border: 1px solid var(--border) !important;
+        vertical-align: middle;
+    }
+
+    table.table-invoice tbody td {
+        border: 1px solid var(--border) !important;
+        vertical-align: middle;
+    }
+
+    table.table-invoice tbody tr:hover {
+        background: #eef4ff;
+    }
+
+    /* ---------- جدول إجمالي الفاتورة ---------- */
+    #tableTotalPrice {
+        border: 1px solid var(--border) !important;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    #tableTotalPrice tr:first-child td {
+        background: linear-gradient(180deg, #f4f6fb 0%, #eef1f8 100%) !important;
+        color: var(--brand-navy) !important;
+        font-weight: 800 !important;
+        border: 1px solid var(--border) !important;
+        padding: 10px 6px;
+    }
+
+    #tableTotalPrice tr:first-child td i {
+        color: #6b7fa3;
+        margin-left: 6px;
+    }
+
+    #tableTotalPrice tr:last-child td {
+        border: 1px solid var(--border) !important;
+        padding: 10px 6px;
+        font-weight: 800 !important;
+        font-size: 15px;
+        color: var(--brand-navy-light);
+        background: #fff;
+    }
+
+    /* ---------- حاوية جدول الإجماليات ---------- */
+    .pro-sr-totals-wrap {
+        padding: 0 15%;
+        width: 100%;
+    }
+
+    @media (max-width: 991px) {
+        .pro-sr-totals-wrap {
+            padding: 0 4%;
+            float: none !important;
         }
     }
-</style>
+
+    /* ---------- المودالات ---------- */
+    .modal-content {
+        border-radius: var(--radius-lg) !important;
+        border: none;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%);
+        border-bottom: none !important;
+        padding: 14px 20px;
+    }
+
+    .modal-header .modal-title,
+    .modal-header h6 {
+        color: #fff !important;
+        font-weight: 700 !important;
+    }
+
+    .modal-header .close {
+        color: #fff;
+        opacity: .85;
+        text-shadow: none;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--border);
+        background: var(--bg-soft);
+    }
+
+  </style>
 <!-- Internal Spectrum-colorpicker css -->
 <link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
 
@@ -119,7 +260,7 @@
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.salesـreturned') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
+                <h4 class="content-title mb-0 my-auto"><i class="fa fa-sync-alt"></i> {{ __('home.salesـreturned') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
                 </span>
             </div>
         </div>
@@ -127,13 +268,12 @@
     <!-- breadcrumb -->
     @endsection
     @section('content')
-    <center>
-        <div id="loading-screen">
-            <div id="loading-animation"></div>
-            &nbsp; <p> جارٍ إرسال الفاتورة، يرجى الانتظار <br>Invoice is being sent, please wait</p>
-        </div>
-    </center>
-
+   <center>
+    <div id="loading-screen">
+    <div id="loading-animation"></div>
+    &nbsp;  <p>  جارٍ إرسال الفاتورة، يرجى الانتظار  <br>Invoice  is being sent, please wait</p>
+  </div>
+  </center>
     @if (session()->has('foundinvoice'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <br>
@@ -195,7 +335,7 @@
                         <div class="col-lg-5 mg-t-20 mg-lg-t-0">
 
 
-                            <label for="inputName" class="control-label parent-label">{{ __('home.enterinvoicenumber') }}</label>
+                            <label for="inputName" class="control-label parent-label"><i class="fa fa-hashtag" style="color:#6b7fa3;margin-left:6px;"></i>{{ __('home.enterinvoicenumber') }}</label>
                             <input type="text" class="form-control parent-input" id="invoice_no" name="invoice_no" title="  يرجي ادخال رقم الفاتورة  " onkeyup="convertToNumberPriceSale()" required>
 
                         </div>
@@ -209,10 +349,10 @@
                             <br>
 
                             <div class="d-flex justify-content-center">
-                                <button style="background-color: #419BB2" type="submit" class="btn btn-success p-1">
+                                <button style="background: linear-gradient(135deg, #2f97ac 0%, #1f7a8c 100%)" type="submit" class="btn btn-success p-1">
                                     {{ __('home.search') }}
                                     <i style=" height: 100;
-                                                 
+
                                                  font-size:15px" class="las la-search"></i>
                                 </button>
                             </div>
@@ -238,13 +378,36 @@
             <div style="border-radius: 10px" class="card mg-b-20 p-3">
                 <div class="card-header pb-0 p-5">
                     <div class="d-flex justify-content-between">
-                        <h4 style="background-color: #23395D;border-radius:5px;color:white" class="card-title mg-b-0 p-2">
-                            {{ __('home.sales') }}
-                        </h4>
-                        <i class="mdi mdi-dots-horizontal text-gray"></i>
+       <div class="col-lg-2 mg-t-20 mg-lg-t-0" id="type">
+                                <p class="mg-b-10 parent-label pro-sr-payment-label"><i class="fa fa-credit-card"></i> {{ __('home.paymentmethod') }} </p>
+                                <select class="form-control parent-input pro-sr-payment-select" name="pay_return_sale" id="pay_return_sale">
+
+
+                                    @if($data['payment']=="Cash")
+                                    <option selected value="Cash"> {{ __('report.cash') }}</option>
+                                    @else
+                                    <option value="Cash"> {{ __('report.cash') }}</option>
+                                    @endif
+
+                                    @if($data['payment']=="Shabka"||$data['payment']=="Bank_transfer")
+                                    <option selected value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
+                                    @else
+                                    <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
+                                    @endif
+                                    @if($data['payment']=="Credit")
+                                    <option selected value="Credit"> {{ __('report.credit') }} </option>
+                                    @else
+                                    <option  value="Credit"> {{ __('report.credit') }} </option>
+                                    @endif
+
+
+                                </select>
+
+                            </div>
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="table-responsive">
                     <table class="table table-invoice border text-md-nowrap mb-0 text-center" name="example" id="example" width="100%">
                         <col style="width:5%">
                         <col style="width:14%">
@@ -279,17 +442,17 @@
                             @if ($product->quantity > 0)
                             <tr>
                                 <td>{{ $i }}</td>
-                                <td dir=ltr>{{ $product->productData->barcode }}</td>
-                                <td>{{ $product->productData->name }}</td>
+                                <td dir=ltr>{{ $product->productData->Product_Code }}</td>
+                                <td>{{ $product->productData->product_name }}</td>
                                 <td class="tx-center">{{ $product->Unit_Price }}</td>
                                 <td>{{ $product->quantity }}</td>
-                                <td>{{ round($product->Unit_Price * $product->quantity,2) }}</td>
+                                <td>{{ $product->Unit_Price * $product->quantity }}</td>
                                 <td>{{ $product->Discount_Value }}</td>
-                                <td>{{round ($product->Unit_Price * $product->quantity - $product->Discount_Value,2) }}
+                                <td>{{ $product->Unit_Price * $product->quantity - $product->Discount_Value }}
                                 </td>
 
                                 <td>
-                                    <a style="background-color: #419BB2;" class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->id }}" data-section_name="{{ $product->productData->name }}" data-description="{{ $product->quantity }}" data-ordernumber="{{ $product->invoice_id }}" data-toggle="modal" href="#exampleModal2" title="تعديل"><i class="las la-pen"></i></a>
+                                    <a style="background-color: #419BB2;" class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->id }}" data-section_name="{{ $product->productData->product_name }}" data-description="{{ $product->quantity }}" data-ordernumber="{{ $product->invoice_id }}" data-toggle="modal" href="#exampleModal2" title="تعديل"><i class="las la-pen"></i></a>
 
 
                                 </td>
@@ -298,21 +461,22 @@
                                 @endforeach
                         </tbody>
                     </table>
+                    </div>
                     <input class="form-control " name="recentretrn" id="recentretrn" hidden value=0 hidden>
 
-                    <div style="padding: 0 20% 0 20%" class="table-responsive mg-t-20  float-left mt-3 mr-2">
+                    <div class="table-responsive mg-t-20 float-left mt-3 mr-2 pro-sr-totals-wrap">
                         <table class="table table-invoice border text-md-nowrap mb-0 text-center" name="tableTotalPrice" id="tableTotalPrice" width="100%">
 
                             <body>
                                 <tr>
-                                    <td class="tx-">{{__('home.the amount')}}</td>
-                                    <td class="tx-">{{ __('home.discount') }}</td>
-                                    <td class="tx-">{{ __('home.avt') }}</td>
-                                    <td class="tx-">{{ __('home.total') }}</td>
+                                    <td class="tx-"><i class="fa fa-coins"></i>{{__('home.the amount')}}</td>
+                                    <td class="tx-"><i class="fa fa-percent"></i>{{ __('home.discount') }}</td>
+                                    <td class="tx-"><i class="fa fa-receipt"></i>{{ __('home.avt') }}</td>
+                                    <td class="tx-"><i class="fa fa-dollar-sign"></i>{{ __('home.total') }}</td>
 
                                 </tr>
                                 <tr>
-                                    <td class="tx-">{{round( $data['invoicetotal_price'] ?? 0,2) }}</td>
+                                    <td class="tx-">{{( $data['invoicetotal_price']+$data['invoicetotal_discount'] )?? 0 }}</td>
 
                                     <td class="tx-">{{ $data['invoicetotal_discount'] ?? 0 }}</td>
                                     <td class="tx-">{{ round( $data['invoicetotal_addedvalue'] ?? 0,2) }}</td>
@@ -329,12 +493,25 @@
                         <br>
                         <div class="d-flex justify-content-center">
 
-                            <a style="background-color: #419BB2" class="btn btn-success p-1" href="{{ url('/' . ($page = 'printreturnInvoice') . '/' . $data['invoice_id']) }}" target=”_blank”>
+                            <a style="background-color: #419BB2;height:30px" class="btn btn-success p-1" href="{{ url('/' . ($page = 'printreturnInvoice') . '/' . $data['invoice_id']) }}">
                                 {{__('home.print')}}
                                 <svg style="width: 22px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
                                     <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
                                 </svg>
                             </a>
+
+&nbsp;
+  <a style="background: linear-gradient(135deg, #2f97ac 0%, #1f7a8c 100%);font-size:15px;width: 120px!important;height:30px" href="{{ url('/' . ($page = 'generate_return_sale_pdf') . '/' . $data['invoice_id']) }}"
+                    class="btn btn-success p-1 px-2 fw-bolder"  id="generate_pdf" target="_blank" >{{ __('home.dwonloadpdf') }}&nbsp;<i class="fa-solid fa-download"></i></i></a>
+&nbsp;
+<input hidden id="invoice_id" value="{{$data['invoice_id']}}">
+   <button  id="reciptprinter" class="btn btn-success p-1 px-2 fw-bolder">
+                                        {{ __('home.reciptprinter') }}
+                                        <svg style="width: 15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
+                                            <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
+                                        </svg>
+                                    </button>
+
                         </div>
 
                         <br>
@@ -350,11 +527,13 @@
 
                     <div class="row d-flex justify-content-end p-0 mb-2">
 
-                        <button style="background-color:#FF4F1F" id="showmodal" href="#paymentmethod" class="btn btn-danger p-1">
-                            {{ __('home.returninvoiceItem') }} </button>
-&nbsp;                            
-                                   
-                                    <button style="background-color: grey;" class="modal-effect btn btn-sm btn-info" id="sendzatca" >
+                        <button style="background: linear-gradient(135deg, #ff6a4d 0%, #FF4F1F 100%)" id="showmodal" href="#paymentmethod" class="btn btn-danger p-1">
+                            <i class="fa fa-sync-alt"></i> {{ __('home.returninvoiceItem') }} </button>
+
+                            &nbsp;
+&nbsp;
+
+                                    <button style="background: linear-gradient(135deg, #7c8896 0%, #64748b 100%);" class="modal-effect btn btn-sm btn-info" id="sendzatca" >
                                         {{ __('home.uploadzatca') }}&nbsp;<i class="fa-regular fa-paper-plane"></i>
                                     </button>
 
@@ -400,6 +579,36 @@
 </div>
 <!-- Container closed -->
 </div>
+
+
+
+ <div class="modal fade product-selection" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" id="loading" name="loading" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+            <div class="modal-dialog modal-xl" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" role="document">
+                <div class="modal-content">
+
+                    <div class="modal-body" style="justify-content: center;">
+
+
+ <center><img style="width:250px;height:250px;" class="custom_img" src="{{ asset('assets/admin/uploads/loading.png') }}" >
+
+</center>
+
+
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+
 <!-- edit -->
 @if (isset($data['product']))
 
@@ -470,8 +679,8 @@
             </form>
 
             <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" name="updateproductalldata" id="updateproductalldata">تاكيد</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+                <button class="btn btn-primary" data-dismiss="modal" name="updateproductalldata" id="updateproductalldata">{{ __('home.confirm') }}</button>
+                <button class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
             </div>
         </div>
     </div>
@@ -484,6 +693,46 @@
 </div>
 @endsection
 @section('js')
+<!-- SweetAlert2 (رسائل التنبيه الاحترافية) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    /* دوال مساعدة موحّدة عشان كل رسائل الصفحة تطلع بنفس شكل SweetAlert بدل alert() الافتراضية */
+    function proSuccessAlert(message) {
+        return Swal.fire({
+            icon: 'success',
+            title: message,
+            confirmButtonText: '{{ __('home.confirm') ?? 'OK' }}',
+            confirmButtonColor: '#23395D',
+            customClass: { popup: 'pro-sr-swal' }
+        });
+    }
+
+    function proErrorAlert(message) {
+        return Swal.fire({
+            icon: 'error',
+            title: message,
+            confirmButtonText: '{{ __('home.confirm') ?? 'OK' }}',
+            confirmButtonColor: '#e0293f',
+            customClass: { popup: 'pro-sr-swal' }
+        });
+    }
+
+    function proWarningAlert(message) {
+        return Swal.fire({
+            icon: 'warning',
+            title: message,
+            confirmButtonText: '{{ __('home.confirm') ?? 'OK' }}',
+            confirmButtonColor: '#f59e0b',
+            customClass: { popup: 'pro-sr-swal' }
+        });
+    }
+</script>
+<style>
+    .pro-sr-swal {
+        border-radius: 16px !important;
+        font-family: inherit !important;
+    }
+</style>
 <!-- Internal Data tables -->
 <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.dataTables.min.js') }}"></script>
@@ -529,15 +778,82 @@
 </script>
 <script>
 
-    $("#dwonloadxml").click(function(e) {
-    var url = " {{ URL::to('dwonloadxml') }}" + '/' + $('#show_invoice_number').val();
-    console.log(url)
+$("#sendzatca").click(function(e) {
+                  document.getElementById('loading-screen').style.display = 'block'; // show loading screen
 
-    window.open(url, '_blank');
+        var url = " {{ URL::to('sent_to_zatca_return_items') }}"+'/'+ $('#invoice_id').val();
+        console.log(url)
+        document.getElementById('sendzatca').hidden = true
 
-})
+        token_search = $('#token_search').val();
+        $.ajax({
+            url: url,
+            type: 'GET',
+            cache: false,
+            dataType: "html",
 
 
+
+            success: function(data) {
+               console.log(data)
+                if(data==1){
+                          document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
+
+                var audio = new Audio('/sounds/done.mp3');
+                audio.play();
+                   $('#SearchProduct').modal().show();
+ setTimeout(() => {
+         $('#SearchProduct').modal('hide');
+
+        }, 1000);
+                document.getElementById('dwonloadxml').hidden = false
+                document.getElementById('sendzatca').hidden = true
+                }
+                else{
+                    proErrorAlert(data)
+                    document.getElementById('sendzatca').hidden = false
+
+                }
+            },
+              error: function(response) {
+                console.log(response)
+
+}
+        });
+    })
+
+
+        $("#reciptprinter").click(function(e) {
+        var url = " {{ URL::to('returnsalesprinter') }}"+'/'+$('#invoice_id').val();
+        console.log(url);
+        var token_search = $("#token_search").val();
+        $.ajax({
+            url: url,
+            type: 'get',
+            cache: false,
+            dataType: 'html',
+
+            success: function(data) {
+                console.log(data)
+                const winUrl = URL.createObjectURL(
+                    new Blob([data], {
+                        type: "text/html"
+                    })
+                );
+                const win = window.open(
+                    winUrl,
+                    "win",
+                    `width=800,height=400,screenX=200,screenY=200`
+                );
+
+            },
+            error: function(response) {
+                console.log(response)
+                proErrorAlert("{{ __('home.sorryerror') }}")
+
+            }
+        });
+    });
 
     function convertToNumberPriceSale() {
         var input = document.getElementById("invoice_no");
@@ -605,19 +921,20 @@
     $(document).ready(function() {
 
 
-    document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
+      document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
 
         $("#returnAll").click(function(e) {
+            document.getElementById('returnAll').style.visibility = 'hidden';
             event.preventDefault();
             let table = document.getElementById("example");
-
-
+            $('#loading').modal().show();
             var token_search = $("#token_search").val();
-
             var url = " {{ URL::to('returnAll') }}";
             token_search = $('#token_search').val();
             console.log($('#pagename').val())
             console.log($('#invoice_no_delete_All').val())
+            var pay_return_sale = $("#pay_return_sale").val();
+
             if($('#recentretrn').val()==0){
                 $('#recentretrn').val(1);
 
@@ -630,56 +947,12 @@
                     _token: token_search,
                     pagename: $('#pagename').val(),
                     invoice_no_delete_All: $('#invoice_no_delete_All').val(),
+                    pay_return_sale:pay_return_sale
 
                 },
 
 
                 success: function(data) {
-                    
-                                         document.getElementById('loading-screen').style.display = 'block'; // show loading screen
-
-        var url = " {{ URL::to('sent_to_zatca_return_items') }}"+'/'+ $('#invoice_no_delete_All').val();
-        console.log(url)
-        document.getElementById('sendzatca').hidden = true
-
-        token_search = $('#token_search').val();
-        $.ajax({
-            url: url,
-            type: 'GET',
-            cache: false,
-            dataType: "html",
-           
-
-
-            success: function(data) {
-               console.log(data)
-                if(data==1){
-                          document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
-
-                var audio = new Audio('/sounds/done.mp3');
-                audio.play();
-       
-                document.getElementById('dwonloadxml').hidden = false
-                document.getElementById('sendzatca').hidden = true
-                 document.getElementById('loading-screen').style.display ='none';
-                }
-                else{
-                    alert(data)
-                    document.getElementById('sendzatca').hidden = false
-                 document.getElementById('loading-screen').style.display ='none';
-
-                }
-            },
-              error: function(response) {
-                console.log(response)
-                                 document.getElementById('loading-screen').style.display ='none';
-
-
-}
-        });
-                    console.log(data)
-                    console.log('data')
-                    console.log('-----')
                     // const map =(JSON.parse(response));
                     let tableTotalPrice = document.getElementById("tableTotalPrice");
                     var tableHeaderRowCount = 1;
@@ -715,14 +988,17 @@
                     }
                     i = 0;
 
+setTimeout(() => {
+         $('#loading').modal('hide');
 
-                    alert(data['message'])
+        }, 500);
+                    proSuccessAlert(data['message'])
 
 
                 },
                 error: function(response) {
-                    console.log(response.responseJSON)
-                    alert("{{ __('home.sorryerror') }}")
+                    console.log(response)
+                    proErrorAlert("{{ __('home.sorryerror') }}")
                     $('#recentretrn').val(0);
 
                 }
@@ -741,20 +1017,16 @@
 
 
         $("#updateproductalldata").click(function(e) {
+            document.getElementById('updateproductalldata').style.visibility = 'hidden';
+            $('#loading').modal().show();
             event.preventDefault();
             let table = document.getElementById("example");
-
-
             var token_search = $("#token_search").val();
-
+            var pay_return_sale = $("#pay_return_sale").val();
             var url = " {{ URL::to('update_return_sale') }}";
-            console.log("$('#return_quentity').val()")
-
             token_search = $('#token_search').val();
-            console.log($('#currentquantity').val())
-            console.log($('#return_quentity').val())
-            console.log(Number($('#currentquantity').val()) >=Number( $('#return_quentity').val()))
-            if (Number($('#currentquantity').val()) >=Number( $('#return_quentity').val())) {
+
+            if ($('#currentquantity').val()*1 >= $('#return_quentity').val()*1) {
                 $.ajax({
                     url: url,
                     type: 'post',
@@ -766,50 +1038,11 @@
                         return_quentity: $('#return_quentity').val(),
                         ordernumber: $('#ordernumber').val(),
                         product_name: $('#product_name').val(),
+                        pay_return_sale:pay_return_sale
                     },
 
 
                     success: function(data) {
-
-                                         document.getElementById('loading-screen').style.display = 'block'; // show loading screen
-
-        var url = " {{ URL::to('sent_to_zatca_return_items') }}"+'/'+ $('#invoice_no_delete_All').val();
-        console.log(url)
-        document.getElementById('sendzatca').hidden = true
-
-        token_search = $('#token_search').val();
-        $.ajax({
-            url: url,
-            type: 'GET',
-            cache: false,
-            dataType: "html",
-           
-
-
-            success: function(data) {
-               console.log(data)
-                if(data==1){
-                          document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
-
-                var audio = new Audio('/sounds/done.mp3');
-                audio.play();
-                 
-                 document.getElementById('loading-screen').style.display ='none';
-                }
-                else{
-                    alert(data)
-                    document.getElementById('sendzatca').hidden = false
-                 document.getElementById('loading-screen').style.display ='none';
-
-                }
-            },
-              error: function(response) {
-                console.log(response)
-                                 document.getElementById('loading-screen').style.display ='none';
-
-
-}
-        });
                         // const map =(JSON.parse(response));
                         let tableTotalPrice = document.getElementById("tableTotalPrice");
                         var tableHeaderRowCount = 1;
@@ -833,10 +1066,10 @@
                         totaldiscount = data['invoicetotal_discount']
                         total = data['total']
 
-                        c1.innerText =( Math.round(total_reaming*100)/100).toFixed(2)
+                        c1.innerText =Number(total_reaming)+Number(totaldiscount)
                         c2.innerText = totaldiscount
-                        c3.innerText =(Math.round( added_value_total*100)/100).toFixed(2)
-                        c4.innerText = (Math.round(total*100)/100).toFixed(2)
+                        c3.innerText = added_value_total
+                        c4.innerText = total
 
                         console.log('++++++')
                         console.log(data)
@@ -891,11 +1124,11 @@
                                 c1.innerText = count1
                                 c2.innerHTML = ' <span dir=ltr>' + product_code + '</span>'
                                 c3.innerText = product_name
-                                c4.innerText = (Math.round(Unit_Price*100)/100).toFixed(2)
+                                c4.innerText = Unit_Price
                                 c5.innerText = quentity
-                                c6.innerText = (Math.round(totalsale*100)/100).toFixed(2)
+                                c6.innerText = totalsale
                                 c7.innerText = discount
-                                c8.innerText = (Math.round(totalsaleafterdiscount*100)/100).toFixed(2)
+                                c8.innerText = totalsaleafterdiscount
                                 c9.innerHTML = result4
 
 
@@ -916,23 +1149,39 @@
 
 
 
+setTimeout(() => {
+         $('#loading').modal('hide');
+
+        }, 500);
 
 
 
-                        alert(data['message'])
+
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم عملية الاسترجاع بنجاح',
+                            text: 'The recovery process was completed successfully',
+                            confirmButtonText: '{{ __('home.confirm') ?? 'OK' }}',
+                            confirmButtonColor: '#23395D',
+                            customClass: { popup: 'pro-sr-swal' }
+                        })
 
 
                     },
                     error: function(response) {
-                        console.log(response.responseJSON)
-                        alert("{{ __('home.sorryerror') }}")
+                        console.log(response)
+
+                        proErrorAlert("{{ __('home.sorryerror') }}")
 
                     }
                 })
             } else {
-
-                alert("{{ __('home.returnquantitymorethensale') }}")
+                proWarningAlert("{{ __('home.returnquantitymorethensale') }}")
             }
+
+                        document.getElementById('updateproductalldata').style.visibility =  'visible';
+
         })
     })
 

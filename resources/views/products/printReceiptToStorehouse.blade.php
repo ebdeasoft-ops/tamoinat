@@ -31,37 +31,21 @@
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
                 <div class="card-body">
-                    <div class="invoice-header">
+                <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-                        <div class="billed-from">
-                            <br>
-                            &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-                            <br>
-                            <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-                            <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                            <p dir=ltr> {{Taxen}} </p>
+                      
+                        
+                        
+<div class="billed-from" style="width:33%;text-align: center;">
+<br>
 
-                        </div>
-                        <div class="row">
-                        <?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+<span style="font-size:16px">{{Namear}}</span>
+<br>
+<p> {{describtionar}}</p>
+<p>{{STar}}</p>
+<p>{{Taxar}}</p>
 
-                        </div>
-
-
-                        <div class="billed-from">
-                            <br>
-
-                            &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-                            <br>
-                            <p> {{describtionar}}</p>
-                            <p>{{STar}}</p>
-                            <p>{{Taxar}}</p>
-
-                        </div><!-- billed-from -->
-                    </div><!-- invoice-header -->
+</div><!-- billed-from -->
                     <div class="row mg-t-12">
                         <br>
                         <br><!-- billed-from -->

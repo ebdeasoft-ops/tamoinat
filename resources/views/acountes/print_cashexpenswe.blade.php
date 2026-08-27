@@ -30,7 +30,7 @@
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
                 <div class="card-body">
-                                     <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+                    <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
                         <div class="billed-from" style="width:33%;text-align: center;" >
                             <br>
@@ -61,10 +61,8 @@ $logo=camplogo;
 
                         </div><!-- billed-from -->
                     </div><!-- invoice-header -->
-<br>
-<p>{{ __('home.Offerـpricesـtoـcustomer') }}</p>
                     <div class="row ">
-                    &nbsp; &nbsp; {{__('home.other_expenses')}}&nbsp; &nbsp; 
+                    <center>{{__('home.other_expenses')}}</center>
                         
                     </div>
 

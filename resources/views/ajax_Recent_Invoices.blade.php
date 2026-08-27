@@ -1,88 +1,131 @@
-@if (@isset($data) && !@empty($data) && count($data) >0 )
-@php
-$i=1;
-@endphp
-<div class="table-responsive">
-    <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
-       
+@if (isset($data) && !empty($data) && count($data) > 0)
+    <div class="table-responsive">
+        <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 1px solid #e1e6f1;">
+            <thead>
+                <tr>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.Invoice_no') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.sallerName') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.clietName') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.date') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.branch') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.total') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.paymentmethod') }}</th>
+                    <th style="color: #FF4F1F; font-size:12px">الربط مع زكاة (Zatca)</th>
+                    <th style="color: #FF4F1F; font-size:12px">{{ __('home.operations') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $avtSetting = App\Models\Avt::find(1);
+                    $saleavt = $avtSetting ? $avtSetting->AVT : 0.15;
+                @endphp
 
-        <thead>
-            <tr>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.Invoice_no') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.sallerName') }} </th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.clietName') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.date') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.branch') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.total') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.operations') }}</th>
+                @foreach ($data as $product)
+                    @php
+                        // حساب الإجمالي مع الضريبة
+                        $netPrice =  $product->cashamount+$product->Bank_transfer+$product->bankamount+$product->creaditamount;
+                        $totalWithTax = round($netPrice, 2);
+                        
+                        // تحديد نص طريقة الدفع
+                        $payText = match($product->Pay) {
+                            'Cash' => __('report.cash'),
+                            'Shabka' => __('report.shabka'),
+                            'Credit' => __('report.credit'),
+                            'Bank_transfer' => __('home.Bank_transfer'),
+                            default => __('home.Partition of the amount'),
+                        };
 
+                        // تجهيز رابط الواتساب
+                        $cleanPhone = "966" . ltrim($product->customer->phone ?? '', '0');
+                        $pdfLink = "https://demoo.ebdeaclients.online/ar/generate_pdf/" . $product->id;
+                        $waMessage = "يسرنا خدمتك. فاتورتك رقم {$product->id} جاهزة للتحميل:\n" . $pdfLink;
+                        $waFullUrl = "https://wa.me/{$cleanPhone}?text=" . urlencode($waMessage);
+                    @endphp
 
-            </tr>
-        </thead>
-        <tbody>
-            <?php $i = 0; ?>
+                    <tr id="{{ $product->id }}">
+                        <td>{{ $product->id }}</td>
+                        <td>{{ $product->user->name ?? '---' }}</td>
+                        <td dir="ltr">{{ $product->customer->name ?? '---' }}</td>
+                        <td>{{ $product->created_at->format('Y-m-d H:i') }}</td>
+                        <td>{{ $product->branch->name }}</td>
+                        <td class="font-weight-bold">
+                            @if($totalWithTax == 0)
+                                <span class="text-danger">{{ __('home.return') }}</span>
+                            @else
+                                {{ number_format($totalWithTax, 2) }}
+                            @endif
+                        </td>
+                        <td>
+                            <small>{{ $payText }}</small>
+                            @if($product->Pay == "Partition")
+                                <div class="text-muted" style="font-size: 10px;">
+                                    {{ __('report.shabka') }}: {{ $product->bankamount }} | 
+                                    {{ __('home.Bank_transfer') }}: {{ $product->Bank_transfer }}
+                                </div>
+                            @endif
+                        </td>
+                        <td>
+                            @if($product->sent_to_zatca == 1)
+                                <span class="badge badge-success-light">
+                                    <i class="fa fa-check-circle text-success"></i> مرسلة
+                                </span>
+                            @else
+                                <span class="badge badge-danger-light">
+                                    <i class="fa fa-times-circle text-danger"></i> مسودة
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="btn-icon-list d-flex justify-content-center align-items-center" style="gap: 4px;">
+                                <!-- زر الطباعة / العرض -->
+                                <a href="showInvoiceRecent/{{ $product->id }}" class="btn btn-sm btn-primary" title="{{ __('home.show') }}">
+                                    <i class="fas fa-print"></i>
+                                </a>
 
-            @foreach ($data as $product)
-            <?php $i++; ?>
+                                <!-- زر الواتساب -->
+                                <a href="{{ $waFullUrl }}" target="_blank" class="btn btn-sm btn-success" style="background-color: #25d366; border: none;" title="واتساب">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
 
-            <tr id="<?php echo $product['id']; ?>">
-                <td data-target="id">{{ $product->id }}</td>
-                <td data-target="id">{{ $product->user->name }}</td>
-                <td dir="ltr" data-target="id">
-                    {{ $product->customer->name }}
-                </td>
-                <td data-target="numberofpice">{{ $product->created_at }}</td>
-                <td data-target="numberofpice">{{ $product->branch->name }}
-                </td>
-                <td data-target="numberofpice">
-                    <?php
-                    $avt = App\Models\Avt::find(1);
-                    $saleavt = $avt->AVT;
+                                <!-- زر التحميل PDF -->
+                                <a href="generate_pdf/{{ $product->id }}" target="_blank" class="btn btn-sm btn-secondary" title="{{ __('home.dwonloadpdf') }}">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
 
-                    ?>
-                    {{ ($product->Price) + ($product->Added_Value)==0?__('home.return'):($product->Price) + ($product->Added_Value)  }}
-                </td>
+                                <!-- زر تعديل طريقة الدفع -->
+                                <a class="btn btn-sm btn-info modal-effect" 
+                                   data-effect="effect-scale" 
+                                   data-id="{{ $product->id }}" 
+                                   data-totalinvoice="{{ $totalWithTax }}" 
+                                   data-toggle="modal" href="#paymentmethod" title="{{ __('home.updatepayment') }}">
+                                    <i class="las la-pen"></i>
+                                </a>
 
-                <?php
-                $pay = '';
-                if ($product->Pay == 'Cash') { 
-                    $pay = __('report.cash');
-                } elseif ($product->Pay == 'Shabka') {
-                    $pay = __('report.shabka');
-                } elseif ($product->Pay == "Credit") {
-                    $pay = __('report.credit');
-                } elseif ($product->Pay == "Bank_transfer") {
-                    $pay = __('home.Bank_transfer');
-                } else {
-                    $pay = __('home.Partition of the amount');
-                }
+                                <!-- نموذج ورار مرتجع المبيعات -->
+                                <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/return_sale') }}" method="POST" role="search" autocomplete="off" style="display: inline-block; margin: 0;">
+                                    {{ csrf_field() }}
+                                    <input type="hidden" name="invoice_no" value="{{ $product->id }}">
+                                    <button style="background-color: #419BB2; border: none;" type="submit" class="btn btn-sm btn-success" title="{{ __('home.salesـreturned') }}">
+                                        <i class="las la-search" style="font-size:15px"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-                ?>
-                <td data-target="numberofpice">{{ $pay }}</td>
-                <td> <a style="color: #23395D" class="dropdown-item" href="showInvoiceRecent/{{ $product->id }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
-                        {{ __('home.show') }}
-                    </a>
+    <div class="mt-3" id="ajax_pagination_in_search">
+        {{ $data->links() }}
+    </div>
 
-
-                    <a class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->id }}" data-totalinvoice="{{  round(($product->Price-$product->discount) + (($product->Price-$product->discount)*$saleavt),2)==0?__('home.return'):round(($product->Price-$product->discount) + (($product->Price-$product->discount)*$saleavt),2)}}" data-toggle="modal" href="#paymentmethod" title="تعديل طريقة الدفع">{{ __('home.updatepayment') }}<i class="las la-pen"></i></a>
-
-                    <a style="background-color: #419BB2;" class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->id }}" data-customername="{{ $product->customer->name}}" data-toggle="modal" href="#updateCustomer" title="تعديل بيانات العميل ">{{ __('home.updatecustome') }}<i class="las la-pen"></i></a>
-
-                </td>
-
-            </tr>
-            @endforeach
-    </table>
-    <div>
-        <br>
-        <div class="justify-content-start" id="ajax_pagination_in_search">
-            {{ $data->links() }}
+@else
+    <div class="alert alert-custom alert-indicator-top alert-danger fade show" role="alert">
+        <div class="alert-content">
+            <span class="alert-title">تنبيه!</span>
+            <span class="alert-text">{{ __('home.notfounddata') }}</span>
         </div>
-
-
-
-        @else
-        <div class="alert alert-danger">
-        {{__('home.notfounddata')}}          </div>
-        @endif
+    </div>
+@endif

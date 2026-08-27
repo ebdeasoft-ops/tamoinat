@@ -21,10 +21,17 @@
     <!-- breadcrumb -->
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
-            <div class="d-flex">
+            <div class="row">
+                   <div class="d-flex">
                 <h4 class="content-title mb-0 my-auto">{{ __('report.Listofsupplier') }}</h4>
             </div>
-        </div>
+            
+         
+   
+      
+        </div>  
+            </div>
+       
     </div>
     <!-- breadcrumb -->
 @endsection
@@ -43,43 +50,50 @@
         <div class="col-xl-12">
             <div class="card p-3">
                 <div class="card-body p-3">
-                <div class="table-responsive hoverable-table">
-                        <table class="table table-hover" id="example1" data-page-length='50' style=" text-align: center;">
-                           <thead>
-                                <tr>
+            <div class="table-responsive  ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+  <thead>
+  <tr>
                                     <th class="wd-10p border-bottom-0">#</th>
-                                    <th class="wd-15p border-bottom-0"> {{ __('home.CampanyName') }}</th>
-                                    <th class="wd-20p border-bottom-0">{{ __('users.email') }} </th>
-                                    <th class="wd-15p border-bottom-0"> {{ __('home.phone') }}</th>
-                                    <th class="wd-15p border-bottom-0"> {{ __('home.Location') }}</th>
-                                    <th class="wd-15p border-bottom-0"> {{ __('home.creditpurchese') }}</th>
-
+                                    <th class="wd-15p border-bottom-0"> {{__('home.clietName')}}</th>
+                                    <th class="wd-15p border-bottom-0"> {{__('home.phone')}}</th>
+                                    <th class="wd-15p border-bottom-0"> {{__('home.Location')}}</th>
+                                    <th style="font-size: 18px;font-weight: bold;" class="border-bottom-0">{{__('home.depit_oping')}} </th>
+                                    <th style="font-size: 18px;font-weight: bold;" class="border-bottom-0">{{__('home.credit_oping')}}</th>
+                                    <th style="font-size: 18px;font-weight: bold;" class="border-bottom-0">{{__('home.credit')}} </th>
+                                    <th style="font-size: 18px;font-weight: bold;" class="border-bottom-0">{{__('home.debit')}}</th>
+                                    <th style="font-size: 18px;font-weight: bold;" class="border-bottom-0">{{__('home.current balance')}} </th>
                                 </tr>
                             </thead>
 
                             <tbody>
 
                                 <?php $i = 0; ?>
-                                @foreach (App\Models\supllier::get() as $user)
-                                    <?php $i++; ?>
+                                @foreach (App\Models\financial_accounts::where('orginal_type',2)->get() as $user)
+                                <?php $i++ ;
+                                $customer=App\Models\supllier::find($user->orginal_id);
+                                
+                                ?>                                    <?php $i++; ?>
 
                                     <tr>
-                                        <td>{{ $i }}</td>
-                                       
-                                            <td>
-                                               {{ $user->comp_name }}
-                                            </td>
-                                    
-                                            <td>{{ $user->email }}</td>
-                                        <td>{{ $user->phone??'-' }}</td>
-                                        <td>{{ $user->location }}</td>
-                                        <td>{{ $user->In_debt }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{ $i}}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{ $user->name}}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{ $customer->phone??'' }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{ $customer->address??'' }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{$user->debtor_opening }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{$user->creditor_opening }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{$user->debtor_current }}</td>
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{$user->creditor_current }}</td>
+                                    @if($user->debtor_current-$user->creditor_current ==0)
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{__('home.Balanced')}}</td>
+                                    @elseif($user->debtor_current-$user->creditor_current >0)
+                                   <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{__('home.credit')}} ( {{$user->debtor_current-$user->creditor_current}} ) {{__('home.SAR')}}</td>
+                                    @else
+                                    <td style="font-size: 15px;font-weight: bold;" data-target="numberofpice">{{__('home.debit')}} ( {{($user->debtor_current-$user->creditor_current)*-1}} ) {{__('home.SAR')}}</td>
+                                     @endif
 
+                                </tr>
 
-
-
-
-                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -89,6 +103,9 @@
 
                         <a class="btn btn-success print-style" href="{{ url('/' . ($page = 'print_SupplierList')) }}">
                             {{ __('home.print') }}</a>
+                            &nbsp;
+                                 <a class="btn btn-success print-style" href="{{ url('/' . ($page = 'print_SupplierList')) }}">
+                           EXPORT EXCEL</a>
                     </div>
                 </div>
             </div>

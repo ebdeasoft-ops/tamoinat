@@ -57,7 +57,7 @@
                     <div style="padding:20px 10px 0 10px" class="card-header pb-0">
 
                         <form
-                            action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'printavaliableproduct')) }}"
+                            action=""
                             method="POST" role="search" autocomplete="off">
                             {{ csrf_field() }}
 

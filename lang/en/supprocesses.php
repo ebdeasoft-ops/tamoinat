@@ -17,7 +17,7 @@ return [
     'Viewـpermissions' => 'View permissions',
     'addproduct' => 'Add product',
 
-    'product_name_ar'=> 'Product Name *',
+    'product_name_ar'=> 'Product Name Arabic',
     'product_name_en'=>'Product Name (En) *'  ,
     'product_branch'=>'Branches *',
     'product_code'=> 'Product Number *',

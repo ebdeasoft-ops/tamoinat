@@ -1,765 +1,881 @@
 <?php
 
-use App\Http\Controllers\SupllierController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\App;
-use App\Http\Controllers\CustomersController;
-use App\Http\Controllers\ProductsDamageController;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
-use  App\Http\Controllers\ProductsController;
-use  App\Http\Controllers\AdminController;
-use  App\Http\Controllers\InvoicesController;
-use App\Http\Controllers\AcountesController;
-use App\Http\Controllers\CredittransactionsController;
-use App\Http\Controllers\ExpensesController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\BranchsController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
-use Spatie\Permission\Models\role_has_permissions;
-use App\Http\Controllers\SupprocessesController;
-use App\Http\Controllers\InvItemcardCategoriesController;
-use App\Http\Controllers\AvtController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\ProductMovementAnotherBranchController;
-use App\Http\Controllers\TransferMoneyToMainbranchController;
-use App\Http\Controllers\DeliveryProductToTheCustomerController;
-use App\Http\Controllers\UnitsController;
-use App\Http\Controllers\InvItemCardController;
-use App\Http\Controllers\SystemSettingController;
-use App\Http\Controllers\LoansController;
-
-use  App\Models\system_setting;
-use  App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CostCenterExport;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+// استيراد الـ Controllers بالكامل
+use App\Http\Controllers\{
+    AdminController,
+    SupllierController,
+    CustomersController,
+    FinancialAccountsController,
+    AcountsTypeController,
+    ProductsDamageController,
+    ProductsController,
+    InvoicesController,
+    AcountesController,
+    CredittransactionsController,
+    ExpensesController,
+    ReportController,
+    BranchsController,
+    RoleController,
+    UserController,
+    SupprocessesController,
+    AvtController,
+    BomController,
+    EmployeeController,
+    ProductMovementAnotherBranchController,
+    TransferMoneyToMainbranchController,
+    DeliveryProductToTheCustomerController,
+    CashWithdrawalFromTheBankController,
+    DeliveryNoteController,
+    SystemSettingController,
+    LoansController,
+    DliveryController,
+    ProductsMixController,
+    LeaveController,
+    AttendanceController,
+    HrSettingController,
+    FinishedGoodsReceiptController,
+    ManufacturingExpenseController,
+    ManufacturingOrderController,
+    ManufacturingReportController,
+    MaterialIssueController,
+    UnitController,
+    WarehouseController,
+    ContractController,
+    EndOfServiceController,
+    CustodyController
+};
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
-// Route::get('/{page}', [App\Http\Controllers\AdminController::class,'index']);
-
-//products
 
 
-
-$system_setting=system_setting::find(1);
-define('PAGINATION_COUNT',20);
-define('serviceCost',$system_setting->serviceCost);
-
-
-define('Namear',$system_setting->name_ar);
-define('describtionar',$system_setting->descriptionarbic);
-define('STar',' س . ت  :'.$system_setting->SR);
-define('Taxar','  الرقم الضريبي : '.$system_setting->Tax);
-define('TaxQrCode',$system_setting->Tax);
-define('sallerQrCode',$system_setting->name_ar);
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/custodies', [CustodyController::class, 'index'])->name('custodies.index');
+    Route::get('/custodies/create', [CustodyController::class, 'create'])->name('custodies.create');
+    Route::post('/custodies', [CustodyController::class, 'store'])->name('custodies.store');
+    Route::post('/custodies/{id}/return', [CustodyController::class, 'returnItem'])->name('custodies.return');
+});
 
 
-define('Nameen',$system_setting->name_en);
-define('describtionen',$system_setting->descriptionenglish);
-define('STen','  C.R : '.$system_setting->SR);
-define('Taxen','VAT Number : '.$system_setting->Tax);
-define('addressar',$system_setting->address_ar);
-define('addressen',$system_setting->address_en);
-define('camplogo',$system_setting->logo);
+// مسارات حساب نهاية الخدمة
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/eos', [EndOfServiceController::class, 'index'])->name('eos.index');
+    Route::get('/eos/create', [EndOfServiceController::class, 'create'])->name('eos.create');
+    Route::post('/eos', [EndOfServiceController::class, 'store'])->name('eos.store');
+});
 
 
+Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function () {
+    Route::resource('contracts', ContractController::class);
+    Route::get('documents/alerts', [ContractController::class, 'documentAlerts'])->name('documents.alerts');
+});
+// ضع هذا السطر قبل Route::resource
+Route::get('leaves/balance-report', [LeaveController::class, 'leaveBalanceReport'])->name('leaves.balance_report');
 
+// مسار الـ Resource يأتي بعده
+Route::resource('leaves', LeaveController::class);
+Route::resource('hr-settings', HrSettingController::class)->only(['index', 'update']);
+Route::prefix('attendances')->name('attendances.')->group(function () {
+    // مسار استيراد الإكسيل (يُوضع قبل الـ resource لتجنب التعارض مع الـ show)
+    Route::post('/import', [AttendanceController::class, 'import'])->name('import');
+    Route::get('/template', [AttendanceController::class, 'downloadTemplate'])->name('template');
+    // مسارات الـ Resource القياسية (index, create, store, show, edit, update, destroy)
+    Route::resource('/', AttendanceController::class)->parameters(['' => 'attendance']);
+});
 
-
-Route::post('/posttestajax', [BranchsController::class, 'posttestajax']);
-
-
-
-
-
-    /*      ═══════ ೋღ   start  LINK ZATCA   ღೋ ═══════             */
-    Route::get('dwonloadxml/{id}', [InvoicesController::class, 'dwonloadxml']);
-    Route::get('sent_to_zatca_return_items/{id}', [InvoicesController::class, 'sent_to_zatca_return_items']);
-    Route::get('sent_to_zatca/{id}', [InvoicesController::class, 'sent_to_zatca']);
-    Route::get('sendzatca_fromsale/{id}', [InvoicesController::class, 'sendzatca_fromsale']);
-    
-
-
-/*      ═══════ ೋღ  end LINK ZATCA ღೋ ═══════              */
-
-
-
-
-/*      ═══════ ೋღ   start   LoansController    ღೋ ═══════             */
-Route::get('/Loans', [LoansController::class, 'index']);
-Route::get('/delete_Loans/{id}', [LoansController::class, 'destroy']);
-Route::post('/Loans', [LoansController::class, 'store']);
-
-Route::post('/update_Loans', [LoansController::class, 'edit']);
-
-
-
-
-/*      ═══════ ೋღ  end LoansController   ღೋ ═══════              */
-
-    /*      ═══════ ೋღ   start  System setting    ღೋ ═══════             */
-Route::get('/systemSetting', [SystemSettingController::class, 'index']);
-
-
-///    new
-Route::post('/connect_start_hunger', [SystemSettingController::class, 'connect_start_hunger']);
-Route::get('CONNECT_TO_HUNGER_SETTING',  [SystemSettingController::class, 'CONNECT_TO_HUNGER_SETTING']);
-Route::get('hangerStationTestFlow',  [SystemSettingController::class, 'hangerStationTestFlow']);
-
-////      end new
-
-Route::get('/onbourding', [SystemSettingController::class, 'onbourding']);
-Route::post('/onbourding', [SystemSettingController::class, 'store']);
-Route::post('/updateCamData', [SystemSettingController::class, 'update']);
-
-
-
-
-
-/*      ═══════ ೋღ  end System setting  ღೋ ═══════              */
-
-/*      ═══════ ೋღ   start  Item Card   ღೋ ═══════             */
-Route::get('/itemcard/index', [InvItemCardController::class, 'index'])->name('admin.itemcard.index');
-Route::get('/itemcard/create', [InvItemCardController::class, 'create'])->name('admin.itemcard.create');
-Route::post('/itemcard/store', [InvItemCardController::class, 'store'])->name('admin.itemcard.store');
-Route::get('/itemcard/edit/{id}', [InvItemCardController::class, 'edit'])->name('admin.itemcard.edit');
-Route::post('/itemcard/update/{id}', [InvItemCardController::class, 'update'])->name('admin.itemcard.update');
-Route::get('/itemcard/delete/{id}', [InvItemCardController::class, 'delete'])->name('admin.itemcard.delete');
-Route::post('/itemcard/ajax_search', [InvItemCardController::class, 'ajax_search'])->name('admin.itemcard.ajax_search');
-Route::get('/itemcard/show/{id}', [InvItemCardController::class, 'show'])->name('admin.itemcard.show');
-Route::post('/itemcard/ajax_search_movements', [InvItemCardController::class, 'ajax_search_movements'])->name('admin.itemcard.ajax_search_movements');
-Route::post('/itemcard/ajax_check_barcode', [InvItemCardController::class, 'ajax_check_barcode'])->name('admin.itemcard.ajax_check_barcode');
-Route::post('/itemcard/ajax_check_name', [InvItemCardController::class, 'ajax_check_name'])->name('admin.itemcard.ajax_check_name');
-Route::get('/itemcard/generate_barcode/{id}', [InvItemCardController::class, 'generate_barcode'])->name('admin.itemcard.generate_barcode');
-
-
-/*      ═══════ ೋღ  end Item Card  ღೋ ═══════              */
-
-
-Route::get('/itemcards/search', [InvItemCardController::class, 'search'])
-     ->name('itemcards.search');
- 
+// الصفحة الرئيسية (تسجيل الدخول)
 Route::get('/', function () {
-
     return view('auth.login');
 });
+
+// --------------------------------------------------------------------------
+// مسارات عامة (Public / Guest Routes)
+// --------------------------------------------------------------------------
+
+Route::get('/get-pending-invoices', function () {
+    $branchId = auth()->user()->branchs_id;
+    $url = "http://elmoaadat.ebdea.online/api/purchases/getinvoicecount_by_branch_not_recive/{$branchId}";
+    return Http::get($url)->json();
+});
+
+Route::get('export-cost-centers', function (Request $request) {
+    return Excel::download(
+        new CostCenterExport($request->query('start_at'), $request->query('end_at'), $request->query('cost_center')),
+        'cost_centers_report_' . date('Y-m-d') . '.xlsx'
+    );
+});
+
+Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
+
+    // مسار تحميل نموذج الإكسيل (Template)
+    Route::get('/download-template', [SupprocessesController::class, 'downloadTemplate'])
+        ->name('download_template');
+
+    // مسار رفع ومعالجة ملف الإكسيل عبر AJAX
+    Route::post('/import-ajax', [SupprocessesController::class, 'importStockAjax'])
+        ->name('import_ajax');
+
+});
+
+Route::post('Purchase_returns_Data', [ProductsController::class, 'Purchase_returns_Data']);
+Route::post('save_invoice_purchase_roken', [ProductsController::class, 'save_invoice_purchase_roken']);
+Route::post('searchaboutproduct_location_function', [ProductsController::class, 'searchaboutproduct_location_function']);
+Route::get('/confirm_purchase', [ProductsController::class, 'purchases_roken']);
+Route::get('/getquotebybranch/{branch}', [InvoicesController::class, 'getquotebybranch']);
+Route::post('/posttestajax', [BranchsController::class, 'posttestajax']);
+Route::get('/upload_stock', [ProductsController::class, 'upload_stock']);
+
+
+Route::get('/account-balance/{id}', [ProductsController::class, 'getAccountBalance'])
+    ->name('account.balance');
+
+
+
+Route::post('/products/store', [ProductsController::class, 'store'])->name('products.store');
+
+Route::get('/stock/upload', [ProductsController::class, 'showStockUpload'])->name('stock.upload.page');
+Route::get('/stock/download-template', [ProductsController::class, 'downloadStockTemplate'])->name('stock.download_template');
+Route::post('/stock/import-excel', [ProductsController::class, 'importStockExcel'])->name('stock.import_excel');
+// --------------------------------------------------------------------------
+// مسارات محمية بالـ Authentication (Sanctum & Verified)
+// --------------------------------------------------------------------------
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified'
 ])->group(function () {
 
-
-    //role
-
-
+    // 1. إدارة الصلاحيات والمستخدمين
     Route::group(['middleware' => ['auth']], function () {
-
         Route::resource('roles', RoleController::class);
-
         Route::resource('users', UserController::class);
     });
 
-
-    //end role
-Route::post('save_invoice_sale',  [InvoicesController::class, 'save_invoice_sale']);
-
-
-  Route::get('searchChooseProductpaginatenewSale_new/{searchtext}/{branch_id}/{currentrow}', [ProductsController::class, 'searchChooseProductpaginatenewSale_new']);
-  Route::get('ChooseProductpaginatenewSale_new/{branch_id}/{currentrow}', [ProductsController::class, 'ChooseProductpaginatenewSale_new']);
-  Route::get('/getByCodenew/{barcode}',[ ProductsController::class,'getByCodenew'])->name('getByCodenew');
-
-
-    //unit
-
-    Route::get('units', [UnitsController::class, 'index'])->name('units');
-    Route::get('update/{id}', [UnitsController::class, 'update'])->name('unit.go.update');
-    Route::get('createunit', [UnitsController::class, 'create'])->name('unit.create');
-    Route::post('storeUnit', [UnitsController::class, 'store'])->name('unit.store');
-    Route::post('editeUnit/{id}', [UnitsController::class, 'edit'])->name('unit.update');
-    Route::post('unit.ajax_search', [UnitsController::class, 'ajax_search'])->name('unit.ajax_search');
-    Route::get('delete/{id}', [UnitsController::class, 'delete'])->name('unit.delete');
-
-    Route::post('/storeemcard_categories',[ InvItemcardCategoriesController::class,'store'])->name('inv_itemcard_categories.store');
-    Route::resource('/inv_itemcard_categories', InvItemcardCategoriesController::class);
-
-    //end unit
-
-
-    //Confirm product delivery
-
-    Route::get('confirm_delivery', [DeliveryProductToTheCustomerController::class, 'index']);
-    Route::get('confirm_sales', [DeliveryProductToTheCustomerController::class, 'confirm_sales']);
-    Route::post('search_confirm_delievery', [DeliveryProductToTheCustomerController::class, 'store']);
-    Route::post('confirm_delivery_all', [DeliveryProductToTheCustomerController::class, 'edit']);
-    Route::post('search_confirm_sales', [DeliveryProductToTheCustomerController::class, 'search_confirm_sales']);
-    Route::post('confirm_sales_delivery_all', [DeliveryProductToTheCustomerController::class, 'confirm_sales_delivery_all']);
-
-    
-    //end confirm_delivery
-    //ProductsDamage
-
-    Route::get('ProductsDamageReport', [ProductsDamageController::class, 'index']);
-    Route::post('ProductsDamageReport', [ProductsDamageController::class, 'show']);
-
-
-
-    //end ProductsDamage
-//product_movement_another_branch
-
-Route::get('sendProduct', [ProductMovementAnotherBranchController::class, 'index']);
-Route::get('reciveProduct', [ProductMovementAnotherBranchController::class, 'show']);
-Route::get('deleteproduct/{id}', [ProductMovementAnotherBranchController::class, 'destroy']);
-Route::get('findinvoiceMovmevt/{id}', [ProductMovementAnotherBranchController::class, 'findinvoiceMovmevt']);
-Route::post('create_sendProduct', [ProductMovementAnotherBranchController::class, 'create']);
-Route::post('create_reciveProduct', [ProductMovementAnotherBranchController::class, 'store']);
-Route::post('print_Transfer_items', [ProductMovementAnotherBranchController::class, 'print_Transfer_items']);
-Route::post('print_Recive_items', [ProductMovementAnotherBranchController::class, 'print_Recive_items']);
-
-
-
-
-
-//end product_movement_another_branch
-    //products
-    Route::get('goToSale', [ProductsController::class, 'goToSale']);
-    Route::get('goToSaleBypage', [ProductsController::class, 'goToSaleByPage']);
-    Route::get('searchaboutproduct/{searchtext}', [ProductsController::class, 'searchaboutproduct']);
-
-
-    Route::get('showAllproductpaginate', [ProductsController::class, 'showAllproductpaginate']);
-    Route::get('searchAllproductpaginate/{searchtext}', [ProductsController::class, 'searchAllproductpaginate']);
-    Route::get('searchAllproductpaginatenew/{searchtext}', [ProductsController::class, 'searchAllproductpaginatenew']);
-    Route::get('searchAllInvoicespaginatenew/{date}', [ProductsController::class, 'searchAllInvoicespaginatenew']);
-    Route::get('searchAllInvoicespaginatenewpurchase/{date}', [ProductsController::class, 'searchAllInvoicespaginatenewpurchase']);
-    Route::get('searchaboutinvoiceByIdfunction/{date}', [ProductsController::class, 'searchaboutinvoiceByIdfunction']);
-    Route::get('searchaboutinvoiceByIdfunctionpurchases/{date}', [ProductsController::class, 'searchaboutinvoiceByIdfunctionpurchases']);
-    Route::get('searchaboutReciptByIdfunction/{date}', [ProductsController::class, 'searchaboutReciptByIdfunction']);
-    Route::get('searchAllRecieptspaginatenew/{date}', [ProductsController::class, 'searchAllRecieptspaginatenew']);
-    Route::get('Allproductpaginatenew', [ProductsController::class, 'Allproductpaginatenew']);
-    Route::get('getAllinvicesajax', [ProductsController::class, 'getAllinvicesajax']);
-    Route::get('getAllinvicesapurchasesjax', [ProductsController::class, 'getAllinvicesapurchasesjax']);
-    Route::get('getAllRecieptsjax', [ProductsController::class, 'getAllRecieptsjax']);
-    Route::get('searchChooseProductpaginatenew/{searchtext}/{branch_id}', [ProductsController::class, 'searchChooseProductpaginatenew']);
-    Route::get('ChooseProductpaginatenew/{branch_id}', [ProductsController::class, 'ChooseProductpaginatenew']);
-   
-    Route::get('searchChooseProductpaginatenewSale/{searchtext}/{branch_id}', [ProductsController::class, 'searchChooseProductpaginatenewSale']);
-    Route::get('ChooseProductpaginatenewSale/{branch_id}', [ProductsController::class, 'ChooseProductpaginatenewSale']);
-
-
-
-    
-    Route::get('showAllproductpaginatepurchase/{branchId}', [ProductsController::class, 'showAllproductpaginatepurchase']);
-    Route::get('searchAllproductpaginatepurchase/{branchId}/{searchtext}', [ProductsController::class, 'searchAllproductpaginatepurchase']);
-
-
-    Route::get('searchaboutproductwithBranchId/{searchtext}/{branchId}', [ProductsController::class, 'searchaboutproductwithBranchId']);
-    
-    Route::get('printReturnpurchases/{id}', [ProductsController::class, 'printReturnpurchases']);
-
-    Route::get('ShowAllNotifications', [ProductsController::class, 'ShowAllNotifications']);
-    Route::get('profile', [ProductsController::class, 'profile']);
-    Route::get('showAllProducts', [ProductsController::class, 'showAllProducts']);
-    Route::get('previousPurchasesInvoices', [ProductsController::class, 'previousPurchasesInvoices']);
-    Route::get('previousSalesInvoices', [ProductsController::class, 'previousSalesInvoices']);
-    Route::get('previousRecieptInvoices', [ProductsController::class, 'previousRecieptInvoices']);
-    Route::get('printOrderPriceFromSupplier/{id}', [ProductsController::class, 'printOrderPriceFromSupplier']);
-    Route::post('printOrderPriceFromSupplier', [ProductsController::class, 'printOrderPriceFromSupplierBypost']);
-    Route::get('getproductsquntitytocustomer', [ProductsController::class, 'index']);
-    Route::get('getproductspricetocustomer', [ProductsController::class, 'showProductsPrice']);
-    Route::get('getproductsprice', [ProductsController::class, 'getProductsPriceFromSupplier']);
-    Route::get('getproduct/{id}', [ProductsController::class, 'show']);
-    Route::get('savepurchase/{id}/{payment}/{supplier}', [ProductsController::class, 'savepurchase']);
-    Route::get('getProductdJsonDecode/{id}', [ProductsController::class, 'getProductdJsonDecode']);
-    Route::get('Purchase_returns', [ProductsController::class, 'Purchase_returns']);
-    Route::get('purchases', [ProductsController::class, 'purchases']);
-    Route::post('printavaliableproduct', [ProductsController::class, 'create']);
-    Route::get('printavaliableproductprice', [ProductsController::class, 'printProductPriceToCustomer']);
-    Route::post('printproductprice', [ProductsController::class, 'printProductPrice']);
-    Route::post('print_all_products_price', [ProductsController::class, 'print_all_products_price']);
-    Route::post('AddproducttoSupllier', [ProductsController::class, 'AddproducttoSupllier']);
-    Route::post('Addproducttopurchases', [ProductsController::class, 'Addproducttopurchases']);
-    Route::post('purchaseproduct_update', [ProductsController::class, 'update']);
-    Route::post('purchaseproduct_delete', [ProductsController::class, 'destroy']);
-    Route::get('goToReceipt', [ProductsController::class, 'goToReceipt']);
-    Route::post('order_price_from_suppliers', [ProductsController::class, 'order_price_from_suppliers']);
-    Route::post('report_offer_price_customer', [ProductsController::class, 'AddproductPriceToCustomer']);
-    Route::post('AddproductPriceToCustomer', [ProductsController::class, 'AddproductPriceToCustomer']);
-    Route::post('print_order_perice_to_customer', [ProductsController::class, 'print_order_perice_to_customerByPost']);
-    Route::get('report_offer_price_customer', [ProductsController::class, 'print_order_perice_to_customer']);
-    Route::post('updatePurchase', [ProductsController::class, 'updatePurchase']);
-    Route::post('updatePurchaseOrder', [ProductsController::class, 'updatePurchaseOrder']);
-    Route::post('updatePurchaseOrderToIncrease', [ProductsController::class, 'updatePurchaseOrderToIncrease']);
-    Route::get('/makeTotalDiscontpurchases/{idInvoice}/{discountvalue}', [ProductsController::class, 'makeTotalDiscontpurchases']);
-    Route::get('/cancelInvoiceDiscontpurcgases/{idInvoice}', [ProductsController::class, 'cancelInvoiceDiscontpurcgases']);
-
-    Route::post('increasePurchase', [ProductsController::class, 'increasePurchase']);
-    Route::post('updateproductalldatapurchases', [ProductsController::class, 'updateproductalldatapurchases']);
-
-    Route::get('get_all_products_in_orderto_supplier/{order_id}', [ProductsController::class, 'get_all_products_in_orderto_supplier']);
-    Route::get('changePaymethodPurchase/{id}/{paymendMethod}', [ProductsController::class, 'changePaymethodIPurchases']);
-
-
-
-
-    //end product
-
-//start transfer money to main branch
-
-Route::post('Transfertomainbranch', [TransferMoneyToMainbranchController::class, 'store']);
-Route::post('updateTransfertomainbranch', [TransferMoneyToMainbranchController::class, 'updateTransfertomainbranch']);
-Route::post('updateTransfertomainbranchnotconfirm', [TransferMoneyToMainbranchController::class, 'updateTransfertomainbranchnotconfirm']);
-Route::get('confirmTransfarToMainBranch/{id}', [TransferMoneyToMainbranchController::class, 'show']);
-Route::get('rejectTransfarToMainBranch/{id}', [TransferMoneyToMainbranchController::class, 'rejectTransfarToMainBranch']);
-Route::get('pendingtransfers', [TransferMoneyToMainbranchController::class, 'pendingtransfers']);
-Route::post('print_Transfer_Main_Branch', [TransferMoneyToMainbranchController::class, 'print_Transfer_Main_Branch']);
-
-
-
-
-//end 
-
-
-    //++++++++++++++++++
-    //accountes
-
-    Route::get('voncher', [AcountesController::class, 'voncher']);
-    Route::get('convertcashboxToBank', [AcountesController::class, 'convertcashboxToBank']);
-    Route::get('Transfertomainbranch', [AcountesController::class, 'transferMainBranch']);
-    Route::get('confirmTransfertomainbranch', [AcountesController::class, 'confirmTransfertomainbranch']);
-    Route::get('cashEcprnse', [AcountesController::class, 'cashEcprnse']);
-    Route::get('income', [AcountesController::class, 'income']);
-    Route::get('go_to_bank', [AcountesController::class, 'go_to_bank']);
-    Route::post('Add_blance_from_bank', [AcountesController::class, 'Add_blance_from_bank']);
-    Route::post('updateAdd_blance_from_bank', [AcountesController::class, 'updateAdd_blance_from_bank']);
-    Route::post('convertcashboxToBank', [AcountesController::class, 'SearchconvertcashboxToBank']);
-    Route::post('printconvertcashboxToBank', [AcountesController::class, 'printconvertcashboxToBank']);
-    
-    Route::get('reciept_decoument', [AcountesController::class, 'reciept_decoument']);
-
-
-
-    Route::get('Transfer_cash_to_next_day', [AcountesController::class, 'Transfer_cash_to_next_day']);
-    Route::post('/Transfercashto_the_next_day', [AcountesController::class, 'Transfercashto_the_next_day']);
-    Route::post('/updatedecoumentcashNextDay', [AcountesController::class, 'updatedecoumentcashNextDay']);
-
-
-
-    Route::post('/print_reciept', [AcountesController::class, 'print_voucher']);
-    Route::post('/print_reciept_ducoument', [AcountesController::class, 'print_reciept_ducoument']);
-    Route::post('/print_expansedecoument', [AcountesController::class, 'print_expansedecoument']);
-
-
-
-
-    //end accountes
-
-
-
-
-
-
-    //++++++++++++++++++++
-    //Credittransactions
-
-
-    Route::post('Credittransactions', [CredittransactionsController::class, 'create']);
-    Route::post('updateVoncher', [CredittransactionsController::class, 'updateVoncher']);
-    Route::post('reciepttransactions', [CredittransactionsController::class, 'store']);
-
-    Route::post('updaterecieptdecoument', [CredittransactionsController::class, 'updaterecieptdecoument']);
-
-
-
-    //endCredittransactions
-
-
-
-
-    //+++++++++++++++++++
-    //Expenses
-
-    Route::post('Expenses', [ExpensesController::class, 'store']);
-    Route::post('updateExpenses', [ExpensesController::class, 'updateExpenses']);
-    Route::post('ExpensesOwner', [ExpensesController::class, 'ExpensesOwner']);
-
-
-
-    //end Expenses
-
-
-
-
-    //+++++++++++++++++++
-    //invoices
-    Route::post('AddInvoices', [InvoicesController::class, 'store']);
-    Route::post('Receipt', [InvoicesController::class, 'Receipt']);
-    Route::post('EditInvoices', [InvoicesController::class, 'edit']);
-    Route::post('updateproductallDataInvoices', [InvoicesController::class, 'updateproductallDataInvoices']);
-    Route::post('editRecipt', [InvoicesController::class, 'editRecipt']);
-    Route::post('returnAll', [InvoicesController::class, 'returnAll']);
-
-    Route::post('increaseProduct', [InvoicesController::class, 'increaseProduct']);
-    Route::get('/makeTotalDiscont/{idInvoice}/{discountvalue}', [InvoicesController::class, 'makeTotalDiscont']);
-    Route::get('/confirmpaymentconfirmpayment/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', [InvoicesController::class, 'confirmpaymentconfirmpayment']);
-    Route::get('/updatepaymentconfirmpayment/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', [InvoicesController::class, 'updatepaymentconfirmpayment']);
-    Route::get('/updatepaymentconfirmpaymentpurchases/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', [InvoicesController::class, 'updatepaymentconfirmpaymentpurchases']);
-    Route::get('/updatepaymentconfirmpaymentReciept/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', [InvoicesController::class, 'updatepaymentconfirmpaymentReciept']);
-    Route::get('/cancelInvoiceDiscont/{idInvoice}', [InvoicesController::class, 'cancelInvoiceDiscont']);
-    Route::get('/getproductbyCode/{code}', [InvoicesController::class, 'getproductbyCode']);
-    Route::get('/getproductbyCodeandbranch/{branch}/{code}', [InvoicesController::class, 'getproductbyCodeandbranch']);
-    Route::post('/getByCode', [InvoicesController::class, 'getByCode']);
-    
-    Route::get('printInvoice/{id}', [InvoicesController::class, 'printInvoice']);
-    Route::get('saveInvoice/{id}', [InvoicesController::class, 'saveInvoice']);
-    Route::get('printreturnInvoice/{id}', [InvoicesController::class, 'printreturnInvoice']);
-    Route::get('showInvoice/{id}', [InvoicesController::class, 'showInvoice']);
-    Route::get('showInvoiceRecent/{id}', [InvoicesController::class, 'showInvoiceRecent']);
-    Route::get('showRecieptRecent/{id}', [InvoicesController::class, 'showRecieptRecent']);
-    
-    Route::post('printInvoice', [InvoicesController::class, 'printInvoice']);
-    Route::post('return_sale', [InvoicesController::class, 'return_sale']);
-    Route::get('return_sale', [InvoicesController::class, 'index']);
-    Route::post('update_return_sale', [InvoicesController::class, 'update_return_Sale']);
-    Route::post('printReceiptToStorehouse', [InvoicesController::class, 'printReceiptToStorehouse']);
-    Route::get('changePaymethodIninvoice/{id}/{paymendMethod}', [InvoicesController::class, 'changePaymethodIninvoice']);
-    Route::get('changechustomer/{id}/{paymendMethod}', [InvoicesController::class, 'changechustomerInInvoice']);
-    Route::post('updatecustomerDataInvoice', [InvoicesController::class, 'updatecustomerDataInvoice']);
-    Route::post('updatecustomerDataInvoicepurchases', [InvoicesController::class, 'updatecustomerDataInvoicepurchases']);
-    Route::post('updatecustomerDataRecipt', [InvoicesController::class, 'updatecustomerDataRecipt']);
-
-
-
-
-
-    //endinvoices
-
-
-
-
-
-    //++++++++++++++++++++++++++++
-    //supllier
-
-
-    Route::get('Purchase_order_of_resources', [SupllierController::class, 'index']);
-    Route::get('getsupllier/{id}', [SupllierController::class, 'show']);
-    Route::get('purchasesShow/{id}', [SupllierController::class, 'purchasesShow']);
-    Route::post('printProductToSupllier', [SupllierController::class, 'edit']);
-    Route::post('printProductToSupllierOrder', [SupllierController::class, 'printProductToSupllierOrder']);
-
-    Route::get('printProductToSupllier/{id}', [SupllierController::class, 'prindorderToSupplier']);
-    Route::post('Purchase_returns_Data', [ProductsController::class, 'Purchase_returns_Data']);
-
-
-
-
-
-    //end supplier
-    //+++++++++++++++++++++++++++
-    //users
-
-    Route::get('getallusers', [AdminController::class, 'show']);
-    Route::get('updateuser/{id}', [AdminController::class, 'edit']);
-    Route::get('deleteuser/{id}', [AdminController::class, 'destroy']);
-
-
-    //end user
-
-
-
-
-
-    //+++++++++++++++++++++++++++
-    //customer
-
-
+    // 2. مجموعة مسارات Delivery Notes
+    Route::controller(DeliveryNoteController::class)->prefix('delivery-notes')->as('delivery-notes.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
+        Route::get('/print/{id}', 'print')->name('print');
+        Route::delete('/delete/{id}', 'destroy')->name('delete');
+        Route::get('/{id}/items', 'getItems')->name('get-items');
+    });
+    Route::get('/products-search', [DeliveryNoteController::class, 'searchProducts'])->name('products.search');
+    Route::get('/get-customers-ajax', [DeliveryNoteController::class, 'getCustomers'])->name('customers.ajax');
+
+    // 3. مجموعة مسارات المشتريات (Purchases & Base Products Controller)
+    Route::controller(ProductsController::class)->group(function () {
+        Route::group(['prefix' => 'purchases', 'as' => 'purchases.'], function () {
+            Route::get('/download-template', 'downloadTemplate')->name('download_template');
+            Route::post('/import-ajax', 'importPurchasesAjax')->name('import_ajax');
+        });
+        // --- مسارات المبيعات (التي أضفتها أنت الآن) ---
+        Route::group(['prefix' => 'sales', 'as' => 'sales.'], function () {
+            Route::get('/download-template', 'downloadSalesTemplate')->name('download_template');
+            Route::post('/import-ajax', 'importSalesAjax')->name('import_ajax');
+        });
+        // مسارات المشتريات والأسعار المضافة حديثاً
+        Route::get('getproductspricetocustomer', 'showProductsPrice');
+        Route::get('getproductsprice', 'getProductsPriceFromSupplier');
+        Route::get('getproduct/{id}', 'show');
+        Route::get('savepurchase/{id}/{payment}/{supplier}/{shipping}/{date}/{another_bank}', 'savepurchase');
+        Route::get('getProductdJsonDecode/{id}', 'getProductdJsonDecode');
+        Route::get('updateorder_purchase/{id}', 'updateorder_purchase');
+        Route::get('Purchase_returns', 'Purchase_returns');
+        Route::get('purchases', 'purchases');
+        Route::post('printavaliableproduct', 'create');
+        Route::get('printavaliableproductprice', 'printProductPriceToCustomer');
+        Route::post('printproductprice', 'printProductPrice');
+        Route::post('print_all_products_price', 'print_all_products_price');
+        Route::post('save_purchase_order ', 'save_purchase_order');
+        Route::post('Addproducttopurchases', 'Addproducttopurchases');
+        Route::post('purchaseproduct_update', 'update');
+        Route::post('returnAllpurchase', 'returnAllpurchase');
+        Route::post('purchaseproduct_delete', 'destroy');
+        Route::get('goToReceipt', 'goToReceipt');
+        Route::get('update_offer_price_supplier/{id}', 'update_offer_price_supplier');
+        Route::post('order_price_from_suppliers', 'order_price_from_suppliers');
+        Route::post('report_offer_price_customer', 'AddproductPriceToCustomer');
+        Route::post('AddproductPriceToCustomer', 'AddproductPriceToCustomer');
+        Route::post('print_order_perice_to_customer', 'print_order_perice_to_customerByPost');
+        Route::get('report_offer_price_customer', 'print_order_perice_to_customer');
+        Route::get('set_customer_quotation/{id}/{customer}', 'set_customer_quotation');
+        Route::post('updatePurchase', 'updatePurchase');
+        Route::post('updatePurchaseOrder', 'updatePurchaseOrder');
+        Route::post('updatePurchaseOrderToIncrease', 'updatePurchaseOrderToIncrease');
+        Route::get('/makeTotalDiscontpurchases/{idInvoice}/{discountvalue}', 'makeTotalDiscontpurchases');
+        Route::get('/makeTotalDiscontOferprice/{idInvoice}/{discountvalue}', 'makeTotalDiscontOferprice');
+        Route::get('/cancelInvoiceDiscontpurcgases/{idInvoice}', 'cancelInvoiceDiscontpurcgases');
+        Route::post('increasePurchase', 'increasePurchase');
+        Route::post('uploadfilepurchases', 'uploadfilepurchases');
+        Route::post('updateproductalldatapurchases', 'updateproductalldatapurchases');
+        Route::get('get_all_products_in_orderto_supplier/{order_id}', 'get_all_products_in_orderto_supplier');
+        Route::get('getinvoicesbyspplluer/{order_id}', 'getinvoicesbyspplluer');
+        Route::get('changePaymethodPurchase/{id}/{paymendMethod}', 'changePaymethodIPurchases');
+
+        // المسارات القديمة التابعة لنفس الكنترولر
+        Route::get('/itemcards/search', 'search')->name('itemcards.search');
+        Route::get('/clientnamesearch/search', 'clientnamesearch')->name('clientnamesearch.search');
+        Route::get('/suppliernamesearch/search', 'suppliernamesearch')->name('suppliernamesearch.search');
+        Route::get('/searchfinancial_accounts/search', 'searchfinancial_accounts')->name('searchfinancial_accounts.search');
+        Route::get('/getByCodenew/{barcode}', 'getByCodenew')->name('getByCodenew');
+        Route::get('/generate_barcode/{id}', 'generate_barcode')->name('admin.itemcard.generate_barcode');
+        Route::post('save_invoice_purchase', 'save_invoice_purchase');
+        Route::post('save_invoice_qutation', 'save_invoice_qutation');
+        Route::get('show_or_not_number/{id}/{statuse}', 'show_or_not_number');
+        Route::get('preinvoiceprint/{id}', 'print_preinvoice_to_customer');
+        Route::get('delete_offer_price/{id}', 'delete_offer_price');
+        Route::get('delete_purchase_invoice/{id}', 'delete_purchase_invoice');
+        Route::get('OfferPricesTocustomer_for_update/{id}', 'OfferPricesTocustomer_for_update');
+        Route::get('/export-products/{branch_id}', 'exportAllBranchs')->name('products.export');
+        Route::get('previous_deliver_Invoices', 'previous_deliver_Invoices');
+        Route::get('getAllinvices_deliveryajax', 'getAllinvices_deliveryajax');
+        Route::get('getinvoicesbycustomerdelivery/{date}', 'getinvoicesbycustomerdelivery');
+        Route::get('searchaboutinvoiceByIdfunction_delivery/{date}', 'searchaboutinvoiceByIdfunction_delivery');
+        Route::get('replaceproducts/{branch_id}/{productId}', 'replaceproducts');
+        Route::get('make_Note/{id}/{note}', 'make_Note');
+        Route::get('find_account/{id}', 'find_account');
+        Route::get('/updateofficebyidforupdate/{id}', 'updateofficebyidforupdate');
+        Route::post('/product_branchs_id_ajax', 'product_branchs_id_ajax');
+        Route::post('/updateproductallDataofferprice', 'updateproductallDataofferprice');
+        Route::get('/generate_pdf_qoute/{id}', 'generate_pdf_qoute');
+        Route::get('/updatepurchasesbyid/{id}', 'updatepurchasesbyid');
+        Route::get('getAllinvicesapurchasesjax', 'getAllinvicesapurchasesjax');
+        Route::get('searchaboutinvoiceByIdfunctionpurchases/{date}', 'searchaboutinvoiceByIdfunctionpurchases');
+        Route::get('getinvoicesbycustomer/{date}', 'getinvoicesbycustomer');
+        Route::get('getinvoicesbypaymentmethod/{pay}',  'getinvoicesbypayment');
+        Route::get('goToSale', 'goToSale');
+        Route::get('goToSaleBypage', 'goToSaleByPage');
+        Route::get('searchaboutproduct/{searchtext}', 'searchaboutproduct');
+        Route::get('/updatequtation/{id}', 'updatequtation');
+        Route::get('product_mix', 'product_mix');
+        Route::get('showAllproductpaginate', 'showAllproductpaginate');
+        Route::get('getproductbyid/{id}', 'getproductbyid');
+        Route::get('searchAllproductpaginate/{searchtext}', 'searchAllproductpaginate');
+        Route::get('searchAllproductpaginatenew/{searchtext}', 'searchAllproductpaginatenew');
+        Route::post('searchAllproductpaginatenew_by_post', 'searchAllproductpaginatenew_by_post');
+        Route::get('searchAllInvoicespaginatenew/{date}', 'searchAllInvoicespaginatenew');
+        Route::get('searchaboutinvoiceByIdfunction/{date}', 'searchaboutinvoiceByIdfunction');
+        Route::get('searchaboutinvoice_pendding_ByIdfunction/{date}', 'searchaboutinvoice_pendding_ByIdfunction');
+        Route::get('getinvoices_bending_bycustomer/{date}', 'getinvoices_bending_bycustomer');
+        Route::get('getinvoices_bending_bydate/{date}', 'getinvoices_bending_bydate');
+        Route::get('searchaboutReciptByIdfunction/{date}', 'searchaboutReciptByIdfunction');
+        Route::get('searchAllRecieptspaginatenew/{date}', 'searchAllRecieptspaginatenew');
+        Route::get('Allproductpaginatenew', 'Allproductpaginatenew');
+        Route::get('getAllinvicesajax', 'getAllinvicesajax');
+        Route::get('getAllRecieptsjax', 'getAllRecieptsjax');
+        Route::get('searchChooseProductpaginatenew/{searchtext}/{branch_id}', 'searchChooseProductpaginatenew');
+        Route::get('ChooseProductpaginatenew/{branch_id}', 'ChooseProductpaginatenew');
+        Route::get('searchChooseProductpaginatenewSale/{searchtext}/{branch_id}', 'searchChooseProductpaginatenewSale');
+        Route::post('searchChooseProductpaginatenewSaleBypost', 'searchChooseProductpaginatenewSaleBypost');
+        Route::post('searchChooseProductpaginatenewpurchaseBypost', 'searchChooseProductpaginatenewpurchaseBypost');
+        Route::get('ChooseProductpaginatenewSale/{branch_id}', 'ChooseProductpaginatenewSale');
+        Route::get('showAllproductpaginatepurchase/{branchId}', 'showAllproductpaginatepurchase');
+        Route::get('searchAllproductpaginatepurchase/{branchId}/{searchtext}', 'searchAllproductpaginatepurchase');
+        Route::get('searchaboutproductwithBranchId/{searchtext}/{branchId}', 'searchaboutproductwithBranchId');
+        Route::post('ChooseProductpaginatenewupdate', 'ChooseProductpaginatenewupdate');
+        Route::get('printReturnpurchases/{id}', 'printReturnpurchases');
+        Route::get('ShowAllNotifications', 'ShowAllNotifications');
+        Route::get('showAllProducts', 'showAllProducts');
+        Route::get('showAllProducts_IN_Wherehouse', 'showAllProducts_IN_Wherehouse');
+        Route::get('previousPurchasesInvoices', 'previousPurchasesInvoices');
+        Route::get('previousSalesInvoices', 'previousSalesInvoices');
+        Route::get('previousRecieptInvoices', 'previousRecieptInvoices');
+        Route::get('printOrderPriceFromSupplier/{id}', 'printOrderPriceFromSupplier');
+        Route::post('printOrderPriceFromSupplier', 'printOrderPriceFromSupplierBypost');
+        Route::get('getproductsquntitytocustomer', 'index');
+        Route::get('/deleteitem/{id}', 'deleteitem');
+        Route::post('/product_group_ajax', 'product_group_ajax');
+        Route::post('/product_sale_group_ajax', 'product_sale_group_ajax');
+        Route::get('/detproductbycode/{idInvoice}/{branch}', 'detproductbycode');
+        Route::get('getallpurshasesfromsupplier/{id}', 'getallpurshasesfromsupplier');
+        Route::get('operationproducts/{branch_id}/{productId}', 'operationproducts');
+        Route::get('openfile/{path}', 'openfilefile');
+    });
+
+    // 4. مجموعة تحويل الأموال إلى الفرع الرئيسي (Transfer Money To Main Branch)
+    Route::controller(TransferMoneyToMainbranchController::class)->group(function () {
+        Route::post('Transfertomainbranch', 'store');
+        Route::post('updateTransfertomainbranch', 'updateTransfertomainbranch');
+        Route::post('updateTransfertomainbranchnotconfirm', 'updateTransfertomainbranchnotconfirm');
+        Route::get('confirmTransfarToMainBranch/{id}', 'show');
+        Route::get('rejectTransfarToMainBranch/{id}', 'rejectTransfarToMainBranch');
+        Route::get('pendingtransfers', 'pendingtransfers');
+        Route::post('print_Transfer_Main_Branch', 'print_Transfer_Main_Branch');
+    });
+
+    // 5. الحسابات والعمليات النقدية والبنكية (Accounts & Cash Box)
+    Route::controller(AcountesController::class)->group(function () {
+        Route::get('Statement_of_Changes_in_Equity_Report', 'Statement_of_Changes_in_Equity_Report');
+        Route::get('cashFlowStatement', 'cashFlowStatement');
+        Route::get('get_all_kid_yaomy_jax', 'get_all_kid_yaomy_jax');
+        Route::get('search_by_decoumentNo_kid_yomy/{id}', 'search_by_decoumentNo_kid_yomy');
+        Route::get('Cash_withdrawal_from_the_bank', 'Cash_withdrawal_from_the_bank');
+        Route::get('voncher', 'voncher');
+        Route::get('get_all_send_kabd_jax', 'get_all_send_kabd_jax');
+        Route::get('get_all_send_serf_jax', 'get_all_send_serf_jax');
+        Route::get('opining_balnce_ajax', 'opining_balnce_ajax');
+        Route::get('convertcashboxToBank', 'convertcashboxToBank');
+        Route::get('Transfertomainbranch', 'transferMainBranch');
+        Route::get('confirmTransfertomainbranch', 'confirmTransfertomainbranch');
+        Route::get('cashEcprnse', 'cashEcprnse');
+        Route::get('income', 'income');
+        Route::get('go_to_bank', 'go_to_bank');
+
+        Route::post('cashFlowStatement', 'cashFlowStatementSearch')->name('reports.cashFlowStatement');
+        Route::post('changesInEquity', 'changesInEquity')->name('reports.changes_in_equity');
+        Route::post('Add_blance_from_bank', 'Add_blance_from_bank');
+        Route::post('updateAdd_blance_from_bank', 'updateAdd_blance_from_bank');
+        Route::post('convertcashboxToBank', 'SearchconvertcashboxToBank');
+        Route::post('printconvertcashboxToBank', 'printconvertcashboxToBank');
+        Route::get('reciept_decoument', 'reciept_decoument');
+        Route::get('Transfer_cash_to_next_day', 'Transfer_cash_to_next_day');
+        Route::post('/Transfercashto_the_next_day', 'Transfercashto_the_next_day');
+        Route::post('/updatedecoumentcashNextDay', 'updatedecoumentcashNextDay');
+        Route::post('/print_reciept', 'print_voucher');
+        Route::post('/print_reciept_ducoument', 'print_reciept_ducoument');
+        Route::post('/print_expansedecoument', 'print_expansedecoument');
+        Route::get('/generate_pdf_reciept_ducoument/{id}', 'generate_pdf');
+    });
+
+    // 6. السحوبات النقدية من البنك (Cash Withdrawal From Bank)
+    Route::controller(CashWithdrawalFromTheBankController::class)->group(function () {
+        Route::post('Cash_withdrawal_from_the_bank', 'Cash_withdrawal_from_the_bank');
+        Route::post('printwithdrawal_from_the_bank', 'printwithdrawal_from_the_bank');
+    });
+
+    // 7. مجموعة السندات والقيود اليومية والافتتاحية (Credit Transactions)
+    Route::controller(CredittransactionsController::class)->group(function () {
+        Route::get('get_And_Delete_delyrecord/{id}', 'get_And_Delete_delyrecord');
+        Route::get('Opening_entry', 'Opening_entry');
+        Route::get('search_by_decoumentNo_send_abd/{id}', 'search_by_decoumentNo_send_abd');
+        Route::get('search_by_decoumentNo_send_serf/{id}', 'search_by_decoumentNo_send_serf');
+        Route::post('create_daily_record', 'daily_record');
+        Route::post('updatedelyrecord', 'updatedelyrecord');
+        Route::post('create_Opening_entry', 'create_Opening_entry');
+        Route::get('Daily_record', 'index');
+        Route::get('save_Daily_record/{id}', 'save_Daily_record');
+        Route::get('save_Opening_entry/{id}', 'save_Opening_entry');
+        Route::get('getAndUpdatevoncher/{id}', 'getAndUpdatevoncher');
+        Route::get('delete_voncher/{id}', 'delete_voncher');
+        Route::get('getAndUpdate_reciptdecument/{id}', 'getAndUpdate_reciptdecument');
+        Route::get('getAndUpdate_delyrecord/{id}', 'getAndUpdate_delyrecord');
+        Route::get('delete_record_by_id/{id}', 'delete_record_by_id');
+        Route::post('Credittransactions', 'create');
+        Route::post('updateVoncher', 'updateVoncher');
+        Route::post('reciepttransactions', 'store');
+        Route::post('updaterecieptdecoument', 'updaterecieptdecoument');
+        Route::post('print_daily_record', 'print_daily_record');
+        Route::post('print_Opening_entry', 'print_Opening_entry');
+
+        // المسارات السابقة للـ الكنترولر
+        Route::post('/vocher.store', 'store_kabt_Decument')->name('vocher.store');
+        Route::delete('/voucher/delete-full/{sent_abd_count}', 'destroy_full_voucher');
+        Route::get('voucher/edit/{sent_abd_count}', 'edit_full_voucher');
+        Route::get('general_budget', 'general_budget');
+        Route::post('/general_budget_search', 'budgetsheet')->name('budgetsheet');
+        Route::get('getDetailsJS_Kabd/{serf_count}', 'getDetailsJS_Kabd');
+        Route::post('/voucher-update-all', 'updateAllVoucher')->name('voucher.update.all');
+        Route::get('get-receipt-details/{serf_count}', 'getReceiptDetails');
+        Route::post('/receipt-update/{id}', 'update_Serf_Decument')->name('receipt.update');
+        Route::delete('/receipt-delete/{id}', 'destroy_Serf_Decument')->name('receipt.delete');
+        Route::get('/get-entry-details/{id}', 'getEntryDetails');
+        Route::delete('/opening-entry/delete/{id}', 'delete_Opening_entry')->name('opening_entry.delete');
+        Route::post('/opening-entry/store', 'create_Opening_entry_new')->name('opening_entry.store');
+        Route::post('/save_opening_entry', 'store')->name('save_opening_entry');
+        Route::post('/receipt-store', 'store_Serf_Decument')->name('receipt.store');
+        Route::get('/get_latest_journals', 'getLatestJournals');
+        Route::get('/get_journal_details/{id}', 'get_details');
+        Route::get('/journal_delete/{id}', 'journal_delete')->name('journal.delete');
+        Route::post('/journal/store', 'daily_record_new')->name('journal.store');
+    });
+
+    // 8. المصاريف والأعباء (Expenses)
+    Route::controller(ExpensesController::class)->group(function () {
+        Route::get('getAndUpdateExpenses/{id}', 'getAndUpdateExpenses');
+        Route::post('Expenses', 'store');
+        Route::post('updateExpenses', 'updateExpenses');
+        Route::post('ExpensesOwner', 'ExpensesOwner');
+    });
+
+    // 9. مجموعة مسارات الفواتير والمبيعات (Invoices)
+    Route::controller(InvoicesController::class)->group(function () {
+        Route::get('/employee-invoices-today', 'employeeInvoicesToday')
+            ->name('dashboard.employee-invoices-today');
+        Route::get('/search-invoices-by-date-employee', 'searchInvoicesByDateEmployee')
+            ->name('dashboard.search-invoices');
+        Route::get('/generate_pdf_customer_list', 'generate_pdf_customer_list');
+        Route::get('/generate_return_sale_pdf/{id}', 'generate_return_sale_pdf');
+        Route::post('AddInvoices', 'store');
+        Route::post('Receipt', 'Receipt');
+        Route::post('EditInvoices', 'edit');
+        Route::post('updateproductallDataInvoices', 'updateproductallDataInvoices');
+        Route::post('editRecipt', 'editRecipt');
+        Route::post('returnAll', 'returnAll');
+        Route::post('increaseProduct', 'increaseProduct');
+        Route::get('/makeTotalDiscont/{idInvoice}/{discountvalue}', 'makeTotalDiscont');
+        Route::get('/makenoteoninvoice/{idInvoice}/{notecontent}', 'makenoteoninvoice');
+        Route::get('/confirmpaymentconfirmpayment/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}/{customerId}/{numbershowstatus}/{date}/{anotherbank}/{p_o}', 'confirmpaymentconfirmpayment');
+        Route::get('/updatepaymentconfirmpayment/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}/{another_bank}', 'updatepaymentconfirmpayment');
+        Route::get('/updatepaymentconfirmpaymentReciept/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', 'updatepaymentconfirmpaymentReciept');
+        Route::get('/cancelInvoiceDiscont/{idInvoice}', 'cancelInvoiceDiscont');
+        Route::get('/getproductbyCode/{code}', 'getproductbyCode');
+        Route::post('/getByCode', 'getByCode');
+        Route::get('showInvoiceRecent__pending/{id}', 'showInvoiceRecent__pending');
+        Route::get('printInvoice/{id}', 'printInvoice');
+        Route::get('saveInvoice/{id}', 'saveInvoice');
+        Route::get('printreturnInvoice/{id}', 'printreturnInvoice');
+        Route::get('returnsalesprinter/{id}', 'returnsalesprinter');
+        Route::get('showInvoice/{id}', 'showInvoice');
+        Route::get('showInvoiceRecent/{id}', 'showInvoiceRecent');
+        Route::get('showRecieptRecent/{id}', 'showRecieptRecent');
+        Route::get('getlastprice/{productId}/{customerId}', 'getlastprice');
+        Route::get('getlastprice_offer_price/{productId}/{customerId}', 'getlastprice_offer_price');
+        Route::post('printInvoice', 'printInvoice');
+        Route::post('updateReciept', 'updateReciept');
+        Route::post('return_sale', 'return_sale');
+        Route::get('return_sale', 'index');
+        Route::post('update_return_sale', 'update_return_Sale');
+        Route::post('printReceiptToStorehouse', 'printReceiptToStorehouse');
+        Route::get('changePaymethodIninvoice/{id}/{paymendMethod}', 'changePaymethodIninvoice');
+        Route::get('changechustomer/{id}/{paymendMethod}', 'changechustomerInInvoice');
+        Route::post('updatecustomerDataInvoice', 'updatecustomerDataInvoice');
+        Route::post('updatecustomerDataRecipt', 'updatecustomerDataRecipt');
+        Route::post('reciptprinter', 'reciptprinter');
+        Route::get('/dashboard', 'dashboard')->name('dashboard');
+        Route::get('/home/branch-stats', 'branchStats')->name('home.branch-stats');
+
+        // المسارات السابقة للـ الكنترولر
+        Route::post('save_delivery_sale', 'save_delivery_sale');
+        Route::post('return_sale_delivery', 'return_sale_delivery');
+        Route::get('/delivery_product_to_customer', 'delivery_product_to_customer');
+        Route::get('/confirmpaymentconfirmpaymentdelivery_to_customer_withoud_tax_invoices/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}/{customerId}/{numbershowstatus}/{date}', 'confirmpaymentconfirmpaymentdelivery_to_customer_withoud_tax_invoices');
+        Route::get('showInvoiceRecentdelivery/{id}', 'showInvoiceRecentdelivery');
+        Route::post('print_Invoice_withod_tax', 'print_Invoice_withod_tax');
+        Route::post('update_return_sale_delivery', 'update_return_sale_delivery');
+        Route::get('delivery_printreturnInvoice/{id}', 'delivery_print_return_Invoice_return');
+        Route::get('/previousSales_not_sended_Invoices_all_branchs', 'previousSales_not_sended_Invoices_all_branchs');
+        Route::get('/getAllinvicesajax_send_zatca_not_all_beanchs', 'getAllinvicesajax_send_zatca_not_all_beanchs');
+        Route::get('previousSales_not_sended_Invoices', 'previousSales_not_sended_Invoices');
+        Route::get('previousSales_sended_Invoices', 'previousSales_sended_Invoices');
+        Route::get('getAllinvicesajax_send_zatca', 'getAllinvicesajax_send_zatca');
+        Route::get('getAllinvicesajax_send_zatca_not', 'getAllinvicesajax_send_zatca_not');
+        Route::get('dwonloadxml/{id}', 'dwonloadxml');
+        Route::get('sent_to_zatca_return_items/{id}', 'sent_to_zatca_return_items');
+        Route::get('sent_to_zatca/{id}', 'sent_to_zatca');
+        Route::get('sendzatca_fromsale/{id}', 'sendzatca_fromsale');
+        Route::get('/save_update_DateInvoice/{id}/{date}', 'save_update_DateInvoice');
+        Route::post('save_invoice_sale', 'save_invoice_sale');
+        Route::get('/delete_product/{id}', 'delete_product');
+        Route::get('/generate_pdf/{id}', 'generate_pdf');
+        Route::get('/pending_invoice/{id}', 'pending_invoice');
+        Route::get('/sales_pending/{id}', 'sales_pending');
+        Route::get('/update_pending_invoice/{id}', 'update_pending_invoice');
+        Route::get('/update_sales_pending/{id}', 'update_sales_pending');
+        Route::get('/get_invoice_peeding/{id}', 'get_invoice_peeding');
+        Route::get('/pending_invoice_previes', 'pending_invoice_previes');
+        Route::get('/geta_jax_Recent_Invoices_pending', 'geta_jax_Recent_Invoices_pending');
+        Route::get('/PreviousQuotes', 'PreviousQuotes');
+        Route::get('/searchpreviousquotes/{id}', 'searchPreviousQuotes');
+        Route::get('/getquotebycustomer/{id}', 'getquotebycustomer');
+        Route::get('/updateinvoicebyid/{id}', 'updateinvoicebyid');
+        Route::get('/updateinvoicebyidforsaleupdate/{id}', 'updateinvoicebyidforsaleupdate');
+        Route::get('/updatepaymentconfirmpaymentpurchases/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', 'updatepaymentconfirmpaymentpurchases');
+        Route::get('/get_all_customer', 'get_all_customer');
+        Route::get('/update_customer_name/{id}/{name}', 'update_customer_name');
+        Route::get('/updatepaymentconfirmpayment_in_quotation/{inviceId}/{cashamount}/{bankamount}/{creaditamount}/{Bank_transfer}/{payment}', 'updatepaymentconfirmpayment_in_quotation');
+    });
+
+    // 10. طلبات وعمليات الموردين (Suppliers Management)
+    Route::controller(SupllierController::class)->group(function () {
+        Route::get('Purchase_order_of_resources', 'index');
+        Route::get('getsupllier/{id}', 'show');
+        Route::get('purchasesShow/{id}', 'purchasesShow');
+        Route::post('printProductToSupllier', 'edit');
+        Route::post('printProductToSupllierOrder', 'printProductToSupllierOrder');
+        Route::get('printProductToSupllierOrder_pdf/{id}', 'printProductToSupllierOrder_pdf');
+        Route::get('printProductToSupllier/{id}', 'prindorderToSupplier');
+    });
+
+    // 11. لوحة تحكم الإدارة والمستخدمين (Admin Controller / Users Management)
+    Route::controller(AdminController::class)->group(function () {
+        Route::get('getallusers', 'show');
+        Route::get('updateuser/{id}', 'edit');
+        Route::get('deleteuser/{id}', 'destroy');
+    });
+
+
+    Route::resource('boms', BomController::class);
+    Route::get('/get-product-details/{id}', [BomController::class, 'getProductDetails'])->name('boms.product_details');
+
+
+    Route::resource('manufacturing_orders', ManufacturingOrderController::class);
+    Route::get('/get-bom-details/{id}', [ManufacturingOrderController::class, 'getBomDetails'])->name('manufacturing_orders.bom_details');
+
+    Route::resource('warehouses', WarehouseController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('units', UnitController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // صفحة تقارير التصنيع الرئيسي
+    Route::get('/manufacturing-reports', [ManufacturingReportController::class, 'index'])->name('manufacturing_reports.index');
+    // تقرير تكلفة أمر إنتاج محدد
+    Route::get('/manufacturing-reports/order-cost/{id}', [ManufacturingReportController::class, 'orderCostReport'])->name('manufacturing_reports.order_cost');
+
+    Route::resource('manufacturing_expenses', ManufacturingExpenseController::class);
+
+    Route::resource('material_issues', MaterialIssueController::class);
+
+    // مسار AJAX لجلب خامات أمر الإنتاج المنسوبة له فور اختياره
+    Route::get('/get-mo-materials/{id}', [MaterialIssueController::class, 'getMoMaterials'])->name('material_issues.mo_materials');
+
+    Route::resource('finished_goods_receipts', FinishedGoodsReceiptController::class);
+
+    // مسار AJAX لجلب تفاصيل المنتج التام والكميات التابعة لأمر الإنتاج
+    Route::get('/get-mo-receipt-details/{id}', [FinishedGoodsReceiptController::class, 'getMoReceiptDetails'])->name('finished_goods_receipts.mo_details');
+
+
+
+
+
+
+
+
+    // 12. إدارة العملاء الأساسية (Customers Management)
     Route::get('/getcustomer/{id}', [CustomersController::class, 'show']);
 
-
-
-
-    //endcustomer
-
-
-
-    //+++++++++++++++
-    //Reports
-    Route::get('/Customer_account_statement', [ReportController::class, 'Customer_account_statement']);
-    Route::post('/Customer_account_statement', [ReportController::class, 'search_Customer_account_statement']);
-    Route::get('/TransFerCashTothenNextDay', [ReportController::class, 'TransFerCashTothenNextDay']);
-    Route::post('/TransFerCashTothenNextDay', [ReportController::class, 'search_TransFerCashTothenNextDay']);
-    
-    Route::get('/Expired_Products', [ReportController::class, 'Expired_Products']);
-
-
-    Route::get('/Bank_Statement', [ReportController::class, 'Bank_Statement']);
-
-
-
-    Route::post('/bankDecument', [ReportController::class, 'searchbankDecument']);
-
-    Route::get('/ConvertBoxtobankReport', [ReportController::class, 'ConvertBoxtobankReport']);
-    Route::post('/ConvertBoxtobankReport', [ReportController::class, 'searchConvertBoxtobankReport']);
-    Route::get('/transactionsToMasterBranch', [ReportController::class, 'transactionsToMasterBranch']);
-    Route::post('/searchtransactionsToMasterBranch', [ReportController::class, 'searchtransactionsToMasterBranch']);
-    Route::get('/Bank_Transfer', [ReportController::class, 'Bank_Transfer']);
-    Route::post('/Bank_Transfer', [ReportController::class, 'search_Bank_Transfer']);
-    Route::get('/print_Bank_Transfer/{branch}/{start}/{end}', [ReportController::class, 'print_Bank_Transfer']);
-    Route::get('/print_products_Transfer/{branchfrom}/{branchto}/{start}/{end}', [ReportController::class, 'print_products_Transfer']);
-    Route::get('/Transfer_products', [ReportController::class, 'products_Transfer']);
-    Route::post('/search_Transfer_products', [ReportController::class, 'search_products_Transfer']);
-    Route::get('/print_Transfer_products/{invoiceId}', [ReportController::class, 'print_Transfer_products']);
-    
-    Route::post('/stockquantity', [ReportController::class, 'search_stockquantity']);
-    Route::get('/search_stockquantityPagination/{searchtext}/{branchId}', [ReportController::class, 'search_stockquantityPagination']);
-    Route::get('/stockquantityPagination/{branchId}/{chooseOperation}/{quantity}', [ReportController::class, 'stockquantityPagination']);
-    
-    Route::get('/employeeـsales', [ReportController::class, 'employeeـsales']);
-    Route::get('/showallBranchs', [ReportController::class, 'showallBranchs']);
-    Route::get('/salesـprofits', [ReportController::class, 'salesـprofits']);
-    Route::post('/salesReport', [ReportController::class, 'salesReportsearch']);
-    Route::post('/salesـprofits', [ReportController::class, 'salesـprofitssearch']);
-    Route::get('/salesReport', [ReportController::class, 'salesReport']);
-    Route::get('/Show_return_Sales_Details/{invoiceId}', [ReportController::class, 'Show_return_Sales_Details']);
-    
-    Route::post('/search_Requestـoffersـfromـsuppliers', [ReportController::class, 'search_Requestـoffersـfromـsuppliers']);
-    Route::post('/employeeSalesSearch', [ReportController::class, 'employeeSalesSearch']);
-    Route::get('/printInvoicesReport/{branch}/{paymethod}/{startat}/{endat}', [ReportController::class, 'printInvoicesReport']);
-    Route::get('/report_returns_sale', [ReportController::class, 'report_returns_sale']);
-    Route::post('/search_report_returns_sale', [ReportController::class, 'search_report_returns_sale']);
-    Route::get('/printreturnInvoicesReport/{branch}/{startat}/{endat}', [ReportController::class, 'print_return_Report']);
-    Route::get('/printReportProductSales/{branch}/{productId}/{startat}/{endat}', [ReportController::class, 'printReportProductSales']);
-    Route::get('/printReportemployeeSales/{userId}/{startat}/{endat}', [ReportController::class, 'printReportemployeeSales']);
-    Route::get('/printReportProfitSales/{branch_id}/{userId}/{startat}/{endat}', [ReportController::class, 'printReportProfitSales']);
-    Route::get('/print_report_order_from_supplier/{SupplierId}/{startat}/{endat}', [ReportController::class, 'print_report_order_from_supplier']);
-    Route::get('/printReportoffer_price_customer/{SupplierId}/{startat}/{endat}', [ReportController::class, 'printReportoffer_price_customer']);
-    Route::get('/Requestـoffersـfromـsuppliers', [ReportController::class, 'Requestـoffersـfromـsuppliers']);
-    Route::get('/product_sales', [ReportController::class, 'product_sales']);
-    Route::post('/product_sales', [ReportController::class, 'search_product_sales']);
-    Route::get('/report_offer_price_customer', [ReportController::class, 'report_offer_price_customer']);
-    Route::post('/show_offer_price_customer', [ReportController::class, 'show_offer_price_customer']);
-
-    Route::get('/Delivery_notes', [ReportController::class, 'Delivery_notes']);
-    Route::post('/Delivery_notes', [ReportController::class, 'search_Delivery_notes']);
-    Route::get('/printDelivery_notes/{orderId}/{startat}/{endat}', [ReportController::class, 'printDelivery_notes']);
-
-
-    Route::get('/Requestـaـquoteـfromـtheـsupplier', [ReportController::class, 'Requestـaـquoteـfromـtheـsupplier']);
-    Route::post('/Requestـaـquoteـfromـtheـsupplier', [ReportController::class, 'search_Requestـaـquoteـfromـtheـsupplier']);
-    Route::get('/print_Requestـaـquoteـfromـtheـsupplier/{branchId}/{supplier}/{startat}/{endat}', [ReportController::class, 'print_Requestـaـquoteـfromـtheـsupplier']);
-
-    Route::get('/Purchasesـfromـsuppliers', [ReportController::class, 'Purchasesـfromـsuppliers']);
-    Route::post('/Purchasesـfromـsuppliers', [ReportController::class, 'search_Purchasesـfromـsuppliers']);
-
-
-    
-
-
-    Route::get('/print_Purchasesـfromـsuppliers/{branch}/{pay}/{supplierId}/{startat}/{endat}', [ReportController::class, 'print_Purchasesـfromـsuppliers']);
-    Route::get('Refundـofـresourceـpurchases', [ReportController::class, 'Refundـofـresourceـpurchases']);
-
-    Route::post('/Refundـofـresourceـpurchases', [ReportController::class, 'search_Refundـofـresourceـpurchases']);
-    Route::get('/print_Refundـofـresourceـpurchases/{branch_id}/{startat}/{endat}', [ReportController::class, 'print_Refundـofـresourceـpurchases']);
-
-
-    Route::get('/purchasereports', [ReportController::class, 'purchasereports']);
-    Route::post('/purchasereports', [ReportController::class, 'search_purchasereports']);
-    Route::get('/print_purchasereports/{productId}/{startat}/{endat}', [ReportController::class, 'print_purchasereports']);
-
-    Route::get('/customerـpurchases', [ReportController::class, 'customerـpurchases']);
-    Route::post('/customerـpurchases', [ReportController::class, 'search_customerـpurchases']);
-    Route::get('/print_customerـpurchases/{branchId}/{customerId}/{startat}/{endat}', [ReportController::class, 'print_customerـpurchases']);
-
-    Route::get('/credit_collection', [ReportController::class, 'credit_collection']);
-    Route::post('/credit_collection', [ReportController::class, 'search_credit_collection']);
-    Route::get('/print_credit_collection/{userId}/{startat}/{endat}', [ReportController::class, 'print_credit_collection']);
-
-
-
-    Route::get('/supplierlist', [ReportController::class, 'supplierList']);
-    Route::get('/Customerlist', [ReportController::class, 'Customerlist']);
-    Route::get('/print_supplierlist/{userId}/{startat}/{endat}', [ReportController::class, 'print_supplierlist']);
-    Route::get('/print_customeList', [ReportController::class, 'print_customeList']);
-    Route::get('/Stocktaking', [ReportController::class, 'Stocktaking']);
-    Route::get('/Stocktakingpdf', [ReportController::class, 'Stocktakingpdf']);
-
-    Route::get('/print_SupplierList', [ReportController::class, 'print_supplierList']);
-
-
-
-    Route::get('/Supplier_credit_payment', [ReportController::class, 'Supplier_credit_payment']);
-    Route::post('/Supplier_credit_payment', [ReportController::class, 'search_Supplier_credit_payment']);
-    Route::get('/print_Supplier_credit_payment/{supplierId}/{startat}/{endat}', [ReportController::class, 'print_Supplier_credit_payment']);
-
-    Route::get('/shift_detailes', [ReportController::class, 'shift_detailes']);
-    Route::post('/shift_detailes', [ReportController::class, 'search_shift_detailes']);
-    Route::get('/print_shift_detailes/{branch_id}/{paumethod}/{startat}/{endat}', [ReportController::class, 'print_shift_detailes']);
-
-
-    Route::get('/Expensesreport', [ReportController::class, 'Expenses']);
-    Route::post('/Expensesreport', [ReportController::class, 'search_Expenses']);
-    Route::get('/printExpensesReport/{branch_id}/{reson}/{startat}/{endat}', [ReportController::class, 'printExpensesReportlast']);
-
-    Route::get('/stockquantity', [ReportController::class, 'stockquantity']);
-    Route::get('/printstockquantity/{branch_id}/{display}/{quantity}', [ReportController::class, 'printstockquantity']);
-
-
-    Route::get('/Best_selling_products', [ReportController::class, 'Best_selling_products']);
-    Route::post('/Best_selling_products', [ReportController::class, 'search_Best_selling_products']);
-    Route::get('/printBest_selling_products/{branch_id}/{startat}/{endat}', [ReportController::class, 'printBest_selling_products']);
-
-
-    Route::get('/VAT', [ReportController::class, 'VAT']);
-    Route::post('/VAT', [ReportController::class, 'search_VAT']);
-    Route::get('/print_VAT/{branch_id}/{startat}/{endat}', [ReportController::class, 'print_VAT']);
-
-
-
-
-    Route::get('/Customersـexceededـgraceـperiod', [ReportController::class, 'Customersـexceededـgraceـperiod']);
-
-    Route::get('/budgetsheet', [ReportController::class, 'budgetsheet']);
-    Route::post('/budgetsheet', [ReportController::class, 'search_budgetsheet']);
-
-
-    //endReport
-
-    //supProcesses
-
-
-    Route::get('/addnewProduct', [SupprocessesController::class, 'index']);
-    Route::post('/addnewProduct', [SupprocessesController::class, 'create_addnewProduct']);
-    Route::post('/addnewProductajax', [SupprocessesController::class, 'addnewProductajax']);
-    Route::post('/createnewcustomerajax', [SupprocessesController::class, 'createnewcustomerajax']);
-
-
-
-    Route::get('/addnewcustomer', [SupprocessesController::class, 'addnewcustomer']);
-    Route::post('/addnewcustomer', [SupprocessesController::class, 'create_addnewcustomer']);
-
-    Route::get('/updatecustomer', [SupprocessesController::class, 'Goupdatecustomer']);
-    Route::post('/updatecustomer', [SupprocessesController::class, 'updatecustomer']);
-    Route::get('getcustomer/{id}', [SupprocessesController::class, 'getcustomerdata']);
-
-
-    Route::get('/addnewsupplier', [SupprocessesController::class, 'addnewsupplier']);
-    Route::post('/addnewsupplier', [SupprocessesController::class, 'create_addnewsupplier']);
-    Route::post('/create_addnewsupplierajax', [SupprocessesController::class, 'create_addnewsupplierajax']);
-
-
-    Route::get('/updatesupplier', [SupprocessesController::class, 'Goupdatesupplier']);
-    Route::post('/updatesupplier', [SupprocessesController::class, 'updatesupplier']);
-    Route::get('getsupplier/{id}', [SupprocessesController::class, 'getsupplierdata']);
-
-
-    Route::get('/expenses_reason', [SupprocessesController::class, 'expenses_reason']);
-    Route::post('/expenses_reason', [SupprocessesController::class, 'create_expenses_reason']);
-
-
-    Route::get('/stockAdjastment', [SupprocessesController::class, 'stockAdjastment']);
-    Route::post('/stockAdjastment', [SupprocessesController::class, 'stock_update']);
-
-
-    Route::get('/product_movement', [SupprocessesController::class, 'product_movement']);
-    Route::get('/product_damage', [SupprocessesController::class, 'product_damage']);
-    Route::post('/product_damage_add', [SupprocessesController::class, 'product_damage_add']);
-    Route::post('/product_movement', [SupprocessesController::class, 'update_product_movement']);
-
-
-    //end Supprocesses
-
-
-    //usersAndBranch
-
-    Route::get('/addbranch', [BranchsController::class, 'index']);
-    Route::post('/addbranch', [BranchsController::class, 'create']);
-
-
-
-
-
-
-
-
-
-
-
-    //endUsersAndBranch
-
-
-    //show branches
-
-    Route::get('/showbranches', [BranchsController::class, 'show']);
-    Route::post('/updatebranch', [BranchsController::class, 'updatebranch']);
-
-
-
-    //end branches
-
-    //AVT
-    Route::get('/avt', [AvtController::class, 'index']);
-    Route::post('/update_vat', [AvtController::class, 'update']);
-    Route::post('/New_avt', [AvtController::class, 'store']);
-    Route::post('/destory_avt', [AvtController::class, 'destroy']);
-
-
-
-
-
-    //END avt
-
-    //Hr
-
-    Route::get('/createNewEmployee', [EmployeeController::class, 'index']);
-    Route::post('/createNewEmployee', [EmployeeController::class, 'create']);
-    Route::get('/allEmployees', [EmployeeController::class, 'show']);
-
-
-    Route::get('/addnewDepartment', [EmployeeController::class, 'addnewDepartment']);
-    Route::post('/addnewDepartment', [EmployeeController::class, 'store']);
-
-    Route::get('/updateEmployee/{id}', [EmployeeController::class, 'updateEmployee']);
-    Route::post('/updateEmployee', [EmployeeController::class, 'update']);
-
-    Route::get('/Increaseـor_deduction', [EmployeeController::class, 'Increaseـor_deduction']);
-
-    Route::post('/Increaseـor_deduction', [EmployeeController::class, 'Increaseـor_deduction_add']);
-
-    Route::get('/salarydecoument', [EmployeeController::class, 'salarydecoument']);
-
-    Route::post('/print_decument_salary', [EmployeeController::class, 'print_decument_salary']);
-
-
-
-
-    //end Hr
-
-
-
-
-
-
-
-    // Home Screen
-    Route::get('/dashboard', function () {
-        //   return resource_purchases::whereDate('created_at','>=',(date("Y").'-02'.'-01'))->whereDate('created_at','<',(date("Y").'-03'.'-01'))->get();
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        return view('index');
-    })->name('dashboard');
-    Route::get('/{page}', function ($page) {
-
-        if (view()->exists($page)) {
-            return view($page);
-        } else {
-            return view('404');
-        }
+    // 13. مجموعة التقارير الشاملة (Reports)
+    Route::controller(ReportController::class)->group(function () {
+        Route::get('/account_statement', 'account_statement');
+        Route::get('/our_backup_database', 'serverDBBackup');
+        Route::get('/Daily_record_report', 'Daily_record_report');
+        Route::get('/product_sales_purchases', 'product_sales_purchases');
+        Route::post('/account_statement', 'search_account_statement');
+        Route::post('/product_sales_purchases', 'search_product_sales_purchases');
+        Route::post('/search_Daily_record_report', 'search_Daily_record_report');
+        Route::get('/Bank_Statement', 'Bank_Statement');
+        Route::post('/bankDecument', 'searchbankDecument');
+        Route::get('/ConvertBoxtobankReport', 'ConvertBoxtobankReport');
+        Route::post('/ConvertBoxtobankReport', 'searchConvertBoxtobankReport');
+        Route::get('/transactionsToMasterBranch', 'transactionsToMasterBranch');
+        Route::post('/searchtransactionsToMasterBranch', 'searchtransactionsToMasterBranch');
+        Route::get('/Bank_Transfer', 'Bank_Transfer');
+        Route::post('/Bank_Transfer', 'search_Bank_Transfer');
+        Route::get('/print_Bank_Transfer/{branch}/{start}/{end}', 'print_Bank_Transfer');
+        Route::get('/print_products_Transfer/{branchfrom}/{branchto}/{start}/{end}', 'print_products_Transfer');
+        Route::get('/Transfer_products', 'products_Transfer');
+        Route::post('/search_Transfer_products', 'search_products_Transfer');
+        Route::get('/print_Transfer_products/{invoiceId}', 'print_Transfer_products');
+        Route::get('/print_sales_and_purchases/{invoiceId}/{start}/{end}', 'print_sales_and_purchases');
+        Route::post('/stockquantity', 'search_stockquantity');
+        Route::get('/search_stockquantityPagination/{searchtext}/{branchId}', 'search_stockquantityPagination');
+        Route::get('/stockquantityPagination/{branchId}/{chooseOperation}/{quantity}', 'stockquantityPagination');
+        Route::get('/updatestockquentity', 'updatestockquentity');
+        Route::post('/updatestockquentity', 'search_updatestockquentity');
+        Route::get('/generate_customer_statment_pdf/{customerId}/{start}/{end}', 'generate_customer_statment_pdf');
+        Route::get('/employeeـsales', 'employeeـsales');
+        Route::get('/showallBranchs', 'showallBranchs');
+        Route::get('/wherehouse', 'wherehouse');
+        Route::get('/salesـprofits', 'salesـprofits');
+        Route::post('/salesReport', 'salesReportsearch');
+        Route::post('/salesـprofits', 'sales_profitssearch');
+        Route::get('/salesReport', 'salesReport');
+        Route::get('/Show_return_Sales_Details/{invoiceId}', 'Show_return_Sales_Details');
+        Route::get('/printInvoicesReportdetails/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printReportsaleswithoud_deatails');
+        Route::post('/search_Requestـoffersـfromـsuppliers', 'search_Request_offers_from_suppliers');
+        Route::post('/employeeSalesSearch', 'employeeSalesSearch');
+        Route::get('/printInvoicesReport/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printInvoicesReport');
+        Route::get('/Invoices_export/{branch}/{paymethod}/{startat}/{endat}', 'printInvoicesReport_export');
+        Route::get('/Invoices_purchases_export/{branch}/{paymethod}/{SUPPLIER}/{startat}/{endat}', 'Invoices_purchases_export');
+        Route::get('/printInvoicesReport_export/{branch}/{paymethod}/{startat}/{endat}', 'printInvoicesReport_export');
+        Route::get('/printInvoicesAllItemsWithReturned/{id}', 'printInvoicesAllItemsWithReturned');
+        Route::get('/report_returns_sale', 'report_returns_sale');
+        Route::get('/employeeـsales', 'employeeـsales');
+        Route::post('/search_report_returns_sale', 'search_report_returns_sale');
+        Route::get('/printreturnInvoicesReport/{branch}/{startat}/{endat}', 'print_return_Report');
+        Route::get('/printReportProductSales/{branch}/{productId}/{startat}/{endat}', 'printReportProductSales');
+        Route::get('/printReportemployeeSales/{userId}/{startat}/{endat}', 'printReportemployeeSales');
+        Route::get('/printReportProfitSales/{branch_id}/{userId}/{startat}/{endat}', 'printReportProfitSales');
+        Route::get('/print_report_order_from_supplier/{SupplierId}/{startat}/{endat}', 'print_report_order_from_supplier');
+        Route::get('/printReportoffer_price_customer/{SupplierId}/{startat}/{endat}', 'printReportoffer_price_customer');
+        Route::get('/Requestـoffersـfromـsuppliers', 'Requestـoffersـfromـsuppliers');
+        Route::get('/product_sales', 'product_sales');
+        Route::post('/product_sales', 'search_product_sales');
+        Route::get('/report_offer_price_customer', 'report_offer_price_customer');
+        Route::post('/show_offer_price_customer', 'show_offer_price_customer');
+        Route::get('/Delivery_notes', 'Delivery_notes');
+        Route::post('/Delivery_notes', 'search_Delivery_notes');
+        Route::get('/printDelivery_notes/{orderId}/{startat}/{endat}', 'printDelivery_notes');
+        Route::get('/Requestـaـquoteـfromـtheـsupplier', 'Requestـaـquoteـfromـtheـsupplier');
+        Route::post('/Requestـaـquoteـfromـtheـsupplier', 'search_Requestـaـquoteـfromـtheـsupplier');
+        Route::get('/print_Requestـaـquoteـfromـtheـsupplier/{branchId}/{supplier}/{startat}/{endat}', 'print_Requestـaـquoteـfromـtheـsupplier');
+        Route::get('/Purchasesـfromـsuppliers', 'Purchasesـfromـsuppliers');
+        Route::post('/Purchasesـfromـsuppliers', 'search_Purchases_from_suppliers');
+        Route::get('/print_Purchasesـfromـsuppliers/{branch}/{pay}/{supplierId}/{startat}/{endat}', 'print_Purchasesـfromـsuppliers');
+        Route::get('Refundـofـresourceـpurchases', 'Refundـofـresourceـpurchases');
+        Route::post('/Refundـofـresourceـpurchases', 'search_Refundـofـresourceـpurchases');
+        Route::get('/print_Refundـofـresourceـpurchases/{branch_id}/{startat}/{endat}', 'print_Refundـofـresourceـpurchases');
+        Route::get('/purchasereports', 'purchasereports');
+        Route::post('/purchasereports', 'search_purchasereports');
+        Route::get('/print_purchasereports/{productId}/{startat}/{endat}', 'print_purchasereports');
+        Route::get('/customerـpurchases', 'customerـpurchases');
+        Route::get('/purchasproducttocustomer', 'purchasproducttocustomer');
+        Route::post('/customerـpurchases', 'search_customerـpurchases')->name('customerـpurchases');
+        Route::post('/purchasproducttocustomer', 'searchpurchasproducttocustomer');
+        Route::get('/print_customerـpurchases/{branchId}/{customerId}/{startat}/{endat}', 'print_customerـpurchases');
+        Route::get('/credit_collection', 'credit_collection');
+        Route::post('/credit_collection', 'search_credit_collection');
+        Route::get('/print_credit_collection/{userId}/{startat}/{endat}', 'print_credit_collection');
+        Route::get('/supplierlist', 'supplierList');
+        Route::get('/Customerlist', 'Customerlist');
+        Route::get('/print_supplierlist/{userId}/{startat}/{endat}', 'print_supplierlist');
+        Route::get('/print_customeList', 'print_customeList');
+        Route::get('/Stocktaking/{id}', 'Stocktaking');
+        Route::get('/customerslist_export', 'customerslist_export');
+        Route::get('/supplierlist_export', 'supplierlist_export');
+        Route::get('/Stocktakingpdf', 'Stocktakingpdf');
+        Route::get('/print_SupplierList', 'print_supplierList');
+        Route::get('/Supplier_account_statement', 'Supplier_account_statement');
+        Route::post('/Supplier_account_statement', 'search_Supplier_account_statement');
+        Route::get('/Customer_account_statement', 'Customer_account_statement');
+        Route::post('/Customer_account_statement', 'search_Customer_account_statement');
+        Route::get('/TransFerCashTothenNextDay', 'TransFerCashTothenNextDay');
+        Route::post('/TransFerCashTothenNextDay', 'search_TransFerCashTothenNextDay');
+        Route::get('/Supplier_credit_payment', 'Supplier_credit_payment');
+        Route::post('/Supplier_credit_payment', 'search_Supplier_credit_payment');
+        Route::get('/print_Supplier_credit_payment/{supplierId}/{startat}/{endat}', 'print_Supplier_credit_payment');
+        Route::get('/shift_detailes', 'shift_detailes');
+        Route::post('/shift_detailes', 'search_shift_detailes');
+        Route::get('/print_shift_detailes/{branch_id}/{paumethod}/{startat}/{endat}', 'print_shift_detailes');
+        Route::get('/Expensesreport', 'Expenses');
+        Route::post('/Expensesreport', 'search_Expenses');
+        Route::get('/printExpensesReport/{branch_id}/{reson}/{startat}/{endat}', 'printExpensesReportlast');
+        Route::get('/financial_accounts_Export', 'financial_accounts_Export');
+        Route::get('/financial_accounts_Export_CSV', 'financial_accounts_Export_CSV');
+        Route::get('/stockquantity', 'stockquantity');
+        Route::get('/printstockquantity/{branch_id}/{display}/{quantity}/{loction}', 'printstockquantity');
+        Route::get('/Best_selling_products', 'Best_selling_products');
+        Route::post('/Best_selling_products', 'search_Best_selling_products');
+        Route::get('/printBest_selling_products/{branch_id}/{startat}/{endat}', 'printBest_selling_products');
+        Route::get('/VAT', 'VAT');
+        Route::post('/VAT', 'search_VAT');
+        Route::get('/print_VAT/{branch_id}/{startat}/{endat}', 'print_VAT');
+        Route::get('/Customersـexceededـgraceـperiod', 'Customersـexceededـgraceـperiod');
+        Route::get('/budgetsheet', 'budgetsheet');
+        Route::post('/budgetsheet', 'search_budgetsheet');
+        Route::get('/reports/budget/children', 'getAccountChildren')->name('reports.budget.children');
+        // المسارات السابقة للـ الكنترولر
+        Route::post('/export_sales_excel', 'exportExcel')->name('export.sales.excel');
+        Route::post('/printInvoicesReport_export_post', 'printInvoicesReport_export_post')->name('invoices.export.excel');
+        Route::get('/profit-loss-report', 'profitLossReport')->name('report.profit_loss');
+        Route::post('/profit-loss-report-search', 'searchProfitLossReport')->name('report.profit_loss.search');
+        Route::get('/delivery-profit-loss-report', 'deliveryprofitLossReport')->name('report.delivery_profit_loss');
+        Route::post('/delivery-profit-loss-report-search', 'deliverysearchProfitLossReport')->name('report.delivery_profit_loss.search');
+        Route::get('/profit_lose_export/{start}/{end}/{branch}', 'Profit_loss_export');
+        Route::get('/profit_and_lost', 'profit_and_lost');
+        Route::post('/profit_and_lost', 'search_profit_and_lost');
+        Route::get('/sel_product_DELIVERY', 'sel_product_DELIVERY');
+        Route::post('/salesReport_delivery', 'salesReport_delivery');
+        Route::get('/report_returns_sale_delivery', 'report_delivery_return');
+        Route::post('/report_returns_sale_delivery', 'search_report_returns_sale_delivery');
+        Route::post('/account_statement_model', 'search_account_statement_modal');
+        Route::get('/sales_product_by_date', 'sales_product_by_date');
+        Route::post('/sales_product_by_date', 'search_sales_product_by_date');
+        Route::get('/purchase_product_by_date', 'purchase_product_by_date');
+        Route::post('/purchase_product_by_date', 'search_purchase_product_by_date');
+        Route::get('/SalesPurchaseInPeriode', 'SalesPurchaseInPeriode');
+        Route::post('/SalesPurchaseInPeriode', 'search_SalesPurchaseInPeriode');
+        Route::get('/low_sell', 'low_sell');
+        Route::post('/low_sell', 'low_sell_search');
+        Route::get('/cost_center', 'cost_center');
+        Route::post('/cost_center_search', 'cost_center_search');
+        Route::get('/sales_and_return', 'sales_and_return');
+        Route::post('/sales_and_return', 'search_sales_and_return');
+        Route::get('/Customer_debt_restructuring', 'Customer_debt_restructuring');
+        Route::post('/Customer_debt_restructuring', 'search_Customer_debt_restructuring');
+        Route::get('/Supplier_debt_restructuring', 'Supplier_debt_restructuring');
+        Route::post('/Supplier_debt_restructuring', 'search_Supplier_debt_restructuring');
+        Route::get('/budgetsheet_general', 'budgetsheet_general');
+        Route::get('/year_sales_report', 'year_sales_report');
     });
+
+    // 14. العمليات المساعدة وإدخال البيانات (Supplementary Processes)
+    Route::controller(SupprocessesController::class)->group(function () {
+        Route::get('/show_groups', 'show_groups');
+        Route::get('/addnewProduct', 'index');
+        Route::post('/addnewProduct', 'create_addnewProduct');
+        Route::post('/create_products_group', 'create_products_group');
+        Route::post('/addnewProductajax', 'addnewProductajax');
+        Route::post('/createnewcustomerajax', 'createnewcustomerajax'); // تم تصحيح الميثود للمطابقة مع الكنترولر الفعلي
+        Route::get('/addnewcustomer', 'addnewcustomer');
+        Route::post('/addnewcustomer', 'create_addnewcustomer');
+        Route::get('/updatecustomer', 'Goupdatecustomer');
+        Route::post('/updatecustomer', 'updatecustomer');
+        Route::get('getcustomer/{id}', 'getcustomerdata');
+        Route::get('/addnewsupplier', 'addnewsupplier');
+        Route::post('/addnewsupplier', 'create_addnewsupplier');
+        Route::post('/create_addnewsupplierajax', 'create_addnewsupplierajax');
+        Route::get('/updatesupplier', 'Goupdatesupplier');
+        Route::post('/updatesupplier', 'updatesupplier');
+        Route::get('getsupplier/{id}', 'getsupplierdata');
+        Route::get('/expenses_reason', 'expenses_reason');
+        Route::post('/expenses_reason', 'create_expenses_reason');
+        Route::get('/stockAdjastment', 'stockAdjastment');
+        Route::post('/stockAdjastment', 'stock_update');
+        Route::get('/product_movement', 'product_movement');
+        Route::get('/product_damage', 'product_damage');
+        Route::post('/product_damage_add', 'product_damage_add');
+        Route::post('/product_movement', 'update_product_movement');
+        Route::get('/createnewcustomers', 'createnewcustomers');
+    });
+
+    // 15. إدارة وإضافة الفروع (Branches)
+    Route::controller(BranchsController::class)->group(function () {
+        Route::get('/addbranch', 'index');
+        Route::post('/addbranch', 'create');
+        Route::get('/get-child-branches', 'getChildBranches')->name('get.child.branches');
+        Route::post('/addwherehouse', 'addwherehouse');
+        Route::get('/showbranches', 'show');
+        Route::post('/updatebranch', 'updatebranch');
+    });
+
+    // 16. ضريبة القيمة المضافة (VAT - Avt Controller)
+    Route::controller(AvtController::class)->group(function () {
+        Route::get('/avt', 'index');
+        Route::post('/update_vat', 'update');
+        Route::post('/New_avt', 'store');
+        Route::post('/destory_avt', 'destroy');
+    });
+
+    // 17. الموارد البشرية وشؤون الموظفين (HR & Employee Management)
+    Route::controller(EmployeeController::class)->group(function () {
+        Route::get('/createNewEmployee', 'index');
+        Route::post('/createNewEmployee', 'create');
+        Route::get('/allEmployees', 'show');
+        Route::get('/addnewDepartment', 'addnewDepartment');
+        Route::post('/addnewDepartment', 'store');
+        Route::get('/updateEmployee/{id}', 'updateEmployee');
+        Route::post('/updateEmployee', 'update');
+        Route::get('/Increaseـor_deduction', 'Increaseـor_deduction');
+        Route::post('/Increaseـor_deduction', 'Increaseـor_deduction_add');
+        Route::get('/salarydecoument', 'salarydecoument');
+        Route::post('/print_decument_salary', 'print_decument_salary');
+    });
+
+    // 18. شجرة وإعدادات الحسابات المالية (Financial Accounts)
+    Route::controller(FinancialAccountsController::class)->group(function () {
+        Route::post('/update_account_details', 'updateDetails')->name('account.update_details');
+        Route::post('/update_account_status', 'updateStatus');
+        Route::post('/delete_account', 'destroyOrder');
+        Route::get('/financial_accounts', 'index');
+        Route::get('/tree', 'tree');
+        Route::get('/create_acount', 'create_new_acount');
+        Route::get('/getAllaccountsajax', 'ajax_choose_account');
+        Route::get('/update_acount/{id}', 'update_acount');
+        Route::post('/add_new_acount_finance', 'add_new_acount_finance');
+        Route::get('/getfinancialaccount/{id}', 'getfinancialaccount');
+        Route::get('/searchaboutaccountByname_numberfunction', 'searchaboutaccountByname_numberfunction');
+        Route::get('/searchaboutaccountBytype_function/{text}', 'searchaboutaccountBytype_function');
+        Route::get('/searchMaster_account_function/{text}', 'searchMaster_account_function');
+    });
+
+    // 19. مسارات خلطات المنتجات (Products Mix)
+    Route::controller(ProductsMixController::class)->group(function () {
+        Route::get('/getmixproduct/{code}', 'getmixproduct');
+        Route::post('/Addmixproduct', 'store');
+        Route::post('/updateproduct_mix_Increase', 'updateproduct_mix_Increase');
+        Route::post('/updateproduct_mix_decrease', 'updateproduct_mix_decrease');
+    });
+
+    // 20. نوع الحسابات (Account Types)
+    Route::get('/account_type', [AcountsTypeController::class, 'index']);
+
+    // 21. توصيل وتوريد الموردين والمستندات (Delivery & Suppliers)
+    Route::controller(DliveryController::class)->group(function () {
+        Route::get('recent_delivers', 'previousdelivers');
+        Route::get('getAlldeliversajax', 'getAlldeliversajax');
+        Route::get('getAlldeliversajaxbycustomer/{id}', 'getAlldeliversajaxbycustomer');
+        Route::get('/deliver_to_anoter_supplier', 'index');
+        Route::get('/confirmdelivery', 'confirmdelivery');
+        Route::post('/Addproduct_to_dlivery_supplier', 'store');
+        Route::post('/updateproductallDatadelivery', 'updateproductallDatadelivery');
+        Route::post('/print_delivery_to_anoter_supplier', 'print_delivery_to_anoter_supplier');
+        Route::post('/print_delivery_invoice', 'print_delivery_invoice');
+        Route::get('/deleteitemdelivery/{id}', 'deleteitemdelivery');
+        Route::get('/getcustomerproductsdelivery/{id}', 'getcustomerproductsdelivery');
+        Route::get('/getitems/{id}', 'getitems');
+        Route::get('/deleteitemdeliveryconfirm/{id}', 'deleteitemdeliveryconfirm');
+    });
+
+    // 22. إعدادات النظام (System Settings)
+    Route::controller(SystemSettingController::class)->group(function () {
+        Route::get('/systemSetting', 'index');
+        Route::get('/onbourding', 'onbourding');
+        Route::post('/onbourding', 'store');
+        Route::post('/updateCamData', 'update');
+    });
+
+    // 23. القروض (Loans)
+    Route::controller(LoansController::class)->group(function () {
+        Route::get('/Loans', 'index');
+        Route::delete('/delete_Loans/{id}', 'destroy');
+        Route::post('/Loans', 'store');
+        Route::post('/update_Loans', 'edit');
+    });
+
+    // 24. تأكيد تسليم المنتجات للعملاء
+    Route::controller(DeliveryProductToTheCustomerController::class)->group(function () {
+        Route::get('confirm_delivery', 'index');
+        Route::get('confirm_sales', 'confirm_sales');
+        Route::post('search_confirm_delievery', 'store');
+        Route::post('confirm_delivery_all', 'edit');
+        Route::post('search_confirm_sales', 'search_confirm_sales');
+        Route::post('confirm_sales_delivery_all', 'confirm_sales_delivery_all');
+    });
+
+    // 25. تالف المنتجات (Products Damage)
+    Route::controller(ProductsDamageController::class)->group(function () {
+        Route::get('ProductsDamageReport', 'index');
+        Route::post('ProductsDamageReport', 'show');
+    });
+
+    // 26. حركة المنتجات بين الفروع (Product Movement)
+    Route::controller(ProductMovementAnotherBranchController::class)->group(function () {
+        Route::get('sendProduct', 'index');
+        Route::get('my-drafts-movements', 'showMyDrafts');
+        Route::get('reciveProduct', 'show');
+        Route::get('deleteproduct/{id}', 'destroy');
+        Route::get('findinvoiceMovmevt/{id}', 'findinvoiceMovmevt');
+        Route::post('create_sendProduct', 'create');
+        Route::post('reciveNewF', 'reciveNewF');
+        Route::get('deleteproductrecive/{id}', 'deleteproduct');
+        Route::post('create_reciveProduct', 'store');
+        Route::post('print_Transfer_items', 'print_Transfer_items');
+        Route::post('print_Recive_items', 'print_Recive_items');
+        Route::get('reports/sent-movements', 'sentReport')->name('reports.sent');
+        Route::get('reports/received-movements', 'receivedReport')->name('reports.received');
+        Route::get('reports/product-movements-summary', 'productSummaryReport')->name('reports.summary');
+        Route::get('reports/sent/excel', 'exportExcel')->name('reports.sent.excel');
+        Route::get('reports/sent/pdf', 'exportPdf')->name('reports.sent.pdf');
+        Route::get('reports/recive/excel', 'exportReceivedExcel')->name('reports.recive.excel');
+        Route::get('reports/recive/pdf', 'exportReceivedPdf')->name('reports.recive.pdf');
+    });
+
+    Route::controller(UserController::class)->group(function () {
+        Route::get('get-branch-employees/{branch_id}', 'getEmployeesByBranch');
+
+    });
+
+
+    // ملفات الشخصية التابعة للنظام المتعدد اللغات
+    Route::get('/profile', function () {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+        return view('index');
+    })->name('profile');
 });
+

@@ -1,81 +1,108 @@
-@if (@isset($data) && !@empty($data) && count($data) >0 )
-@php
-$i=1;
-@endphp
-<div class="table-responsive">
-    <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
+@if (isset($data) && !empty($data) && count($data) > 0)
+    <div class="table-responsive">
+        <table class="table text-md-nowrap text-center our-table" id="SearchProductTable" width="100%" style="border: 2px solid rgba(0,0,0,.1);">
+            <thead>
+                <tr>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.Invoice_no') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.buyer name') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.supplierinvoicenumber') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.suppliername') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.date') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.branch') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.total') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.paymentmethod') }}</th>
+                    <th class="border-bottom-0" style="color: #FF4F1F; font-size:11px">{{ __('home.operations') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($data as $product)
+                    <tr id="row-{{ $product->id }}">
+                        <td>{{ $product->orderId }}</td>
+                        
+                        {{-- ملاحظة: يفضل تحميل 'user' من خلال العلاقة في Controller --}}
+                        @php
+                            $orderInfo = App\Models\orderTosupllier::find($product->orderId);
+                        @endphp
+                        <td>{{ $orderInfo->user->name ?? "-" }}</td>
+                        
+                        <td>{{ $product->Purchase_invoice_number }}</td> {{-- تم إغلاق الوسم هنا --}}
+                        
+                        <td dir="ltr"><strong>{{ $product->supllier->name }}</strong></td>
+                        
+                        <td>{{ $product->created_at->format('Y-m-d') }}</td>
+                        
+                        <td>{{ $product->branch->name }}</td>
+                        
+                        <td>
+                            <span class="font-weight-bold" style="color:red">
+                                @if($product->recoveredـpieces != 0)
+                                    {{ __('home.return') }}
+                                @else
+                                    {{ number_format($product->In_debt + $product['shipping fee'], 2) }} {{ __('home.SAR') }}
+                                @endif
+                            </span>
+                        </td>
 
+                        <td>
+                            @php
+                                $payMethods = [
+                                    'Cash' => __('report.cash'),
+                                    'Shabka' => __('report.shabka'),
+                                    'Bank_transfer' => __('home.Bank_transfer'),
+                                    'Credit' => __('report.credit')
+                                ];
+                                $pay = $payMethods[$product->Pay_Method_Name] ?? __('report.credit');
+                            @endphp
+                            <span class="badge badge-light p-2">{{ $pay }}</span>
+                        </td>
 
-        <thead>
-            <tr>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.Invoice_no') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.buyer name') }} </th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.suppliername') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.date') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.branch') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.total') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.operations') }}</th>
+                        <td>
+                            <div class="btn-icon-list justify-content-center">
+                                {{-- زر الطباعة/العرض --}}
+                                <a class="btn btn-sm btn-primary" href="{{ url('purchasesShow/'.$product->orderId) }}" title="{{ __('home.show') }}">
+                                    <i class="fas fa-print"></i>
+                                </a>
 
-            </tr>
-        </thead>
-        <tbody>
-            <?php $i = 0; ?>
+                                {{-- زر تعديل الدفع --}}
+                                <a class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" 
+                                   data-id="{{ $product->orderId }}" 
+                                   data-totalinvoice="{{ round(($product->In_debt) - ($product->discount), 2) == 0 ? __('home.return') : round(($product->In_debt) - ($product->discount), 2) }}" 
+                                   data-toggle="modal" href="#paymentmethod" title="{{ __('home.updatepayment') }}">
+                                    <i class="las la-wallet"></i>
+                                </a>
 
-            @foreach ($data as $product)
-            <?php $i++; ?>
+                                {{-- الملفات المرفقة --}}
+                                @if($product->attachments == null)
+                                    <a class="modal-effect btn btn-sm btn-warning" data-id="{{ $product->orderId }}" data-toggle="modal" href="#uplaodmodal" title="{{ __('home.uplaodpdf') }}">
+                                        <i class="fas fa-upload"></i>
+                                    </a>
+                                @else
+                                    <a class="btn btn-sm btn-success" target="_blank" href="{{ url('openfile/'.$product->attachments) }}" title="{{ __('home.dwonloadpdf') }}">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                @endif
 
-            <tr id="<?php echo $product['id']; ?>">
-                <td data-target="id">{{ $product->orderId }}</td>
-                <?php
-                $buyer = App\Models\orderTosupllier::find($product->orderId);
-                ?>
-                <td data-target="id">{{ $buyer->user->name ??"-"}}</td>
-                <td dir="ltr" data-target="id">
-                    {{ $product->supllier->name }}
-                </td>
-                <td data-target="numberofpice">{{ $product->created_at }}
-                </td>
-                <td data-target="numberofpice">{{ $product->branch->name }}
-                </td>
-                <td><span style="color:red">{{ $product->recoveredـpieces!=0?__('home.return'):$product->In_debt-$product->discount }}</span></td>
+                                {{-- زر الحذف --}}
+                                <a class="modal-effect btn btn-sm btn-danger" data-id="{{ $product->orderId }}" data-toggle="modal" href="#delete_quotation" title="{{ __('home.delete') }}">
+                                    <i class="las la-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-                <?php
-                $pay = '';
-                if ($product->Pay_Method_Name == 'Cash') {
-                    $pay = __('report.cash');
-                } elseif ($product->Pay_Method_Name == 'Shabka') {
-                    $pay = __('report.shabka');
-                } elseif ($product->Pay_Method_Name == 'Bank_transfer') {
-                    $pay = __('home.Bank_transfer');
-                } else {
-                    $pay = __('report.credit');
-                }
+    <div class="mt-3 d-flex justify-content-center" id="ajax_pagination_in_search">
+        {{ $data->links() }}
+    </div>
 
-                ?>
-                <td data-target="numberofpice">{{ $pay }}</td>
-                <td> <a class="dropdown-item" href="purchasesShow/{{ $product->orderId }}"><i style="fill:#072c3c !important" class="fas fa-print"></i>&nbsp;&nbsp;
-                        {{ __('home.show') }}
-                    </a>
-                    <a class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->orderId }}" data-totalinvoice="{{  round(($product->In_debt) - ($product->discount),2)==0?__('home.return'):round(($product->In_debt) - ($product->discount),2)}}" data-toggle="modal" href="#paymentmethod" title="تعديل طريقة الدفع">{{ __('home.updatepayment') }}<i class="las la-pen"></i></a>
-
-                    <a style="background-color: #419BB2;" class="modal-effect btn btn-sm btn-info" data-effect="effect-scale" data-id="{{ $product->orderId }}" data-customername="{{ $product->supllier->name}}" data-toggle="modal" href="#updateCustomer" title="تعديل بيانات العميل ">{{ __('home.updatecustome') }}<i class="las la-pen"></i></a>
-                </td>
-
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div>
-        <br>
-        <div class="justify-content-start" id="ajax_pagination_in_search">
-            {{ $data->links() }}
+@else
+    <div class="alert alert-custom alert-indicator-top alert-danger" role="alert">
+        <div class="alert-content">
+            <span class="alert-title">{{ __('home.alert') }}!</span>
+            <span class="alert-text">{{ __('home.notfounddata') }}</span>
         </div>
-
-
-
-        @else
-        <div class="alert alert-danger">
-            {{__('home.notfounddata')}}
-        </div>
-        @endif
+    </div>
+@endif

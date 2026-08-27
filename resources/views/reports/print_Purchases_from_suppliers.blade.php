@@ -1,304 +1,247 @@
 @extends('layouts.master')
+
 @section('css')
     <style>
         @media print {
-            #print_Button {
-                display: none;
+            #print_Button, .export-btn {
+                display: none !important;
+            }
+            body {
+                border: none !important;
             }
         }
-
         body {
-            font: 13pt Georgia, "Times New Roman", Times, serif;
+            font: 13pt "Times New Roman", Times, serif;
             line-height: 1.5;
-            border-style: solid;
-
+        }
+        .table-styled {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        .invoice-title {
+            color: #419BB2;
+            font-weight: bold;
         }
     </style>
 @endsection
+
 @section('title')
     {{ __('home.print') }}
 @stop
-@section('page-header')
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between">
-    </div>
-    <!-- breadcrumb -->
-@endsection
+
 @section('content')
-    <!-- row -->
     <div class="row row-sm">
-        <div class="col-md-12 col-xl-12">
-            <div class=" main-content-body-invoice" id="print">
+        <div class="col-md-12">
+            <div class="main-content-body-invoice" id="print">
                 <div class="card card-invoice">
+                    
+                    {{-- أزرار التحكم --}}
+                    <div class="d-flex justify-content-center mt-4 no-print">
+                        <a style="background-color: #419BB2; border:none" class="btn btn-success p-2 export-btn" 
+                           href="{{ url('/Invoices_purchases_export/' . $branch . '/' . $pay .'/' . $suplier_id . '/' . $startat . '/' . $endat) }}">
+                            EXPORT EXCEL <i class="fa fa-file-excel ml-1"></i>
+                        </a>
+                        <button class="btn btn-danger ml-2" id="print_Button" onclick="printDiv()">
+                            {{ __('home.print') }} <i class="mdi mdi-printer ml-1"></i>
+                        </button>
+                    </div>
+
                     <div class="card-body">
-       <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%" dir=rtl>
+                        {{-- الهيدر الخاص بالشركة --}}
+                        <div class="invoice-header d-flex justify-content-between">
+                            <div class="billed-from text-center" style="width:33%">
+                                <h2 class="invoice-title">{{ Nameen }}</h2>
+                                <p dir="ltr">{{ describtionen }}<br>{{ STen }}<br>{{ Taxen }}</p>
+                            </div>
+                            
+                            <div class="text-center">
+                                @php $logo = camplogo; @endphp
+                                <img src="{{ asset('assets/img/brand/'.$logo) }}" style="width: 120px; height: auto;">
+                            </div>
 
-
-
-
-                        <div class="billed-from" style="width:33%;text-align: center;">
-                            <br>
-
-                            <span class="thick" style="font-size:18px">{{Namear}}</span>
-                            <br>
-                            <p class="tx-16 thick"> {{describtionar}}</p>
-                            <p class="tx-16 thick">{{STar}}</p>
-                            <p class="tx-16 thick">{{Taxar}}</p>
-
-                        </div><!-- billed-from -->
-                        <div class="row">
-                            <?php
-                            $logo = camplogo;
-                            ?>
-                            <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
-
+                            <div class="billed-from text-center" style="width:33%">
+                                <h2 class="invoice-title">{{ Namear }}</h2>
+                                <p>{{ describtionar }}<br>{{ STar }}<br>{{ Taxar }}</p>
+                            </div>
                         </div>
 
-                        <div class="billed-from" style="width:33%;text-align: center;">
-                            <br>
-                            <span class="thick" style="font-size:19px">{{Nameen}}</span>
-                            <br>
-                            <p class="tx-16 thick" > {{describtionen}} </p>
-                            <span class="tx-16 thick">{{STen}} </span>
-                            <p class="tx-16 thick"> {{Taxen}} </p>
+                    @if (isset($Invoices) && $Invoices->count() > 0)
+<!-- عرض وقت التصدير وفترة التقرير -->
+                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4">
+                    <span style="font-size: 14px; color: #419BB2; font-weight: bold;">
+                        <i class="fas fa-clock ml-1"></i> {{ __('home.exportTime') }} :
+                        {{ \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s") }}
+                    </span>
+                    <span style="font-size: 14px; color: #2c3e50; font-weight: bold;">
+                        <i class="fas fa-calendar-alt ml-1"></i> {{ __('report.fromdate') ?? 'الفترة' }} : 
+                        <span class="text-danger" dir="ltr">{{ $startat ?? '' }}</span> &nbsp; إلى &nbsp; <span class="text-danger" dir="ltr">{{ $endat ?? '' }}</span>
+                    </span>
+                </div>
 
-                        </div>
+    @php
+        // تعريف متغيرات الإجماليات العامة للتقرير
+        $totalAllBeforeTax = 0;
+        $totalAllTax = 0;
+        $totalAllDiscount = 0;
+        $totalAllShipping = 0;
+        
+        // المتغيرات الجديدة للتصنيف
+        $totalNetNonTaxable = 0; // إجمالي صافي الفواتير الصفرية
+        $totalNetTaxable = 0;    // إجمالي صافي الفواتير الضريبية
+    @endphp
 
-                    </div><!-- invoice-header -->
-                        @if (isset($Invoices))
-                        <div class="col-lg-3" id="start_at">
-                                    <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} : </label>
-                                    <?php
-                                    $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
+ @foreach ($Invoices as $invoice)
+    @php
+        $invoiceSubtotalBeforeTax = 0;
+        $invoiceVAT = 0;
+        $shipping = ($invoice['shipping fee'] ?? 0) + ($invoice['Other expenses'] ?? 0);
+        
+        // جلب تفاصيل الأصناف وحساب ضريبة كل صنف بدقة
+        $details = App\Models\orderDetails::where('order_owner', $invoice->orderId)->get();
+        
+        foreach($details as $p) {
+            $qty = $p->numberofpice + $p->returns_purchase;
+            
+            // حساب سعر الشراء الإجمالي للسطر
+            $lineAmount = $qty * $p->purchasingـprice;
+            $invoiceSubtotalBeforeTax += $lineAmount;
 
-                                    ?>
-                                    <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ $currentdata }}</label>
+            // المنطق الجديد: إذا كانت القيمة المضافة أكبر من الصفر نحسب 15%، وإلا فالضريبة صفر
+            $taxRate = ($p->Added_Value > 0) ? 0.15 : 0;
+            $invoiceVAT += ($lineAmount * $taxRate);
+        }
 
-                                </div>
-                                <br>
-                        <div style="border-radius: 10px" class="card px-3 m-3">
-                                <?php
-                                $userId = 0;
-                                $count = 0;
-                                ?>
-                                <?php
-                                $userId = 0;
-                                $startat = '';
-                                $endat = '';
-                                $totalprice = 0;
-                                $totalshipping = 0;
-                                $totaladdedvalue = 0;
-                                $totaldiscount=0;
+        // معالجة ضريبة الخصم: تخصم الضريبة فقط إذا كانت الفاتورة ضريبية أصلاً
+        $discount_net_vat = 0;
+        if ($invoiceVAT > 0 && $invoice->discount > 0) {
+            // حساب قيمة الضريبة الموجودة داخل مبلغ الخصم (بفرض أن الخصم شامل الضريبة)
+            $discount_net_vat = $invoice->discount - ($invoice->discount / 1.15);
+            $invoiceVAT -= $discount_net_vat;
+        }
 
-                                ?>
-                                @foreach ($Invoices as $invoice)
-                                    <?php
-                                     $totaldiscount+=$invoice->discount ;
+        // الصافي النهائي لهذه الفاتورة
+        $invoiceGrandTotal = ($invoiceSubtotalBeforeTax - $invoice->discount) + $invoiceVAT + $shipping;
 
-                                    $totalshipping += $invoice['shipping fee'] + $invoice['Other expenses'];
-                                    
-                                    if ($count == 0) {
-                                        $userId = $invoice->user_id;
-                                        $startat = $invoice->created_at;
-                                    }
-                                    $endat = $invoice->created_at;
-                                    $count++;
-                                    
-                                    ?>
+        // تصنيف الفاتورة
+        if ($invoiceVAT <= 0) {
+            $totalNetNonTaxable += $invoiceGrandTotal;
+            $rowClass = 'border-danger'; 
+            $headerClass = 'bg-danger-transparent';
+        } else {
+            $totalNetTaxable += $invoiceGrandTotal;
+            $rowClass = 'border-success'; 
+            $headerClass = 'bg-success-transparent';
+        }
 
-                                    <br>
+        // تحديث الإجماليات العامة
+        $totalAllBeforeTax += $invoiceSubtotalBeforeTax;
+        $totalAllTax += $invoiceVAT;
+        $totalAllDiscount += $invoice->discount;
+        $totalAllShipping += $shipping;
+    @endphp
 
-{{-- 
-
-                                    <span class="text-danger">{{ __('report.invoiceNo') }} : {{ $invoice->id }} </span>
-                                    <br>
-                                    @if ($invoice->Pay_Method_Name == 'Cash')
-                                        <span class="text-success">{{ __('home.paymentmethod') }} :
-                                            {{ __('report.cash') }}</span>
-                                    @elseif($invoice->Pay_Method_Name == 'Credit')
-                                        <span class="text-danger">{{ __('home.paymentmethod') }} :
-                                            {{ __('report.credit') }}</span>
-                                    @else
-                                        <span class="text-warning">{{ __('home.paymentmethod') }} :
-                                            {{ __('report.shabka') }}</span>
-                                    @endif
-                                    <br>
-                                    <span class="text-danger">{{ __('home.suppliername') }} :
-                                        {{ $invoice->supllier->name }}</span>
-
-                                    @if ($invoice->Pay == 'Cash')
-                                        <span class="text-success">{{ $invoice->Pay }}</span>
-                                    @elseif($invoice->Pay == 'Credit')
-                                        <span class="text-danger">{{ $invoice->Pay }}</span>
-                                    @else
-                                        <span class="text-warning">{{ $invoice->Pay }}</span>
-                                    @endif
-                                    <br>
-
-                                    </span> --}}
-
-
-                                    <div class="">
-                                        <table class="table  table-sm striped table-bordered text-center">
-                                            <thead>
-                                                <tr style="font-size:11px !important;color:#419BB2">
-                                                    <th style="color: #419BB2">{{ __('home.paymentmethod') }}</th>
-                                                    <th style="color: #419BB2">@if ($invoice->Pay_Method_Name == 'Cash')
-                                                            {{ __('report.cash') }}
-                                                    @elseif($invoice->Pay_Method_Name == 'Credit')
-                                                        {{ __('report.credit') }}
-                                                    @else
-                                                        {{ __('report.shabka') }}
-                                                    @endif</th>
-                                                
-                                                
-                                                    <th style="color: #419BB2">{{ __('home.suppliername') }}</th>
-                                                    <th style="color: #419BB2">{{ $invoice->supllier->name }}</th>
-                                                
-                                                
-                                                    <th style="color: #419BB2">{{ __('home.total') }}</th>
-                                                    <th style="color: #419BB2">{{ $invoice->In_debt + ($invoice['shipping fee'] + $invoice['Other expenses']) }}</th>
-                                                
-                                                
-                                                    <th style="color: #419BB2">{{ __('report.Shipping and unloading cost') }}</th>
-                                                    <th style="color: #419BB2">{{ $invoice['shipping fee'] + $invoice['Other expenses'] }}</th>
-                                                </tr>
-                                            </thead>
-                                        </table>
-                                    </div>
-
-                                        <table class="table  table-striped table-bordered px-1 text-center" id="example1">
-                                            <thead>
-                                                <tr>
-                                                    <th>رقم الفاتورة</th>
-                                                    <th>{{ $invoice->orderId }}</th>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-bottom-0">#</th>
-                                                    <th class="border-bottom-0">{{ __('report.date') }}</th>
-
-                                                    <th class="border-bottom-0"> {{ __('home.productNo') }}</th>
-                                                    <th class="border-bottom-0"> {{ __('home.product') }}</th>
-                                                    <th class="border-bottom-0"> {{ __('home.quantity') }}</th>
-
-                                                    <th class="border-bottom-0">{{ __('home.price') }}</th>
-                                                    <th class="border-bottom-0"> {{ __('home.addedValue') }}</th>
-                                                    <th class="border-bottom-0"> {{ __('home.total') }}</th>
-                                                </tr>
-                                            </thead>
-                                            <?php
-                                            $i = 0;
-                                            ?>
-                                            @foreach (App\Models\orderDetails::where('order_owner', $invoice->orderId)->get() as $product)
-                                                <?php
-                                                $i++;
-                                                $totalprice += $product->numberofpice * $product->purchasingـprice;
-                                                
-                                                $totaladdedvalue += $product->numberofpice * $product->Added_Value;
-                                                $date = explode(' ', $product->created_at);
-                                                ?>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{ $i }}</td>
-                                                        <td>{{ $date[0] }}</td>
-
-                                                        <td dir='ltr'>{{ $product->productData->barcode }}</td>
-                                                        <td>{{ $product->productData->name }}</td>
-                                                        <td>{{ $product->numberofpice }}</td>
-                                                        <td>{{ $product->purchasingـprice }}</td>
-                                                        <td>{{ $product->Added_Value }}</td>
-                                                        <td>{{ $product->numberofpice * $product->Added_Value + $product->numberofpice * $product->purchasingـprice }}
-                                                        </td>
-                                                    </tr>
-
-                                                </tbody>
-                                            @endforeach
-                                         </table>
-
-                                         <div class="my-4">
-                                            <hr  style="border-top: 4px solid rgba(0,0,0,.3)">
-                                         </div>
-
-                                         {{--
-                                        <span class="text-warning  float-left mt-3 mr-2"
-                                            id="print_Button">{{ __('home.total') }} :
-                                            {{ $invoice->In_debt + ($invoice['shipping fee'] + $invoice['Other expenses']) }}</span>
-
-                                        <span class="text-warning  float-left mt-3 mr-2"
-                                            id="print_Button">{{ __('report.Shipping and unloading cost') }} :
-                                            {{ $invoice['shipping fee'] + $invoice['Other expenses'] }}</span> --}}
-
-                                @endforeach
-                                
-
-
-                                <div class="table-padding">
-                                    <table class="table table-bordered table-hover text-center table-striped mt-5">
-                                        <thead>
-                                          <tr>
-                                              <th scope="col">{{ __('report.totalprice') }}</th>
-                                            <th scope="col">{{ __('home.the amount') }}</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>{{ __('report.totalpricewithoudtax') }}</td>
-                                                <td>{{ $totalprice }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{ __('report.totaltax') }}</td>
-                                                <td>{{ $totaladdedvalue }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{ __('home.discount') }}</td>
-                                                <td>{{ $totaldiscount }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{ __('report.totalallprice') }}</td>
-                                                <td>{{ $totaladdedvalue + $totalprice + $totalshipping-$totaldiscount  }}</td>
-                                            </tr>
-                                        </tbody>
-                                      </table>
-                                </div>
-
-
-
-                                <br>
-
-                                <br>
-                        @endif
-
-
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered text-center {{ $rowClass }}" style="border-width: 2px;">
+            <thead class="{{ $headerClass }}">
+                <tr>
+                    <th colspan="1" class="text-right">رقم الفاتورة: {{ $invoice->orderId }}</th>
+                    <th colspan="1" class="text-right">تاريخ : {{ $invoice->created_at }}</th>
+                    <th colspan="1" class="text-right">اسم المورد : {{ $invoice->supllier->name }}</th>
+                    <th colspan="2" class="text-left">الحالة: {{ $invoiceVAT <= 0 ? 'معفاة / صفرية' : 'خاضعة للضريبة' }}</th>
+                </tr>
+                <tr>
+                    <th>رقم المنتج</th>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>السعر (قبل الضريبة)</th>
+                    <th>الضريبة ({{ $invoiceVAT > 0 ? '15%' : '0%' }})</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($details as $product)
+                    @php
+                        $lineQty = $product->numberofpice + $product->returns_purchase;
+                        $currentTaxRate = ($product->Added_Value > 0) ? 0.15 : 0;
+                        $lineTax = ($lineQty * $product->purchasingـprice) * $currentTaxRate;
+                        $lineTotal = ($lineQty * $product->purchasingـprice) + $lineTax;
+                    @endphp
+                    <tr>
+                        <td>{{ $product->productData->Product_Code ?? 'N/A' }}</td>
+                        <td>{{ $product->productData->product_name ?? 'N/A' }}</td>
+                        <td>{{ $lineQty }}</td>
+                        <td>{{ number_format($product->purchasingـprice, 2) }}</td>
+                        <td class="{{ $lineTax == 0 ? 'text-danger' : 'text-success' }} font-weight-bold">
+                            {{ number_format($lineTax, 2) }}
+                        </td>
+                        <td>{{ number_format($lineTotal, 2) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot class="bg-light">
+                <tr>
+                    <td colspan="2">الخصم: {{ number_format($invoice->discount, 2) }}</td>
+                    <td colspan="2">الشحن: {{ number_format($shipping, 2) }}</td>
+                    <td class="font-weight-bold">صافي الفاتورة: {{ number_format($invoiceGrandTotal, 2) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+@endforeach
+    {{-- جدول الخلاصة النهائية للتقرير بالكامل --}}
+    <div class="row mt-5">
+        <div class="col-md-6 offset-md-6">
+            <table class="table table-bordered text-center border-dark shadow-sm">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th colspan="2" style="font-size: 18px">ملخص إجماليات التقرير</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-danger">
+                        <td>إجمالي صافي الفواتير (غير الخاضعة للضريبة)</td>
+                        <td class="font-weight-bold">{{ number_format($totalNetNonTaxable, 2) }}</td>
+                    </tr>
+                    <tr class="table-success">
+                        <td>إجمالي صافي الفواتير (الخاضعة للضريبة)</td>
+                        <td class="font-weight-bold">{{ number_format($totalNetTaxable, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>إجمالي القيمة (قبل الضريبة) لكل الفواتير</td>
+                        <td>{{ number_format($totalAllBeforeTax, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>إجمالي الخصومات</td>
+                        <td>{{ number_format($totalAllDiscount, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>إجمالي ضريبة القيمة المضافة</td>
+                        <td class="{{ $totalAllTax == 0 ? 'text-danger' : 'text-success' }} font-weight-bold">
+                            {{ number_format($totalAllTax, 2) }}
+                        </td>
+                    </tr>
+                    <tr class="bg-light">
+                        <td class="font-weight-bold text-uppercase">الإجمالي النهائي (صافي المشتريات)</td>
+                        <td class="font-weight-bold text-primary" style="font-size: 22px">
+                            {{ number_format(($totalAllBeforeTax - $totalAllDiscount) + $totalAllTax + $totalAllShipping, 2) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+@else
+    <div class="alert alert-warning text-center mt-5">لا توجد نتائج لهذا البحث</div>
+@endif
                     </div>
-                    <hr class="mg-b-50">
-
-
-
-                    <div class="d-flex justify-content-center">
-                        <button class="btn btn-danger print-style p-1 float-left mt-10 mr-10" id="print_Button" onclick="printDiv()">{{ __('home.print') }} <i
-                                class="mdi mdi-printer ml-1"></i></button>
-                        <br>
-
-                    </div>
-                    <br>
-
-
                 </div>
             </div>
         </div>
-    </div><!-- COL-END -->
     </div>
-    <!-- row closed -->
-    </div>
-    <!-- Container closed -->
-    </div>
-    <!-- main-content closed -->
 @endsection
+
 @section('js')
-    <!--Internal  Chart.bundle js -->
-    <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-
-
     <script type="text/javascript">
         function printDiv() {
             var printContents = document.getElementById('print').innerHTML;
@@ -309,5 +252,4 @@
             location.reload();
         }
     </script>
-
 @endsection

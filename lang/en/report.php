@@ -12,10 +12,9 @@ return [
     | these language lines according to your application's requirements.
     |
     */
-    'cash'=>'Cash',
-'shabka'=>'Bank',
-'credit'=>'Credit',
-
+'cash' => 'CASH (treasury)',
+'shabka' => 'SHABAKA (bank account)',
+'credit' => 'CREDIT',
     'Cashsales' => 'Cash sales',
     'Creditsales'=>'Credit sales',
     'networksales'=>'Network sales',
@@ -43,9 +42,9 @@ return [
 'Purchasesـinـprogress'=>'Purchases in progress',
 'creditcollection'=>'Credit collection',
 'reciver_name'=>'Reciver name',
-'Listofsupplier'=>'List of supplier',
+'Listofsupplier'=>'Supplier  accounts',
 'Invoicesـnotـpaidـtoـtheـsupplier'=>'Invoices not paid to the supplier',
-'Supplier credit payment'=>'Supplier credit payment',
+'Supplier credit payment'=>'Cash exchange',
 "Rosaryـdetails"=>'Shift details',
 'Expenses'=>'Expenses',
 'stockquantity'=>'Stock quantity',
@@ -66,13 +65,16 @@ return [
 
 'selectmonth'=>'Select month',
 'cash_last_month'=>'Cash last month',
-'enpenses_reason'=>'exchange purpose',
+'enpenses_reason' => 'Add cost center',
 'all_enpenses_reason'=>'All expenses',
 
 "Shipping and unloading cost"=>'Shipping and unloading cost',
 "orderNo"=>'Order No',
-"allBranches"=>"Branch List"
+"allBranches"=>"Branch List",
+"purchasproducttocustomer"=>"Selling a product to customer"
 
+,'costcenter_ar'=>"Cost Center in Arabic"
+,'costcenter_en'=>"Cost Center in English",
 
 
 

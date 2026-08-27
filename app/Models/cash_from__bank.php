@@ -15,6 +15,7 @@ class cash_from__bank extends Model
         'payment_method',
         'created_at',
         'updated_at',
+        'notes'
     ];
     public function branch()
     {

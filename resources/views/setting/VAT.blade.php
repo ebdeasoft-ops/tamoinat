@@ -98,7 +98,7 @@
                                     <?php
                                     $i = 0;
                                     ?>
-                                    @foreach (App\Models\Avt::get() as $role)
+                                    @foreach (App\Models\Avt::where('id','!=',3)->get() as $role)
                                         <tr>
                                             <td>{{ ++$i }}</td>
                                             <td>{{ __('home.name_avt') == 'اسم الضريبة' ? $role->name_ar : $role->name_en }}

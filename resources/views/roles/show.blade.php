@@ -1,79 +1,130 @@
 @extends('layouts.master')
 @section('css')
-    <!--Internal  Font Awesome -->
     <link href="{{ URL::asset('assets/plugins/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
-    <!--Internal  treeview -->
-    <link href="{{ URL::asset('assets/plugins/treeview/treeview-rtl.css') }}" rel="stylesheet" type="text/css" />
-
-
-
+    <style>
+        .group-container { border: 1px solid #e1e5ef; border-radius: 8px; margin-bottom: 20px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .group-header { background: #23395D; color: white; padding: 10px 15px; border-radius: 7px 7px 0 0; font-weight: bold; }
+        /* تمييز قسم الحسابات باللون الأخضر */
+        .header-accounting { background: #28a745 !important; } 
+        
+        .group-body { padding: 15px; display: flex; flex-wrap: wrap; }
+        .permission-badge { 
+            background: #f0faff; 
+            color: #419BB2; 
+            padding: 8px 12px; 
+            margin: 5px; 
+            border-radius: 20px; 
+            border: 1px solid #d1e9f0;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+        .permission-badge i { margin-left: 6px; font-size: 10px; }
+        .role-title-card { background: #419BB2; color: white; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; }
+    </style>
 @section('title')
     {{ __('roles.Viewـpermissions') }}
 @stop
-
-
 @endsection
+
 @section('page-header')
 <div class="main-parent">
-    <!-- breadcrumb -->
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
-            <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('roles.Viewـpermissions') }}
-            </div>
+            <h4 class="content-title mb-0 my-auto" style="color: white">{{ __('roles.Viewـpermissions') }}</h4>
         </div>
     </div>
-    <!-- breadcrumb -->
+@endsection
 
+@section('content')
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mg-b-20 py-4 px-4">
+            <div class="card-body">
+                
+                <div class="mg-b-20 text-left">
+                    <a class="btn btn-primary btn-sm shadow-sm" style="background-color: #23395D;" href="{{ route('roles.index') }}">
+                        <i class="fa fa-arrow-right ml-1"></i> {{ __('users.back') }}
+                    </a>
+                </div>
 
-    <!-- row -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card mg-b-20 py-5">
-                <div class="card-body">
-                    <div class="main-content-label mg-b-5">
-                        <div class="pull-right">
-                            <a style="background-color: #23395D;font-size:14px" class="btn btn-primary btn-sm"
-                                href="{{ route('roles.index') }}">
-                                {{ __('users.back') }}
-                                
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <!-- col -->
-                        <div class="col-lg-4 mt-4">
-                            <ul id="treeview1">
-                                <li><a style="background-color: #419BB2" class="btn btn-danger py-1" href="#">
-                                    {{ $role->name }}
-                                    <svg style="width:15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                        <path d="M17.927,5.828h-4.41l-1.929-1.961c-0.078-0.079-0.186-0.125-0.297-0.125H4.159c-0.229,0-0.417,0.188-0.417,0.417v1.669H2.073c-0.229,0-0.417,0.188-0.417,0.417v9.596c0,0.229,0.188,0.417,0.417,0.417h15.854c0.229,0,0.417-0.188,0.417-0.417V6.245C18.344,6.016,18.156,5.828,17.927,5.828 M4.577,4.577h6.539l1.231,1.251h-7.77V4.577z M17.51,15.424H2.491V6.663H17.51V15.424z"></path>
-                                    </svg>
-                                </a>
-                                    <ul>
-                                        @if (!empty($rolePermissions))
-                                            @foreach ($rolePermissions as $v)
-                                                <li style="font-size: 14px;color:#419BB2">{{ app()->getLocale() == 'ar' ? $v->name_ar : $v->name }}</li>
-                                            @endforeach
-                                        @endif
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- /col -->
+                <div class="role-title-card">
+                    <i class="fa fa-user-tag fa-2x ml-3"></i>
+                    <div>
+                        <small class="d-block text-white-50">الدور الوظيفي:</small>
+                        <h4 class="mb-0">{{ $role->name }}</h4>
                     </div>
                 </div>
+
+                @php
+                    // المصفوفة المحدثة لتشمل الحسابات والمالية
+                    $groups = [
+                        'المبيعات' => ['مبيعات', 'عملاء', 'عرض سعر', 'تسعيرة', 'invoice'],
+                        'المشتريات والموردين' => ['مشتريات', 'مورد', 'vendor'],
+                        'الحسابات والمالية' => ['حساب', 'بنك', 'صندوق', 'سند', 'قيد', 'خزينة', 'صرف', 'قبض', 'شيك'],
+                        'المنتجات والمخازن' => ['منتج', 'مخزن', 'كمية', 'استلام', 'ارسال', 'product'],
+                        'التقارير' => ['تقرير', 'ميزانية', 'ارباح'],
+                        'الموارد البشرية' => ['موظف', 'راتب', 'حضور', 'بشرية', 'user'],
+                        'الإعدادات والربط' => ['صلاحية', 'فرع', 'اعدادات', 'role', 'permission', 'Theta']
+                    ];
+                    $shown_ids = [];
+                @endphp
+
+                @if(!empty($rolePermissions))
+                    @foreach($groups as $groupName => $keywords)
+                        @php
+                            $filteredPermissions = $rolePermissions->filter(function($p) use ($keywords) {
+                                foreach($keywords as $word) {
+                                    if(str_contains(strtolower($p->name_ar), $word) || str_contains(strtolower($p->name), $word)) return true;
+                                }
+                                return false;
+                            });
+                        @endphp
+
+                        @if($filteredPermissions->count() > 0)
+                            <div class="group-container">
+                                <div class="group-header {{ $groupName == 'الحسابات والمالية' ? 'header-accounting' : '' }}">
+                                    <i class="fa {{ $groupName == 'الحسابات والمالية' ? 'fa-university' : 'fa-folder-open' }} ml-2"></i> 
+                                    {{ $groupName }}
+                                </div>
+                                <div class="group-body">
+                                    @foreach($filteredPermissions as $v)
+                                        @php $shown_ids[] = $v->id; @endphp
+                                        <div class="permission-badge">
+                                            <i class="fa fa-check-circle"></i>
+                                            {{ app()->getLocale() == 'ar' ? $v->name_ar : $v->name }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+
+                    @php
+                        $others = $rolePermissions->whereNotIn('id', $shown_ids);
+                    @endphp
+                    @if($others->count() > 0)
+                        <div class="group-container">
+                            <div class="group-header" style="background: #6c757d;">
+                                <i class="fa fa-th-large ml-2"></i> صلاحيات متنوعة
+                            </div>
+                            <div class="group-body">
+                                @foreach($others as $v)
+                                    <div class="permission-badge">
+                                        <i class="fa fa-check-circle"></i>
+                                        {{ app()->getLocale() == 'ar' ? $v->name_ar : $v->name }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @else
+                    <div class="alert alert-warning text-center">لا توجد صلاحيات مسندة لهذا الدور بعد.</div>
+                @endif
+
             </div>
         </div>
     </div>
-    <!-- row closed -->
 </div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
-</div>
-@endsection
-@section('js')
-<script src="{{ URL::asset('assets/plugins/treeview/treeview.js') }}"></script>
-
 @endsection

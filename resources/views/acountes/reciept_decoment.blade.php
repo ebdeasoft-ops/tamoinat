@@ -1,555 +1,540 @@
 @extends('layouts.master')
+
 @section('css')
-<!-- Internal Data table css -->
-<link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <style>
+        .parent-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            display: block;
+        }
 
-<!-- Internal Spectrum-colorpicker css -->
-<link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
+        .table-thead-color {
+            background-color: #f8f9fa;
+        }
 
-<!-- Internal Select2 css -->
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+        .tax-value {
+            background-color: #f1f1f1 !important;
+            font-weight: bold;
+            color: #d33;
+        }
+
+        #total_sum {
+            color: #28a745;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #total_tax {
+            color: #dc3545;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+@endsection
 
 @section('title')
-{{ __('home.Receipt document') }}@stop
-@endsection
-@section('page-header')
-<div class="main-parent">
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between parent-heading">
-        <div class="my-auto">
-            <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.Receipt document') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                </span>
-            </div>
-        </div>
-    </div>
-    <!-- breadcrumb -->
-    @endsection
-    @section('content')
+{{ __('home.Receipt document') }}
+@stop
 
-    @if (count($errors) > 0)
-    <div class="alert alert-danger">
-        <button aria-label="Close" class="close" data-dismiss="alert" type="button">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <strong>خطا</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-
-    <!-- row -->
+@section('content')
+    <br>
     <div class="row">
-
         <div class="col-xl-12">
             <div class="card mg-b-20">
-
-
                 <div class="card-header pb-0">
-
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'reciepttransactions')) }}" method="POST" role="search" name="form-name" autocomplete="off">
-                        {{ csrf_field() }}
-
-                        <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-
-
-
-                        <div class="row">
-
-                            <div class="col-lg-6 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10"> {{__('home.shearchbysuppliername')}}</p>
-                                <select class="form-control select2" name="clientnamesearch" id="clientnamesearch" required>
-                                <option value="-"> {{__('home.shearchbysuppliername')}}</option>
-
-
-                                    @foreach (App\Models\supllier::where('branchs_id', Auth()->User()->branchs_id)->get() as $section)
-                                    <option value="{{ $section->id }}"> {{ $section->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div><!-- col-4 -->
-
-
-                            <div class="col-lg-3">
-                                <label for="inputName" class="control-label parent-label"> {{ __('accountes.debtamount') }} </label>
-                                <input type="number" class="form-control parent-input" id="debtamount" name="debtamount" title="يرجي ادخال الكمية  " value="{{ $data['customer']->Limit_credit ?? '0' }}" readonly>
-                            </div>
-
-                            <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.paymentmethod') }} </p>
-                                <select class="form-control parent-input " name="pay" id="pay" required>
-                                    <option value="Cash"> {{ __('report.cash') }}</option>
-                                    <option value="Shabka "> {{ __('report.shabka') }} </option>
-                                    <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
-
-
-                                </select>
-                            </div>
-                            <div class="col-lg-4">
-                                <label for="inputName" class="control-label parent-label"> {{ __('accountes.Theamountpaid') }}
-                                </label>
-                                <input type="number" class="form-control  parent-input" id="cashreceived" name="cashreceived" title="يرجي ادخال الكمية  " value=0 required onkeyup="moneyconvertToNumber()">
-                            </div>
-
-
-                            <div class="col-lg-8">
-                                <label for="inputName" class="control-label parent-label">{{ __('home.notesClient') }} </label>
-                                <input type="text" class="parent-input form-control" id="notes" name="notes" title="يرجي ادخال ملاحظات  ">
-                            </div>
-
-                        </div>
-                        <br>
-                    </form>
-                    <div class="d-flex justify-content-center">
-                        <button class="btn btn-success print-style p-1" id="button_1">
-                            {{ __('home.savedecoument') }}
-                            <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
-                            </svg>
-                        </button>
-                        <br>
-
-                    </div>
-                    <br>
-                </div>
-
-
-
-
-
-
-
-
-            </div>
-
-        </div>
-        <?php
-        ?>
-        <div class="col-xl-12">
-            <div class="card mg-b-20 p-2">
-                <div class="card-header pb-0 p-5">
                     <div class="d-flex justify-content-between">
-                        <i class="mdi mdi-dots-horizontal text-gray"></i>
+                        <h4 class="content-title mb-0 my-auto" id="form_title">{{ __('home.Receipt document') }}</h4>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="example" class="table text-md-nowrap text-center our-table" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
-                            <thead>
-                                <tr>
-                                    <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
-                                    <th class="border-bottom-0"> {{ __('home.clientname') }}</th>
-                                    <th class="border-bottom-0">{{ __('accountes.Theamountpaid') }}</th>
-                                    <th class="border-bottom-0">{{ __('accountes.Remainingamount') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.operations') }}</th>
-  </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                </tr>
+                    <form id="receipt_form" action="{{ route('receipt.store') }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="receipt_id" id="receipt_id">
 
-                        </table>
-                       
-                        <div class="d-flex justify-content-center">
+                        <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="parent-label">{{ __('home.Withdraw from account') }}</label>
+                            <select class="form-control select2" name="payment_account_id" id="payment_account_id" required>
+                                <option value="">{{ __('home.Choose account') }}</option>
+                                @foreach (App\Models\financial_accounts::whereIn('parent_account_number', [4, 5])->where('branchs_id',
+                                    Auth()->user()->branchs_id)->get() as $acc)
+                                    <option value="{{ $acc->id }}" data-parent="{{ $acc->parent_account_number }}">
+                                        {{ $acc->name }} ({{ $acc->account_number }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-
-                            <div class="row  d-flex justify-content-end mt-3">
-                                <form action="{{ '/' . ($page = 'print_reciept') }}" method="POST" role="search" autocomplete="off">
-                                    {{ csrf_field() }}
-
-
-
-                                    <div class='col ' id="printdiv">
-                                        <input type="number" class="form-control " name="id" id="id" title=" رقم الفاتورة " readonly required hidden>
-
-
-                                        <button style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px" type="submit" class="btn btn-success p-1 px-2 fw-bolder">
-                                            {{ __('home.print') }}
-                                            <svg style="width: 15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                                <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>
-                                            </svg>
-                                        </button>
-
-
-
-
-
-                                    </div>
-
-
-                                </form>
+                        <div class="col-md-4">
+                            <label class="parent-label">{{ __('home.Payment method') }}</label>
+                            <select class="form-control" name="pay_method_type" id="pay_method_type">
+                                <option value="Cash">{{ __('home.Cash') }}</option>
+                                <option value="Shabka"> {{ __('report.shabka') }} </option>
+                                <option value="Bank_transfer">{{ __('home.Bank transfer') }}</option>
+                            </select>
+                        </div>
+                            <div class="col-md-4">
+                                <label class="parent-label">{{ __('home.Date') }}</label>
+                                <input class="form-control" name="date" id="date_input" type="date"
+                                    value="{{ date('Y-m-d') }}" required>
                             </div>
                         </div>
-                        <br>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center" id="dynamic_field">
+                                <thead class="table-thead-color">
+                                    <tr>
+                                        <th>#</th>
+                                        <th style="width: 20%">{{ __('home.Disburse to account') }}</th>
+                                        <th style="width: 15%">{{ __('home.Cost Center') }}</th>
+                                        <th style="width: 10%">{{ __('home.Amount (Inclusive)') }}</th>
+                                        <th style="width: 10%">{{ __('home.avt_rate') }}</th>
+                                        <th style="width: 10%">{{ __('home.Tax Value') }}</th>
+                                        <th style="width: 15%">{{ __('home.Statement') }}</th>
+                                        <th style="width: 10%">{{ __('home.Attachment') }}</th>
+                                        <th>{{ __('home.Action') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>
+                                            <select class="form-control select2" name="items[0][client_account_id]"
+                                                id="item_account_0" required>
+                                                <option value="">{{ __('home.Choose account') }}</option>
+                                                @foreach (App\Models\financial_accounts::where('active', 1)->where('is_parent', 0)->get() as $acc)
+                                                    <option value="{{ $acc->id }}">{{ $acc->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="form-control select2" name="items[0][cost_center]"
+                                                id="item_cost_0">
+                                                <option value="">{{ __('home.Without') }}</option>
+                                                @foreach (App\Models\Cost_centers::all() as $cost)
+                                                    <option value="{{ $cost->id }}">{{ $cost->cost_center_ar }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td><input type="number" name="items[0][amount]" id="item_amount_0" step="0.01"
+                                                class="form-control amount-input" required></td>
+                                        <td>
+                                            <select class="form-control tax-select" name="items[0][tax_rate]"
+                                                id="item_tax_0">
+                                                <option value="0">{{ __('home.Tax') }} (0%)</option>
+                                                <option value="0.05">5%</option>
+                                                <option value="0.15">15%</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" name="items[0][tax_value]" class="form-control tax-value"
+                                                readonly value="0.00"></td>
+                                        <td><input type="text" name="items[0][notes]" id="item_notes_0"
+                                                class="form-control"></td>
+                                        <td><input type="file" name="items[0][attachment]" class="form-control-file"></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="9" class="text-right">
+                                            <button type="button" class="btn btn-primary btn-sm" id="add_row">+
+                                                {{ __('home.Add Row') }}</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-light">
+                                        <td colspan="3">{{ __('home.Total') }}: <span id="total_sum">0.00</span></td>
+                                        <td colspan="6">{{ __('home.Total Tax') }}: <span id="total_tax">0.00</span></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <button type="submit" id="submit_button"
+                            class="btn btn-success btn-block mt-3">{{ __('home.Save and process') }}</button>
+                        <button type="button" id="cancel_edit" class="btn btn-secondary btn-block mt-2"
+                            style="display:none;">{{ __('home.cancel') }}</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mg-b-20">
+                <div class="card-body">
+                    <div class="row">
+                        <div id="AVT_Div2" class="col-lg-3">
+                            <label for="search_by_decoumentNo"
+                                class="control-label parent-label">{{ __('home.decoumentNo') }}</label>
+                            <input type="number" class="form-control parent-input" id="search_by_decoumentNo"
+                                onkeyup="search_by_decoumentNo_function()"
+                                placeholder="{{ __('home.Search by doc number') }}">
+                        </div>
                     </div>
-                    <br />
-                </div>
-            </div>
-        </div>
-
-    </div>
-    <!-- row closed -->
-</div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
-</div>
-<!-- edit -->
-<div class="modal fade" id="increaseProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div style="margin: 5% !important;" class="modal-dialog modal-special" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{ __('home.updatedecoument') }}</h5>
-                <button type="button" class="close choose-close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-
-                    {{ csrf_field() }}
-                    <div class="form-group">
-                        <input type="hidden" name="transactionId" id="transactionId" value="">
-
+                    <br>
+                    <div class="table-responsive" id="ajax_responce_allinvoicesDiv">
+                        <div class="text-center p-3">{{ __('home.Loading') }}...</div>
                     </div>
-
-
-
-            <div class="row">
-
-
-                <div class="col" id="type">
-                    <p class="mg-b-10 parent-label"> {{ __('home.paymentmethod') }} </p>
-                    <select class="form-control parent-input " name="payupdate" id="payupdate" required>
-                        <option value="Cash"> {{ __('report.cash') }}</option>
-                        <option value="Shabka "> {{ __('report.shabka') }} </option>
-                        <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
-
-
-                    </select>
-                </div>
-
-                <div class="col">
-                    <label for="inputName" class="control-label parent-label"> {{ __('accountes.Theamountpaid') }}
-                    </label>
-                    <input type="text" class="form-control parent-input" id="cashreceivedupdate" name="cashreceivedupdate" value=0 title="يرجي ادخال الكمية  " required onkeyup="moneyconvertToNumber()">
                 </div>
             </div>
-
         </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
-            <button id="updatedecoument" name="updatedecoument" data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
-        </div>
-
-        </form>
     </div>
-</div>
-</div>
 @endsection
+
 @section('js')
-<!-- Internal Data tables -->
+    <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/sweet-alert2/sweetalert2.all.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+                $('#payment_account_id').on('change', function() {
+                // جلب الـ data-parent للخيار اللي تم تحديده
+                var parentAccount = $(this).find(':selected').data('parent');
 
-<script src="{{ URL::asset('assets/plugins/datatable/js/responsive.bootstrap4.min.js') }}"></script>
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
+                if (parentAccount == 5) {
+                    // إذا كان الأب 4 (خزينة) -> يقف على نقدي (Cash)
+                    $('#pay_method_type').val('Cash').trigger('change');
+                } else if (parentAccount == 4) {
+                    // إذا كان الأب 5 (بنك) -> يقف على حساب بنكي (Bank_transfer)
+                    $('#pay_method_type').val('Bank_transfer').trigger('change');
+                }
+            });
 
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
-<script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
+            // تفعيل السيلكت 2 وتحميل البيانات
+            $('.select2').select2({ width: '100%' });
+            loadAllData();
 
+            var i = 1;
+            $('#add_row').click(function () {
+                var html = `<tr id="row${i}">
+                <td>${i + 1}</td>
+                <td><select class="form-control select2" name="items[${i}][client_account_id]" required>
+                    <option value="">{{ __('home.Choose account') }}</option>
+                    @foreach (App\Models\financial_accounts::where('active', 1)->where('is_parent', 0)->get() as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->name }}</option>
+                    @endforeach
+                </select></td>
+                <td><select class="form-control select2" name="items[${i}][cost_center]">
+                    <option value="">{{ __('home.Without') }}</option>
+                    @foreach (App\Models\Cost_centers::all() as $cost)
+                        <option value="{{ $cost->id }}">{{ $cost->cost_center_ar }}</option>
+                    @endforeach
+                </select></td>
+                <td><input type="number" name="items[${i}][amount]" step="0.01" class="form-control amount-input" required></td>
+                <td><select class="form-control tax-select" name="items[${i}][tax_rate]">
+                    <option value="0">{{ __('home.Exempt') }}</option><option value="0.05">5%</option><option value="0.15">15%</option>
+                </select></td>
+                <td><input type="text" name="items[${i}][tax_value]" class="form-control tax-value" readonly value="0.00"></td>
+                <td><input type="text" name="items[${i}][notes]" class="form-control"></td>
+                <td><input type="file" name="items[${i}][attachment]" class="form-control-file"></td>
+                <td><button type="button" class="btn btn-danger btn-sm btn_remove" id="${i}">X</button></td>
+            </tr>`;
+                $('#dynamic_field tbody').append(html);
+                $(`#row${i} .select2`).select2({ width: '100%' });
+                i++;
+            });
 
-    $('#increaseProduct').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget)
+            $(document).on('click', '.btn_remove', function () {
+                $(this).parents('tr').remove();
+                calculate();
+            });
 
-        var id = button.data('id')
-        var amount = button.data('amount')
-        var modal = $(this)
+            $(document).on('keyup change', '.amount-input, .tax-select', calculate);
 
+            function calculate() {
+                var total = 0, tax = 0;
+                $('#dynamic_field tbody tr').each(function () {
+                    var amt = parseFloat($(this).find('.amount-input').val()) || 0;
+                    var rate = parseFloat($(this).find('.tax-select').val()) || 0;
+                    var tVal = rate > 0 ? (amt - (amt / (1 + rate))) : 0;
+                    $(this).find('.tax-value').val(tVal.toFixed(2));
+                    total += amt; tax += tVal;
+                });
+                $('#total_sum').text(total.toFixed(2));
+                $('#total_tax').text(tax.toFixed(2));
+            }
 
-
-        modal.find('.modal-body #transactionId').val(id);
-        modal.find('.modal-body #cashreceivedupdate').val(amount);
-
-    })
-</script>
-
-
-<script>
-
-$("#updatedecoument").click(function(e) {
-        console.log($('#notes').val())
-
-        console.log($('#clientnamesearch').val())
-        var url = " {{ URL::to('updaterecieptdecoument') }}";
-        var token_search = $("#token_search").val();
-        if ($('#cashreceivedupdate').val() == 0) {
-                alert("{{__('home.should')}}")
-
-            } else {
-                cashreceived=$('#cashreceivedupdate').val()
-            $('#cashreceivedupdate').val(0)
+            // إرسال النموذج (إضافة أو تحديث)
+            $('#receipt_form').on('submit', function (e) {
+                e.preventDefault();
+                var actionUrl = $(this).attr('action');
 
                 $.ajax({
-                    url: url,
-                    type: 'post',
-                    cache: false,
-
-                    data: {
-                        _token: token_search,
-                        transactionId: $('#transactionId').val(),
-                        payupdate: $('#payupdate').val(),
-                        cashreceivedupdate: cashreceived,
-                       
-
-
+                    url: actionUrl,
+                    method: 'POST',
+                    data: new FormData(this),
+                    processData: false, contentType: false,
+                    success: function (res) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: "ERROR",
+                            text: res.message
+                        });
+                        resetForm();
+                        loadAllData();
                     },
+                    error: function (r) {
+                                Swal.fire({
+                            icon: 'success',
+                            title: "ERROR",
+                            text: r
+                        });
 
 
-                success: function(data) {
-                    console.log(data)
-                    let table = document.getElementById("example");
-                    var tableHeaderRowCount = 1;
-
-                    var rowCount = table.rows.length;
-
-                    for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                        table.deleteRow(tableHeaderRowCount);
+                        console.log(r)
                     }
-                    $('#cashreceived').val(0)
-                    let row = table.insertRow(-1); // We are adding at the end
-                    update = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
-                        update = update.concat(data['id'], '  ', ' data-amount=', data['paid_amount'], '  ',
-                            '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
-                        )
-                    let c1 = row.insertCell(0);
-                    let c2 = row.insertCell(1);
-                    let c3 = row.insertCell(2);
-                    let c4 = row.insertCell(3);
-                    let c5 = row.insertCell(4);
-                    let c6 = row.insertCell(5);
-
-                    c1.innerText = data['id']
-                    c2.innerText = data['name']
-                    c3.innerHTML = ' <span dir=ltr style="color:red">' + data['paid_amount'] + '</span>'
-                    c4.innerText = data['Balance']
-                    c5.innerText = data['method_pay']
-                    c6.innerHTML = update
-
-                    $('#id').val(data['id'])
-
-
-                },
-                error: function(response) {
-                    alert("{{ __('home.sorryerror') }}")
-
-                }
+                });
             });
 
+            $(document).on('click', '#ajax_pagination_in_search a ', function (e) {
+                e.preventDefault();
+                var search_by_text = $("#date").val();
+                var url = $(this).attr("href");
+                var token_search = $("#token_search").val();
 
+                jQuery.ajax({
+                    url: url,
+                    type: 'get',
+                    dataType: 'html',
+                    cache: false,
+                    data: {
+                        "_token": token_search
+                    },
+                    success: function (data) {
+                        $("#ajax_responce_allinvoicesDiv").html(data);
+                    },
+                    error: function () {
 
-        }
+                    }
+                });
+            });
 
+            // دالة لتصفير النموذج بعد النجاح أو الإلغاء
+            function resetForm() {
+                $('#receipt_form')[0].reset();
+                $('#receipt_id').val('');
+                $('#receipt_form').attr('action', "{{ route('receipt.store') }}");
+                $('#form_title').text("{{ __('home.Receipt document') }}");
+                $('#submit_button').text("{{ __('home.Save and process') }}").removeClass('btn-info').addClass('btn-success');
+                $('#cancel_edit').hide();
+                $('#add_row').show();
+                $('#dynamic_field tbody tr:not(:first)').remove();
+                $('.select2').val('').trigger('change');
+                calculate();
+            }
 
+            $('#cancel_edit').click(resetForm);
 
-    })
+            // حدث التعديل (Edit) لجلب كافة الصفوف
+            $(document).on('click', '.edit-btn', function () {
+                // نعتمد هنا على رقم السند (serf_count) وليس فقط الـ ID الفريد للسطر
+                var serf_count = $(this).data('serf_count');
+                var id = $(this).data('id');
 
+                // 1. تغيير شكل النموذج لوضع التعديل
+                $('#receipt_id').val(id);
+                $('#receipt_form').attr('action', "{{ url('receipt-update') }}/" + id);
+                $('#form_title').text("{{ __('home.Edit Receipt') }} #" + serf_count);
+                $('#submit_button').text("{{ __('home.Update') }}").removeClass('btn-success').addClass('btn-info');
+                $('#cancel_edit').show();
+                $('#add_row').show(); // نجعله متاحاً لإضافة أسطر جديدة أثناء التعديل
 
-    $("#button_1").click(function(e) {
-        console.log($('#notes').val())
+                // 2. جلب كافة التفاصيل من السيرفر
+                $.ajax({
+                    url: "{{ url('get-receipt-details') }}/" + serf_count,
+                    type: "GET",
+                    success: function (response) {
+                        $('#dynamic_field tbody').empty();
+                        i = 0;
 
-        console.log($('#pay').val())
-        console.log($('#clientnamesearch').val())
-        var url = " {{ URL::to('reciepttransactions') }}";
-        var token_search = $("#token_search").val();
-        if ($('#cashreceived').val() == 0) {
-            alert("{{__('home.should')}}")
+                        // 1. البحث عن قيد الخزينة/البنك (الذي يحتوي على قيمة في creditor)
 
-        } else {
-            cashreceived=$('#cashreceived').val()
-            $('#cashreceived').val(0)
+                       var paymentEntry = response.find(item => parseFloat(item.creditor) > 0);
 
+                       if (paymentEntry) {
+                            // تعيين حساب الخزينة في القائمة العلوية
+                            $('#payment_account_id').val(paymentEntry.customer_id).trigger('change');
+
+                            // --- الكود الجديد والمضمون لجلب طريقة الدفع من أي سطر في المصفوفة ---
+                            var validMethodEntry = response.find(item => item.Pay_Method_Name && item.Pay_Method_Name.trim() !== '');
+
+                            if (validMethodEntry) {
+                                let method = validMethodEntry.Pay_Method_Name.toLowerCase().trim();
+
+                                if (method === 'cash') {
+                                    $('#pay_method_type').val('Cash').trigger('change');
+                                } else if (method === 'bank_transfer' || method === 'bank transfer') {
+                                    $('#pay_method_type').val('Bank_transfer').trigger('change');
+                                } else {
+                                    $('#pay_method_type').val(validMethodEntry.pay_method).trigger('change');
+                                }
+                            }
+                            // ------------------------------------------------------------------
+
+                            $('#date_input').val(paymentEntry.date_export);
+                        }
+
+                        // 2. تصفية القيود لعرض الحسابات المدينة فقط في الجدول (استثناء الخزينة والضريبة)
+                        $.each(response, function (index, item) {
+                            // نتحقق أن القيد مدين (debtor > 0)
+                            // ونستبعد حساب الضريبة إذا كان رقمه ثابتاً (مثلاً 102)
+                            if (parseFloat(item.debtor) > 0 && item.customer_id != 102) {
+                                addDynamicRowWithData(item);
+                            }
+                        });
+
+                        $('#form_title').text("{{ __('home.Edit Receipt') }} #" + paymentEntry.sent_serf_count);
+                        $('#submit_button').text("{{ __('home.Update') }}").addClass('btn-info').removeClass('btn-success');
+                        $('#cancel_edit').show();
+                        window.scrollTo(0, 0);
+                    }, error: function (r) {
+                        console.log(r)
+                    }
+                });
+            });
+            // دالة بناء السطر بالبيانات عند التعديل
+            function addDynamicRowWithData(item) {
+                var html = `<tr id="row${i}">
+            <td>${i + 1}</td>
+            <td>
+                <select class="form-control select2 row-acc" name="items[${i}][client_account_id]" required>
+                    <option value="">{{ __('home.Choose account') }}</option>
+                    @foreach (App\Models\financial_accounts::all() as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->name }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td>
+                <select class="form-control select2 row-cost" name="items[${i}][cost_center]">
+                    <option value="">{{ __('home.Without') }}</option>
+                    @foreach (App\Models\Cost_centers::all() as $cost)
+                        <option value="{{ $cost->id }}">{{ $cost->cost_center_ar }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td><input type="number" name="items[${i}][amount]" value="${item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
+            <td>
+                <select class="form-control tax-select row-tax" name="items[${i}][tax_rate]">
+                    <option value="0" ${item.vat == 0 ? 'selected' : ''}>0%</option>
+                    <option value="0.05" ${item.vat_rate == 0.05 ? 'selected' : ''}>5%</option>
+                    <option value="0.15" ${item.vat_rate == 0.15 ? 'selected' : ''}>15%</option>
+                </select>
+            </td>
+            <td><input type="text" name="items[${i}][tax_value]" class="form-control tax-value" readonly value="0.00"></td>
+            <td><input type="text" name="items[${i}][notes]" value="${item.note || ''}" class="form-control"></td>
+            <td><input type="file" name="items[${i}][attachment]" class="form-control-file"></td>
+            <td><button type="button" class="btn btn-danger btn-sm btn_remove">X</button></td>
+        </tr>`;
+
+                // إضافة السطر للجدول
+                $('#dynamic_field tbody').append(html);
+
+                // تفعيل التنسيقات والقيم للسطر الجديد
+                var currentRow = $(`#row${i}`);
+                currentRow.find('.row-acc').val(item.customer_id).select2({ width: '100%' });
+                currentRow.find('.row-cost').val(item.cost_center).select2({ width: '100%' });
+
+                i++; // زيادة العداد للسطر التالي
+                calculate(); // إعادة حساب الإجماليات
+            }
+            // دالة مساعدة لبناء السطر أثناء التعديل
+            function addDynamicRowForEdit(item) {
+                var rowHtml = `<tr id="row${i}">
+            <td>${i + 1}</td>
+            <td>
+                <select class="form-control select2 row-acc" name="items[${i}][client_account_id]" required>
+                    <option value="">{{ __('home.Choose account') }}</option>
+                    @foreach (App\Models\financial_accounts::all() as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->name }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td>
+                <select class="form-control select2 row-cost" name="items[${i}][cost_center]">
+                    <option value="">{{ __('home.Without') }}</option>
+                    @foreach (App\Models\Cost_centers::all() as $cost)
+                        <option value="{{ $cost->id }}">{{ $cost->cost_center_ar }}</option>
+                    @endforeach
+                </select>
+            </td>
+            <td><input type="number" name="items[${i}][amount]" value="${item.recive_amount}" step="0.01" class="form-control amount-input" required></td>
+            <td>
+                <select class="form-control tax-select row-tax" name="items[${i}][tax_rate]">
+                    <option value="0" ${item.vat == 0 ? 'selected' : ''}>0%</option>
+                    <option value="0.05" ${item.vat_rate == 0.05 ? 'selected' : ''}>5%</option>
+                    <option value="0.15" ${item.vat_rate == 0.15 ? 'selected' : ''}>15%</option>
+                </select>
+            </td>
+            <td><input type="text" name="items[${i}][tax_value]" class="form-control tax-value" readonly value="0.00"></td>
+            <td><input type="text" name="items[${i}][notes]" value="${item.note || ''}" class="form-control"></td>
+            <td><input type="file" name="items[${i}][attachment]" class="form-control-file"></td>
+            <td>${i === 0 ? '' : '<button type="button" class="btn btn-danger btn-sm btn_remove">X</button>'}</td>
+        </tr>`;
+
+                $('#dynamic_field tbody').append(rowHtml);
+
+                // تفعيل Select2 للسطر الجديد وتحديد القيم
+                var currentRow = $('#row' + i);
+                currentRow.find('.select2').select2({ width: '100%' });
+                currentRow.find('.row-acc').val(item.customer_id).trigger('change');
+                currentRow.find('.row-cost').val(item.cost_center).trigger('change');
+
+                i++; // زيادة العداد للسطر التالي
+            }
+
+            // حدث الحذف (Delete)
+            $(document).on('click', '.delete-btn', function () {
+                var id = $(this).data('id');
+                Swal.fire({
+                    title: "{{ __('home.Are you sure?') }}",
+                    text: "{{ __('home.delete_warning') }}",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: "{{ __('home.Yes, delete it!') }}",
+                    cancelButtonText: "{{ __('home.Cancel') }}"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ url('receipt-delete') }}/" + id,
+                            type: 'DELETE',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: function (res) {
+                                Swal.fire("{{ __('home.Deleted!') }}", res.message, "success");
+                                loadAllData();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        function loadAllData() {
             $.ajax({
-                url: url,
-                type: 'post',
-                cache: false,
-
-                data: {
-                    _token: token_search,
-                    cashreceived: cashreceived,
-                    clientnamesearch: $('#clientnamesearch').val(),
-                    pay: $('#pay').val(),
-                    notes: $('#notes').val() ?? '-',
-
-
-                },
-
-
-                success: function(data) {
-                    console.log(data)
-                    let table = document.getElementById("example");
-                    var tableHeaderRowCount = 1;
-
-                    var rowCount = table.rows.length;
-
-                    for (var i = tableHeaderRowCount; i < rowCount; i++) {
-                        table.deleteRow(tableHeaderRowCount);
-                    }
-                    let row = table.insertRow(-1); // We are adding at the end
-                    update = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
-                        update = update.concat(data['id'], '  ', ' data-amount=', data['paid_amount'], '  ',
-                            '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
-                        )
-                    let c1 = row.insertCell(0);
-                    let c2 = row.insertCell(1);
-                    let c3 = row.insertCell(2);
-                    let c4 = row.insertCell(3);
-                    let c5 = row.insertCell(4);
-                    let c6 = row.insertCell(5);
-
-                    c1.innerText = data['id']
-                    c2.innerText = data['name']
-                    c3.innerHTML = ' <span dir=ltr style="color:red">' + data['paid_amount'] + '</span>'
-                    c4.innerText = data['Balance']
-                    c5.innerText = data['method_pay']
-                    c6.innerHTML = update
-
-                    $('#id').val(data['id'])
-
-
-                },
-                error: function(response) {
-                    alert("{{ __('home.sorryerror') }}")
-
+                url: "{{URL::to('get_all_send_serf_jax')}}",
+                type: "GET",
+                dataType: "html",
+                success: function (products) {
+                    $("#ajax_responce_allinvoicesDiv").html(products);
                 }
             });
-
-
-
         }
 
-
-
-    })
-
-    function moneyconvertToNumber() {
-        var input = document.getElementById("cashreceived");
-        var val = toEnglishNumber(input.value)
-        input.value = val;
-    }
-
-    function toEnglishNumber(strNum) {
-        var ar = '٠١٢٣٤٥٦٧٨٩'.split('');
-        var en = '0123456789'.split('');
-        strNum = strNum.replace(/[٠١٢٣٤٥٦٧٨٩]/g, x => en[ar.indexOf(x)]);
-        //  strNum = strNum.replace(/[^\d]/g, '');
-        return strNum;
-    }
-</script>
-<script>
-    $(document).ready(function() {
-
-
-        $(function() {
-            var timeout = 4000; // in miliseconds (3*1000)
-            $('.alert').delay(timeout).fadeOut(500);
-        });
-
-
-
-
-
-        $(document).ready(function() {
-            $('select[name="clientNosearch"]').on('change', function() {
-                console.log('AJAX load   work 0000');
-
-                var selectclientid = $(this).val();
-                if (selectclientid) {
-                    console.log('AJAX load   work');
-
-                    $.ajax({
-                        url: "{{ URL::to('getsupllier') }}/" + selectclientid,
-                        type: "GET",
-                        dataType: "json",
-                        success: function(data) {
-                            console.log("success");
-                            console.log(data['name']);
-                            $('#debtamount').val(data['In_debt']);
-                            $('#clientName').val(data['name']);
-                            $('#address').val(data['location']);
-                            $('#phonenumber').val(data['phone']);
-                        },
-                    });
-                } else {
-                    console.log('AJAX load did not work');
-                }
-            });
-
-            $('select[name="clientnamesearch"]').on('change', function() {
-                console.log('AJAX load   work 0000');
-
-                var selectclientid = $(this).val();
-                if (selectclientid) {
-                    console.log('AJAX load   work');
-
-                    $.ajax({
-                        url: "{{ URL::to('getsupllier') }}/" + selectclientid,
-                        type: "GET",
-                        dataType: "json",
-                        success: function(data) {
-                            console.log("success");
-                            console.log(data['name']);
-
-                            $('#debtamount').val(data['In_debt']);
-                            $('#clientName').val(data['name']);
-                            $('#address').val(data['location']);
-                            $('#phonenumber').val(data['phone']);
-                        },
-                    });
-                } else {
-                    console.log('AJAX load did not work');
-                }
-            });
-        });
-    });
-</script>
-
-
-
-
-
-
+        function search_by_decoumentNo_function() {
+            var val = $("#search_by_decoumentNo").val();
+            if (val == '') {
+                loadAllData();
+            } else {
+                $.ajax({
+                    url: "{{URL::to('search_by_decoumentNo_send_serf')}}/" + val,
+                    type: "GET",
+                    dataType: "html",
+                    success: function (products) {
+                        $("#ajax_responce_allinvoicesDiv").html(products);
+                    }
+                });
+            }
+        }
+    </script>
 @endsection

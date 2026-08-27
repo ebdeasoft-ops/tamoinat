@@ -1,7 +1,6 @@
 <?php
 
 namespace Database\Seeders;
-
 use Spatie\Permission\Models\Permission;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -16,80 +15,79 @@ class PermissionTableSeeder extends Seeder
      */
     public function run()
     {
+    
+    
+    $permissions = [
+    
+        'Home',
+
+        'Sales' ,
+        'Sales products',
+        'sales return',
+        'Previous sales invoices',
 
 
-        $permissions = [
-
-            'Home',
-
-            'Sales',
-            'Sales products',
-            'sales return',
-            'Previous sales invoices',
+        'Purchases',
+        'Purchases products',
+        'purchase return',
+        'purchase order to resources',
+        'Previous purchase invoices',
 
 
-            'Purchases',
-            'Purchases products',
-            'purchase return',
-            'purchase order to resources',
-            'Previous purchase invoices',
+        'Quotations',
+        'request price from supplier',
+        'offer price to customer',
 
 
-            'Quotations',
-            'request price from supplier',
-            'offer price to customer',
+        'Available quantity',
 
 
-            'Available quantity',
+        'Receipt',
+        'Confirm product delivery',
+        'Previous receipt documents',
 
 
-            'Receipt',
-            'Confirm product delivery',
-            'Previous receipt documents',
+        'Produects',
+        'product damage',
+        'Stock adjustment',
+        'Product data change',
+        'Transferring a product to another branch',
+        'Receiving a product from another branch',
 
 
-            'Produects',
-            'product damage',
-            'Stock adjustment',
-            'Product data change',
-            'Transferring a product to another branch',
-            'Receiving a product from another branch',
-            'Units',
-            'Item categories',
-
-
-            'Reports',
-            'budget sheet',
-            'Transfers to master branch',
-            'Customer exceeded grace period',
-            'Transfer cash to a bank Rep',
-            'Sales report',
-            'Bank transfers',
-            'Sales return report',
-            'Product sales',
-            'Employee sales',
-            'Sales profit',
-            'Purchase orders from suppliers',
-            'A price offer to the customer',
-            'Delivery notes',
-            'Request a quote from supplier',
-            'Puchases from supplier',
-            'Refound of resource purchases',
-            'Purchases report',
-            'Customer purchases',
-            'Credit collection',
-            'List of suppliers',
-            'List of customers',
-            'Supplier credit payment',
-            'Shift details',
-            'Expenses',
-            'stok quantity',
-            'Product damage reports',
-            'Transfer of products',
-            'Best selling product',
-            'VAT',
-
-
+        'Reports',
+        'budget sheet',
+        'Transfers to master branch',
+        'Customer exceeded grace period',
+        'Bank Statement',
+        'Transfer cash to a bank Rep',
+        'Sales report',
+        'Bank transfers',
+        'Sales return report',
+        'Product sales',
+        'Employee sales',
+        'Sales profit',
+        'Purchase orders from suppliers',
+        'A price offer to the customer',
+        'Delivery notes',
+        'Request a quote from supplier',
+        'Puchases from supplier',
+       'Refound of resource purchases',
+       'Purchases report',
+        'Customer purchases',
+        'Credit collection',
+        'List of suppliers',
+        'List of customers',
+        'Supplier credit payment',
+        'Shift details',
+         'Expenses',
+        'stok quantity',
+        'Product damage reports',
+        'Transfer of products',
+        'Best selling product',
+        'VAT',
+    
+    
 
 
             'Accounts',
@@ -102,7 +100,7 @@ class PermissionTableSeeder extends Seeder
             'Confirm transfer of master branch',
             'Transfer cash to a bank',
             'Transfer cash to the next day',
-
+    
 
 
             'User and branches',
@@ -111,7 +109,7 @@ class PermissionTableSeeder extends Seeder
             'List of users',
             'Create a vendor',
             'Users permissions',
-
+    
 
             'Human Resource',
             'Employee',
@@ -119,7 +117,7 @@ class PermissionTableSeeder extends Seeder
             'create a department',
             'Increase or deduction',
             'Salary document',
-
+    
 
 
             'Subprocesses',
@@ -128,7 +126,7 @@ class PermissionTableSeeder extends Seeder
             'Add new supplier',
             'enpenses_reason',
 
-
+           
 
 
 
@@ -136,88 +134,86 @@ class PermissionTableSeeder extends Seeder
             'AVT',
             'System setting',
             'Branches',
-
+            
 
             'Technical support',
 
 
 
             'Notification',
+    
+    ];
+    
+    $permissions_ar = [
+    
+        'الرئيسية',
 
-        ];
+        'المبيعات' ,
+        'المبيعات',
+        'مرتجع المبيعات',
+        'فواتير المبيعات السابقة',
 
-        $permissions_ar = [
-
-            'الرئيسية',
-
-            'المبيعات',
-            'المبيعات',
-            'مرتجع المبيعات',
-            'فواتير المبيعات السابقة',
-
-            'المشتريات',
-            'المشتريات',
-            'مرتجع المشتريات',
-            'أمر شراء الي المورد',
-            'فواتير المشتريات السابقة',
-
-
-            'التسعيرات',
-            'طلب اسعار من المورد',
-            'عرض اسعار للعميل',
+        'المشتريات',
+        'المشتريات',
+        'مرتجع المشتريات',
+        'أمر شراء الي المورد',
+        'فواتير المشتريات السابقة',
 
 
-            'عرض الكمية المتوفرة للعميل',
+        'التسعيرات',
+        'طلب اسعار من المورد',
+        'عرض اسعار للعميل',
 
 
-            'سند استلام',
-            "تاكيد تسليم منتج",
-            'المستندات الاستلام السابقة',
+        'عرض الكمية المتوفرة للعميل',
 
 
-            'المنتجات',
-            'اتلاف منتج',
-            'تعديل كمية المخزون',
-            'تغير بيانات المنتج',
-            'ارسال منتج الي فرع اخري',
-            'استلام منتج من فرع اخري',
-            'الوحدات',
-            'فئات الاصناف',
+        'سند استلام',
+        "تاكيد تسليم منتج",
+        'المستندات الاستلام السابقة',
 
 
-            'التقارير',
-            'الميزانية العمومية',
-            "التحويلات لفرع الرئيسي",
-            'العملاء تجاوزة فترة السماح',
-            " ايداع من  البنك",
-            "تحويل نقدي الصندوق الي البنك",
-
-            'مبيعات المنتجات',
-            'مرتجع المبيعات',
-            'مبيعات منتج',
-            'مبيعات موظف',
-            'أرباح المبيعات',
-            'أوامر الشراء من الموردين',
-            'تقرير عرض أسعار للعميل',
-            'ملاحظات التسليم',
-            'طلبات عرض سعر من المواردين',
-            'مشتريات من مورد',
-            'مرتجع مشتريات من  مورد',
-            'مشتريات البضاعة',
-            'مشتريات العملاء',
-            'تحصيل الأجل',
-            'قائمة الموردين',
-            'قائمة العملاء',
-            'الدفع الأجل للمورد',
-            'تفاصيل الوردية',
-            'المصروفات',
-            'كمية وقيمة المخزون',
-            ' تقارير اتلاف المنتجات',
-            "حركة المنتجات بين الفروع",
-            'منتجات الأكثر مبيعا',
-            'ضريبة القيمة المضافة',
+        'المنتجات',
+        'اتلاف منتج',
+        'تعديل كمية المخزون',
+        'تغير بيانات المنتج',
+        'ارسال منتج الي فرع اخري',
+        'استلام منتج من فرع اخري',
 
 
+        'التقارير',
+        'الميزانية العمومية',
+        "التحويلات لفرع الرئيسي",
+        'العملاء تجاوزة فترة السماح',
+        'كشف الحساب البنكي',
+        " ايداع من  البنك",
+        "تحويل نقدي الصندوق الي البنك",
+        'مبيعات المنتجات',
+        'مرتجع المبيعات',
+        'مبيعات منتج',
+        'مبيعات موظف',
+       'أرباح المبيعات',
+       'أوامر الشراء من الموردين',
+        'تقرير عرض أسعار للعميل',
+        'ملاحظات التسليم',
+        'طلبات عرض سعر من المواردين',
+        'مشتريات من مورد',
+        'مرتجع مشتريات من  مورد',
+         'مشتريات البضاعة',
+        'مشتريات العملاء',
+        'تحصيل الأجل',
+        'قائمة الموردين',
+        'قائمة العملاء',
+        'الدفع الأجل للمورد',
+        'تفاصيل الوردية',
+        'المصروفات',
+        'كمية وقيمة المخزون',
+        ' تقارير اتلاف المنتجات',
+        "حركة المنتجات بين الفروع",
+        'منتجات الأكثر مبيعا',
+        'ضريبة القيمة المضافة',
+    
+    
 
 
             'الحسابات',
@@ -230,7 +226,7 @@ class PermissionTableSeeder extends Seeder
             'تاكيد التحويل لفرع الرئيسي',
             "تحويل نقدي الصندوق لبنك",
             "ترحيل النقدية ليوم التالي",
-
+    
 
 
             'المستخدمين و الفروع',
@@ -239,7 +235,7 @@ class PermissionTableSeeder extends Seeder
             'قائمة المستخدمين',
             'إنشاء بائع',
             'صلاحيات المستخدمين',
-
+    
 
             'الموارد البشرية',
             'قائمة الموظفين',
@@ -247,7 +243,7 @@ class PermissionTableSeeder extends Seeder
             'انشاء قسم جديد',
             'زيادة او خصم للموظف',
             'مستند المرتبات',
-
+    
 
 
             'العمليات الفرعية',
@@ -256,7 +252,7 @@ class PermissionTableSeeder extends Seeder
             'اضافة مورد جديد',
             'اضافة غرض الصرف',
 
-
+           
 
 
 
@@ -264,22 +260,32 @@ class PermissionTableSeeder extends Seeder
             'الضريبة',
             'اعدادات النظام',
             'الفروع',
-
+            
 
             'التواصل مع الدعم الفني',
 
 
 
             'الاشعارات',
+    
+    ];
+      
 
-        ];
-
-
-        $i = 0;
-        foreach ($permissions as $permission) {
-
-            Permission::create(['name' => $permission, 'name_ar' => $permissions_ar[$i]]);
-            $i++;
-        }
+    $i=0;
+    foreach ($permissions as $permission) {
+    
+Permission::firstOrCreate(
+            [
+                'name' => $permission,
+                'guard_name' => 'web' // تحديد الـ guard هنا
+            ], 
+            [
+                'name_ar' => $permissions_ar[$i]
+            ]
+        );    $i++;
     }
-}
+    
+    
+    }
+    }
+

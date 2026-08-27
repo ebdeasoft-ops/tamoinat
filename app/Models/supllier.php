@@ -17,6 +17,6 @@ class supllier extends Model
         'In_debt',
         'comp_name',
         'TaxـNumber',
-        'branchs_id'
+        'mantob_account_id'
     ];
 }

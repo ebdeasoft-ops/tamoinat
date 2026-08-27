@@ -42,12 +42,6 @@ class settings extends Model
         'production_csid',
         'company_id',
         'scander_number',
-        'stage',
-        'invoices_count',
-        'previous_hash_invoice',
-    'TOKEN',
-'production',
-'token_sendbox',
-'sendbox'];
+        'stage'];
     
 }

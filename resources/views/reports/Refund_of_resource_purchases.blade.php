@@ -109,7 +109,7 @@
                     </form>
 
                 </div>
-                @if (isset($Invoices))
+                @if (isset($Invoices)&&count($Invoices)>0)
                 <div style="border-radius: 10px" class="card m-3 p-3">
                     <div class="table-responsive">
                         <?php
@@ -165,7 +165,7 @@
                             <table class="table table-hover text-center table-striped table-bordered">
                                 <thead>
                                     <tr>
-                                        <th style="color:#419BB2"> {{__('home.Invoice_no')}}</th>
+                                        <th style="color:#419BB2">{{__('home.Invoice_no')}}</th>
                                         <th style="color:#419BB2">{{ $invoice->orderId }}</th>
                                         <th style="color:#419BB2">{{ __('home.paymentmethod') }}</th>
                                         <th style="color: #419BB2">@if ($invoice->Pay == 'Cash')
@@ -209,8 +209,8 @@
                                         <td>{{ $i }}</td>
                                         <td>{{ $date[0] }}</td>
 
-                                        <td dir=ltr>{{ $product->productData->barcode }}</td>
-                                        <td>{{ $product->productData->name }}</td>
+                                        <td dir=ltr>{{ $product->productData->Product_Code }}</td>
+                                        <td>{{ $product->productData->product_name }}</td>
                                         <td>{{ $product->returns_purchase }}</td>
 
 

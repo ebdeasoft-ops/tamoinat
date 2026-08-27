@@ -1,12 +1,26 @@
 <?php
 
- namespace App\Http\Controllers;
-  use Illuminate\Support\Facades\Config; 
-  use Illuminate\Support\Facades\Session; 
-  use Illuminate\Support\Facades\Redirect; 
-  class LanguagesController extends Controller { 
-    public function switchLang($lang) {
-         if (array_key_exists($lang, Config::get('languages'))) 
-         { Session::put('applocale', $lang); } 
-         return Redirect::back(); } 
-        }
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+
+class LanguagesController extends Controller
+{ 
+    public function switchLang($lang) 
+    {
+        // التأكد من أن اللغة المرسلة مدعومة في ملف إعدادات الحزمة laravel-localization
+        if (array_key_exists($lang, LaravelLocalization::getSupportedLocales())) {
+            
+            // جلب الرابط السابق الذي جاء منه المستخدم
+            $previousUrl = url()->previous();
+            
+            // تحويل الرابط السابق ليدعم اللغة الجديدة
+            $localizedUrl = LaravelLocalization::getLocalizedURL($lang, $previousUrl, [], true);
+            
+            return redirect()->to($localizedUrl);
+        } 
+
+        return redirect()->back();
+    } 
+}

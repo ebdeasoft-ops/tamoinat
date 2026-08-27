@@ -33,6 +33,7 @@ class User extends Authenticatable
         'branchs_id',
         'roles_name',
         'active',
+        'discount_allow_limit',
     ];
 
     /**

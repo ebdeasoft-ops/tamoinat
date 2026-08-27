@@ -66,7 +66,7 @@
 
                 <div class="card-header pb-0">
 
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'salesـprofits')) }}" method="POST" role="search" autocomplete="off">
+                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'salesـprofits')) }}" method="POST" role="search"id="searchForm" autocomplete="off">
                         {{ csrf_field() }}
 
                         <div class="row">
@@ -93,19 +93,19 @@
                                 </div><!-- input-group -->
                             </div>
 
-                            <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.searchbyclientname') }} </p>
-                                <select class="form-control parent-input select2" name="UserId" required>
+                                    <div class="col-lg-4 mg-t-20 mg-lg-t-0" id="type">
+                                    <p class="mg-b-10 parent-label"> {{ __('report.Enter_employeeـname') }} </p>
+                                    <select class="form-control parent-input" name="userid" required>
 
-                                    <option value="-"> {{ __('home.searchbyclientname') }}</option>
+                                        <option value="-"> {{ __('report.Enter_employeeـname') }} </option>
 
-                                    @foreach (App\Models\customers::get() as $section)
-                                    <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name }} -
-                                        {{ $section->id }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div><!-- col-4 -->
+                                        @foreach (App\Models\User::get() as $section)
+                                            <option value="{{ $section->id }}"> {{ $section->name }} 
+                                               </option>
+                                        @endforeach
+                                    </select>
+                                </div><!-- col-4 -->
+
                             <div class="col" id="type">
                                 <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
                                 <select class="form-control parent-input" name="branch" required>
@@ -123,12 +123,15 @@
 
                         </div><br>
                         <div class="d-flex justify-content-center">
-                            <button class="btn btn-success print-style p-1">
-                                {{ __('home.search') }}
-                                <i style=" height: 100;
-                                                 
-                                                 font-size:15px" class="las la-search"></i>
-                            </button>
+               <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-success p-1 mx-1">
+            {{ __('home.search') }} <i class="las la-search"></i>
+        </button>
+
+        <button type="button" id="exportExcelBtn" class="btn btn-primary p-1 mx-1">
+            تصدير إكسيل <i class="las la-file-excel"></i>
+        </button>
+    </div>
                             <br>
                         </div>
 
@@ -192,9 +195,8 @@
 
 
                                     foreach (App\Models\sales::where('invoice_id', $product->id)->where('quantity', '!=', 0)->get() as $productaa) {
-                                       
-                                        $totalprofit += (($productaa->quantity * $productaa->Unit_Price)- $productaa->discount ) - ($productaa->quantity * $productaa->productData->cost_price);
-                                        $profit += (($productaa->quantity * $productaa->Unit_Price)- $productaa->discount ) - ($productaa->quantity * $productaa->productData->cost_price);
+                                        $totalprofit += (($productaa->quantity * $productaa->Unit_Price) - $productaa->Discount_Value) - ($productaa->quantity * $productaa->productData->purchasingـprice);
+                                        $profit += (($productaa->quantity * $productaa->Unit_Price) - $productaa->Discount_Value) - ($productaa->quantity * $productaa->productData->purchasingـprice);
                                         $date = explode(' ', $product->created_at);
                                     }
                                     ?>
@@ -347,13 +349,7 @@
                             </div>
 
 
-
-
-
-                            @endif
-
-                            @if (isset($Invoices) && $totalprofit != 0)
-                            <div class="d-flex justify-content-center my-3">
+ <div class="d-flex justify-content-center my-3">
 
                                 <a style="background-color: #419BB2;font-size:17px" class="btn btn-success p-1" href="{{ url('/' . ($page = 'printReportProfitSales') . '/' . $branch_id . '/' . $userId . '/' . $startat . '/' . $endat) }}">
                                     {{ __('home.print') }}
@@ -362,7 +358,11 @@
                                     </svg>
                                 </a>
                             </div>
+
+
                             @endif
+
+                           
                         </div>
 
                         <br>
@@ -426,6 +426,25 @@
 </script>
 
 <script>
+    $('#exportExcelBtn').on('click', function(e) {
+        e.preventDefault();
+        var form = $('#searchForm');
+        var originalAction = form.attr('action'); // حفظ الرابط الأصلي للبحث
+        
+        // تغيير الرابط لرابط الـ Route الخاص بالإكسيل
+        var excelRoute = "{{ url(LaravelLocalization::getCurrentLocale() . '/export_sales_excel') }}";
+        
+        form.attr('action', excelRoute);
+        form.submit(); // إرسال البيانات للـ Route الجديد
+        
+        // إعادة الرابط الأصلي بعد الإرسال لكي يعمل زر البحث بشكل طبيعي لاحقاً
+        setTimeout(function(){
+            form.attr('action', originalAction);
+        }, 500);
+    });
+</script>
+
+
     $(document).ready(function() {
 
         $(function() {

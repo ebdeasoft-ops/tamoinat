@@ -26,7 +26,16 @@
                 <h4 class="content-title mb-0 my-auto">{{ __('home.newexpense') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
                 </span>
             </div>
+              
         </div>
+          <button  style=" height: 40px;font-weight:400 !important;
+                                                 width: 100px;
+                                                 font-size:13px" class="modal-effect btn btn-sm btn-info  button-eng" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicebyidmodale" title="تحديد"><i
+                                    class="las"> {{ __('home.update_decument') }}</i>
+                                        <svg style="width:16px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
+                                            <path d="M17.927,5.828h-4.41l-1.929-1.961c-0.078-0.079-0.186-0.125-0.297-0.125H4.159c-0.229,0-0.417,0.188-0.417,0.417v1.669H2.073c-0.229,0-0.417,0.188-0.417,0.417v9.596c0,0.229,0.188,0.417,0.417,0.417h15.854c0.229,0,0.417-0.188,0.417-0.417V6.245C18.344,6.016,18.156,5.828,17.927,5.828 M4.577,4.577h6.539l1.231,1.251h-7.77V4.577z M17.51,15.424H2.491V6.663H17.51V15.424z"></path>
+                                        </svg>
+                                    </button>
     </div>
     <!-- breadcrumb -->
     @endsection
@@ -55,7 +64,7 @@
 
                 <div class="card-header pb-0">
 
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'Expenses')) }}" method="POST" role="search" autocomplete="off" name="form-name">
+                    <form enctype="multipart/form-data" method="POST" role="search" name="form-name" id='formdata' autocomplete="off">
                         {{ csrf_field() }}
 
                         <input type="hidden" id="token_search" value="{{ csrf_token() }}">
@@ -66,7 +75,7 @@
 
                         <div class='row'>
 
-                            <div class="col-lg-3 mb-2" id="type">
+                            <div class="col-lg-2 mb-2" id="type">
                                 <label class="parent-label"> {{ __('home.paymentmethod') }} </label>
                                 <div class="input-group">
                                     <select class="form-control parent-input" name="pay" id="pay" required>
@@ -77,7 +86,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-lg-3 mb-2">
+                            <div class="col-lg-2 mb-2">
                                 <label for="inputName" class="parent-label"> {{ __('accountes.Theamountpaid') }}
                                 </label>
                                 <div class="input-group">
@@ -85,14 +94,14 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-3 mb-2" id="type">
+                            <div class="col-lg-2 mb-2" id="type">
                                 <label class="parent-label"> {{ __('report.enpenses_reason') }} </label>
                                 <div class="input-group">
                                     <select class="form-control parent-input" name="reasone" id="reasone" required>
 
                                         @foreach (App\Models\Expenses_reasons::get() as $Expenses_reason)
                                         <option value="{{ $Expenses_reason->id }}">
-                                            {{ $Expenses_reason->expenses_reason }}
+                                            {{ App::getLocale()=='ar'?$Expenses_reason->expenses_reason:$Expenses_reason->expenses_reason_en }}
                                         </option>
                                         @endforeach
                                     </select>
@@ -100,7 +109,12 @@
 
 
                             </div>
-                            <div class="col-lg-3 parent-label" id="start_at">
+                              <div class="col-lg-2 parent-label">
+                  <label> {{__('home.attachments')}}</label>
+                  <input autocomplete="off" onchange="readURL(this)" type="file" id="attachments" name="attachments" class="form-control">
+                
+               </div>
+                            <div class="col-lg-2 parent-label" id="start_at">
                                 <label for="exampleFormControlSelect1"> {{ __('report.date') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -111,15 +125,19 @@
                                 </div>
                             </div>
 
-                         
+                              <div class="col-lg-2 parent-label">
+                                <label for="inputName" class="control-label parent-label">{{ __('home.notesClient') }}
+                                </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="notes" name="notes" title="يرجي ادخال ملاحظات   "  
+                                  value ="- " >         
+                            </div>
 
                             <br>
 
                         </div>
                         <br>
-                    </form>
                     <div class="d-flex justify-content-center">
-                        <button class="btn btn-success print-style p-1" id="button_1">
+                        <button type='submit' class="btn btn-success print-style p-1" id="button_1">
                             {{ __('home.savedecoument') }}
                             <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
                                 <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
@@ -128,6 +146,8 @@
                         <br>
 
                     </div>
+                                        </form>
+
                     <br>
                     <br>
 
@@ -210,6 +230,65 @@
 </div>
 <!-- main-content closed -->
 </div>
+
+    <div class="modal p-3" id="updateinvoicebyidmodale">
+        <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
+            <div class="modal-content modal-content-demo p-3">
+                <form>
+                    <div class="modal-header">
+                        <h6 class="modal-title"> {{ __('home.update_decument') }} </h6><button aria-label="Close" class="close close-special" data-dismiss="modal" type="button"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    {{ csrf_field() }}
+                    <div class="row mb-1">
+                        <div class="col-lg-6 col-md-6 col-md-4 mb-2">
+                            <label style="font-size: 12px;" for="inputName" class="control-label parent-label"> {{ __('home.decoumentNo') }}</label>
+                            <input style="height:32px" type="text" class="form-control parent-input" id="updateinvoicebyid" name="name" title="{{ __('supprocesses.name') }}" required>
+                        </div>
+
+
+                    </div>
+
+
+                    <br>
+                    <div class="d-flex justify-content-center">
+                        <button style="background-color: #419BB2" class="btn btn-primary p-1" data-dismiss="modal" id="getinvoiceupdate">
+                            {{ __('home.search') }}
+                            <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
+                                <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
+                            </svg>
+                        </button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+  <div class="modal fade product-selection" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+            <div class="modal-dialog modal-xl" style="background-color: rgba(0, 0, 0, 0)!important;color: rgba(0, 0, 0, 0)!important;" role="document">
+                <div class="modal-content">
+                  
+                    <div class="modal-body" style="justify-content: center;">
+
+
+ <center><img style="width:250px;height:250px;" class="custom_img" src="{{ asset('assets/admin/uploads/done.png') }}" >
+                        
+</center>
+
+
+
+                          
+                        </div>
+
+                     
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
 
 
 <!-- edit -->
@@ -306,6 +385,70 @@
         }).val();
 
 
+
+  $("#getinvoiceupdate").click(function(e) {
+            event.preventDefault();
+            var url = " {{ URL::to('getAndUpdateExpenses') }}" + "/" + $('#updateinvoicebyid').val();
+            console.log(url)
+            jQuery.ajax({
+                url: url,
+                type: 'get',
+                dataType: 'json',
+                cache: false,
+
+             
+                success: function(data) {
+         let table = document.getElementById("example");
+                        var tableHeaderRowCount = 1;
+                        console.log(data['id'])
+                        var rowCount = table.rows.length;
+                        $('#cashreceived').val(0)
+                        for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                            table.deleteRow(tableHeaderRowCount);
+                        }
+                        let row = table.insertRow(-1); // We are adding at the end
+                        update = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
+                        update = update.concat(data['id'], '  ', ' data-amount=', data['Theـamountـpaid'], '  ',
+                            '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
+                        )
+                        let c1 = row.insertCell(0);
+                        let c2 = row.insertCell(1);
+                        let c3 = row.insertCell(2);
+                        let c4 = row.insertCell(3);
+                        let c5 = row.insertCell(4);
+                        let c6 = row.insertCell(5);
+
+                        c1.innerText = data['id']
+                        c2.innerText = data['user']
+                        c3.innerHTML = ' <span dir=ltr style="color:red">' + data['expense'] + '</span>'
+                        c4.innerText = data['Theـamountـpaid']
+                        c5.innerText = data['Pay_Method_Name']
+                        c6.innerHTML = update
+
+                        $('#id').val(data['id'])
+
+
+
+                },
+                error: function(response) {
+                    alert("{{ __('home.sorryerror') }}")
+
+                }
+                
+            })
+            
+       })
+
+
+
+
+
+
+
+
+
+
+
         $('#increaseProduct').on('show.bs.modal', function(event) {
             var button = $(event.relatedTarget)
 
@@ -326,16 +469,20 @@
             var url = " {{ URL::to('updateExpenses') }}";
             var token_search = $("#token_search").val();
             console.log($('#cashreceivedupdate').val())
+            console.log('--------------reson id---------')
             console.log( $('#reasoneupdate').val())
+            console.log('--------------reson id---------')
+
             console.log( $('#payupdate').val())
             console.log( $('#transactionId').val())
 
-            if ($('#cashreceivedupdate').val() == 0) {
+            if ($('#cashreceivedupdate').val() == '') {
                 alert("{{__('home.should')}}")
 
             } else {
                 cashreceived= $('#cashreceivedupdate').val()
                 $('#cashreceivedupdate').val(0)
+
                 $.ajax({
                     url: url,
                     type: 'post',
@@ -347,9 +494,6 @@
                         reasoneupdate: $('#reasoneupdate').val(),
                         payupdate: $('#payupdate').val(),
                         transactionId: $('#transactionId').val(),
-
-
-
                     },
 
 
@@ -373,19 +517,18 @@
                         let c4 = row.insertCell(3);
                         let c5 = row.insertCell(4);
                         let c6 = row.insertCell(5);
-
                         c1.innerText = data['id']
                         c2.innerText = data['user']
                         c3.innerHTML = ' <span dir=ltr style="color:red">' + data['expense'] + '</span>'
                         c4.innerText = data['Theـamountـpaid']
                         c5.innerText = data['Pay_Method_Name']
                         c6.innerHTML = update
-
                         $('#id').val(data['id'])
 
 
                     },
                     error: function(response) {
+                        console.log(response)
                         alert("{{ __('home.sorryerror') }}")
 
                     }
@@ -402,7 +545,10 @@
 
 
 
-        $("#button_1").click(function(e) {
+      $("#formdata").on('submit',function(e) {
+            document.getElementById('button_1').style.visibility = 'hidden';
+
+        e.preventDefault();
             var url = " {{ URL::to('Expenses') }}";
             var token_search = $("#token_search").val();
 
@@ -415,30 +561,24 @@
 
             } else {
                 cashreceived= $('#cashreceived').val()
-                $('#cashreceived').val(0)
                 $.ajax({
                     url: url,
                     type: 'post',
                     cache: false,
-
-                    data: {
-                        _token: token_search,
-                        reasone: $('#reasone').val(),
-                        cashreceived: cashreceived,
-                        pay: $('#pay').val(),
-                        date: $('#date').val(),
-
-
-
-                    },
+contentType:false,
+processData:false,
+                data:new FormData(this),
 
 
                     success: function(data) {
+
                         let table = document.getElementById("example");
                         var tableHeaderRowCount = 1;
                         console.log(data['id'])
                         var rowCount = table.rows.length;
                         $('#cashreceived').val(0)
+                        document.getElementById('button_1').style.visibility = 'visible';
+
                         for (var i = tableHeaderRowCount; i < rowCount; i++) {
                             table.deleteRow(tableHeaderRowCount);
                         }
@@ -462,10 +602,16 @@
                         c6.innerHTML = update
 
                         $('#id').val(data['id'])
+                        $('#SearchProduct').modal().show();
+ setTimeout(() => {
+         $('#SearchProduct').modal('hide');
+
+        }, 1000);
 
 
                     },
                     error: function(response) {
+                        console.log(response)
                         alert("{{ __('home.sorryerror') }}")
 
                     }

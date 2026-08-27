@@ -73,7 +73,6 @@ $logo=camplogo;
                         <br>
                         <br>
                         <br>
-                        <input id="fristshow" value=0>
                         <div class="table-responsive ">
                             <table id="example" class="table text-md-nowrap text-center our-table" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
                                 <thead>

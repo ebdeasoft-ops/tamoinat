@@ -14,10 +14,14 @@ class expenses extends Model
         'Reasonforspendingmoney',
         'branchs_id',
         'expensesAvt',
+        'notes',
         'created_at',
          'updated_at',
          'Theـamountـpaid',
-         'reasonId_id'
+         'reasonId_id',
+         'attachments',
+         'Transaction_id',
+         'type'
     ];
     public function user()
     {

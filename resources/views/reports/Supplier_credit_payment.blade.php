@@ -93,16 +93,34 @@
                                 </div><!-- input-group -->
                             </div>
 
-                            <div class="col-lg-5 mg-t-20 mg-lg-t-0" id="type">
-                                <p class="mg-b-10 parent-label"> {{ __('home.shearchbysuppliername') }} </p>
+                            <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
+                                <p class="mg-b-10 parent-label"> {{ __('home.saerch_by_numberaccount_or_name') }} </p>
                                 <select class="form-control parent-input select2" name="supplierId" required>
 
+                                    <option value="-"> {{ __('home.acount_name') }} </option>
 
-                                    @foreach (App\Models\supllier::where('branchs_id', Auth()->User()->branchs_id)->get() as $section)
+                                    @foreach (App\Models\financial_accounts::get() as $section)
                                     <option style="font-size: 15px" value="{{ $section->id }}"> {{ $section->name }} </option>
                                     @endforeach
                                 </select>
                             </div><!-- col-4 -->
+         <div class="col" id="type">
+                                    <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
+                                    <select class="form-control parent-input" name="branch" required>
+                                    @if(Auth()->user()->branchs_id==1)
+                                        <option value="-" selected>{{ __('users.allbranchs') }}
+                                        </option>
+                                            @endif
+                                        @foreach (App\Models\branchs::get() as $branch)
+                                        @if(Auth()->user()->branchs_id==1||Auth()->user()->branchs_id==$branch->id)
+
+                                            <option style="font-size:15px" value="{{ $branch->id }}"> {{ $branch->name }}</option>
+                                       @endif
+                                            @endforeach
+                                 
+                                    </select>
+
+                                </div>
 
                             <div class="col-lg-3 mg-t-20 mg-lg-t-0" id="type">
                                 <input class="form-control parent-input" name="productNo" hidden=true>
@@ -137,24 +155,28 @@
                           ?>
 
 
-                        <div class="table-responsive hoverable-table">
-                            <table class="table table-hover" id="example1" data-page-length='50' style=" text-align: center;">
+                         <div class="table-responsive  ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
 
                                 <thead>
                                     <tr>
                                         <th class="border-bottom-0">#</th>
+                                                                                        <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
+
                                         <th class="border-bottom-0">{{ __('report.date') }}</th>
 
                                         <th class="border-bottom-0"> {{ __('home.employee') }}</th>
-                                        <th class="border-bottom-0"> {{ __('home.suppliername') }}</th>
+                                        <th class="border-bottom-0"> {{ __('home.acount_name') }}</th>
                                         <th class="border-bottom-0"> {{ __('accountes.Theamountpaid') }}</th>
-                                        <th class="border-bottom-0"> {{ __('home.Remainingamount') }}</th>
 
                                         <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                        <th class="border-bottom-0">{{ __('home.notesClient') }}</th>
+                                        <th class="border-bottom-0">{{ __('home.notesClient') }}</th>  <th class="border-bottom-0">{{ __('home.attachments') }}</th>
                                     </tr>
 
                                 </thead>
+                                     <?php
+                                $i = 0;
+                                ?>
                                 @foreach ($Invoices as $invoice)
                                 <?php
 
@@ -175,9 +197,7 @@
 
 
 
-                                <?php
-                                $i = 0;
-                                ?>
+                           
                                 <?php
                                 $i++;
 
@@ -186,11 +206,12 @@
                                 <tbody>
                                     <tr>
                                         <td>{{ $i }}</td>
+                                                                                            <td>{{ $invoice->id}}</td>
+
                                         <td>{{ $date[0] }}</td>
                                         <td>{{ $invoice->user->name }}</td>
-                                        <td>{{ $invoice->supllier->name }}</td>
-                                        <td>{{ $invoice->paidـamount }}</td>
-                                        <td>{{ $invoice->currentblance }}</td>
+                                        <td>{{ $invoice->financial_accounts_data->name }}</td>
+                                        <td>{{ $invoice->recive_amount }}</td>
                                         <td>
                                             @if ($invoice->Pay_Method_Name == 'Cash')
                                             {{ __('report.cash') }}
@@ -201,6 +222,15 @@
                                             @endif
                                         </td>
                                         <td>{{$invoice->note }}</td>
+                                       <?php
+                                       $path=$invoice->attachments;
+                                       ?>
+                                        <td><center>@if($path!=null)<a  target="_blank"
+href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
+                                    >{{  __('home.show')}}</a>
+                                    @else
+                                    -
+                                    @endif</td>
 
                                     </tr>
 

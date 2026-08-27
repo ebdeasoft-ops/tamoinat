@@ -9,274 +9,163 @@ use App\Models\product_movement_another_branch;
 use App\Models\product_movement_another_branch_items;
 use App\Models\products;
 use App\Models\Avt;
-
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
+use App\Models\products_mix_items;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class DeliveryProductToTheCustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        //
-
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
         return view('products.confirm_delivery_another_branch', compact('data'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(Request $request)
-    {
-        //
-
-        return $request;
-    }
-
-    /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        //
+        $currentBranchId = auth()->user()->branchs_id;
+        
+        $Delivery_product_to_the_customer = Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)
+            ->where('status', 0)
+            ->where('branch_to', $currentBranchId)
+            ->get();
 
-        $Delivery_product_to_the_customer = Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)->where('status', 0)->where('branch_to', Auth()->user()->branchs_id)->get();
-        // return  $Delivery_product_to_the_customer;
-        if (count($Delivery_product_to_the_customer) == 0) {
-            $message = LaravelLocalization::getCurrentLocale() == 'ar' ? '  لم يتم العثور علي فاتورة بهذة الرقم' : 'No invoice with this number was found';
+        if ($Delivery_product_to_the_customer->isEmpty()) {
+            $message = LaravelLocalization::getCurrentLocale() == 'ar' 
+                ? 'لم يتم العثور علي فاتورة بهذا الرقم تابعة لفرعكم' 
+                : 'No invoice with this number was found for your branch';
 
             session()->flash('notfountreturnproduct', $message);
             $data = [];
             return view('products.confirm_delivery_another_branch', compact('data'));
-        } else {
-            session()->flash('foundinvoice', '   تم العثور علي فاتورة ');
-
-            $datamain = [
-                'branch_from' => $Delivery_product_to_the_customer[0]->branchfrom->name,
-                'branch_to' => $Delivery_product_to_the_customer[0]->branchto->name,
-                'user_from' => $Delivery_product_to_the_customer[0]->userfrom->name,
-                'invoice_id' => $Delivery_product_to_the_customer[0]->invoice_id,
-            ];
-
-            // 'quantity'=> $request->quantity,
-            // 'status'=>0,
-            // 'created_at'=>\Carbon\Carbon::now()->addHours(3),
-            $data = [
-                'products' => $Delivery_product_to_the_customer,
-                'datamain' => $datamain
-
-            ];
-
-            return view('products.confirm_delivery_another_branch', compact('data'));
         }
-    }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Delivery_product_to_the_customer  $delivery_product_to_the_customer
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Delivery_product_to_the_customer $delivery_product_to_the_customer)
-    {
-        //
+        session()->flash('foundinvoice', 'تم العثور علي فاتورة');
+
+        $datamain = [
+            'branch_from' => $Delivery_product_to_the_customer[0]->branchfrom->name ?? '',
+            'branch_to'   => $Delivery_product_to_the_customer[0]->branchto->name ?? '',
+            'user_from'   => $Delivery_product_to_the_customer[0]->userfrom->name ?? '',
+            'invoice_id'  => $Delivery_product_to_the_customer[0]->invoice_id,
+        ];
+
+        $data = [
+            'products' => $Delivery_product_to_the_customer,
+            'datamain' => $datamain
+        ];
+
+        return view('products.confirm_delivery_another_branch', compact('data'));
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Delivery_product_to_the_customer  $delivery_product_to_the_customer
-     * @return \Illuminate\Http\Response
      */
     public function edit(Request $request)
     {
-        //
+        $currentBranchId = auth()->user()->branchs_id;
+        $currentUserId = auth()->id();
+        $currentTime = Carbon::now()->addHours(3);
 
+        // 1. جلب البيانات المعلقة أولاً للتأكد من وجودها قبل التحديث
+        $deliveryItems = Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)
+            ->where('status', 0)
+            ->where('branch_to', $currentBranchId)
+            ->get();
 
-        $avtSaleRate = Avt::find(1);
-
-        $order_id_send = 0;
-        $order_id_recive = 0;
-        $Delivery_product_to_the_customerData = Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)->where('status', 0)->where('branch_to', Auth()->user()->branchs_id)->get();
-        $Delivery_product_to_the_customer = Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)->where('status', 0)->where('branch_to', Auth()->user()->branchs_id)->update([
-            'status' => 1
-        ]);
-        // return  $Delivery_product_to_the_customer;
-        if ($Delivery_product_to_the_customer == 0) {
-            $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'عذرا حدث خطا نرجو المحاولة مرة اخري' : 'Sorry, an error occurred, please try again';
+        if ($deliveryItems->isEmpty()) {
+            $message = LaravelLocalization::getCurrentLocale() == 'ar' 
+                ? 'عذراً، لم يتم العثور على الفاتورة أو تم معالجتها مسبقاً' 
+                : 'Sorry, invoice not found or already processed';
 
             session()->flash('notfountreturnproduct', $message);
             $data = [];
             return view('products.confirm_delivery_another_branch', compact('data'));
-        } else {
-            foreach ($Delivery_product_to_the_customerData as $product) {
-                $productdata = products::find($product->product_id);
+        }
 
-                if ($order_id_send == 0) {
+        try {
+            // استخدام الترانزأكشن لحماية حركات المخزون والخلطات (Mix) من التداخل أو الفشل الجزئي
+            DB::transaction(function () use ($deliveryItems, $currentBranchId, $currentUserId, $currentTime, $request) {
+                
+                // تحديث حالة عناصر الفاتورة الأصلية إلى تم التسليم
+                Delivery_product_to_the_customer::where('invoice_id', $request->invoice_no)
+                    ->where('status', 0)
+                    ->where('branch_to', $currentBranchId)
+                    ->update(['status' => 1]);
 
-                    $product_movement_another_branch = product_movement_another_branch::create(
-                        [
-                            'branch_from' => Auth()->user()->branchs_id,
-                            'branch_to' => $product->branch_from,
-                            'user_from' => Auth()->user()->id,
-                            'reciveInvoiceNumber' => 10,
-                            'user_to' => $product->user_from,
-                            'Totalcost' => $productdata->cost_price * $product->quantity,
-                            'created_at' => \Carbon\Carbon::now()->addHours(3),
-
-                        ]
-                    );
-
-
-
-                    $product_movement_another_branch_items = product_movement_another_branch_items::create(
-                        [
-                            'order_id' => $product_movement_another_branch->id,
-                            'product_id' => $product->product_id,
-                            'quantity' => $product->quantity,
-                            'cost_per_each_withoud_tax' => $productdata->cost_price,
-                            'created_at' => \Carbon\Carbon::now()->addHours(3),
-                            'updated_at' => \Carbon\Carbon::now()->addHours(3),
-                        ]
-                    );
-
-                    if ( $productdata->parent_inv_itemcard_id == 0) {
-                        $updatedproduct = products::where('id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->QUENTITY_all_Retails - $product->quantity) / $productdata->retail_uom_quntToParent,
-                                'QUENTITY' => (int)(($productdata->QUENTITY_all_Retails - $product->quantity) / $productdata->retail_uom_quntToParent),
-                                'QUENTITY_Retail' => ((($productdata->QUENTITY_all_Retails - $product->quantity) ) % $productdata->retail_uom_quntToParent) ,
-                                'QUENTITY_all_Retails' => ($productdata->QUENTITY_all_Retails - $product->quantity),
-                            ]
-                        ); 
-                        products::where('parent_inv_itemcard_id', $request->id)->update(
-                            [
-                                'All_QUENTITY' =>  ($productdata->QUENTITY_all_Retails - $product->quantity),
-                            ]);
-                    } else {
-                        $updatedproduct = products::where('id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->All_QUENTITY - $product->quantity),
-                                'QUENTITY' => (int)($productdata->All_QUENTITY - $product->quantity),
-                                'QUENTITY_Retail' => ($productdata->All_QUENTITY - $product->quantity) -((int)($product->All_QUENTITY - $request->return_quentity)),
-                                'QUENTITY_all_Retails' => ($productdata->All_QUENTITY - $product->quantity)* $product->retail_uom_quntToParent,
-                            ]
-                        );
-                        products::where('parent_inv_itemcard_id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->All_QUENTITY )- ($product->quantity* $product->retail_uom_quntToParent),
-                            ]);
-                    }
-
-
-        
-                    $order_id_send = $product_movement_another_branch->id;
-
-
-
-
-                } else {
-                    $product_movement_another_branch_data = product_movement_another_branch::find($order_id_send);
-                    $product_movement_another_branch = product_movement_another_branch::where('id', $order_id_send)->update(
-                        [
-
-                            'Totalcost' => $product_movement_another_branch_data->Totalcost + ($productdata->cost_price * $product->quantity),
-                            'created_at' => \Carbon\Carbon::now()->addHours(3),
-
-                        ]
-                    );
-                    $product_movement_another_branch_data = product_movement_another_branch::find($order_id_recive);
-
-                    $product_RECIVE_another_branch = product_movement_another_branch::where('id', $order_id_recive)->update(
-                        [
-                            'Totalcost' => $product_movement_another_branch_data->Totalcost + ($productdata->cost_price * $product->quantity),
-                            'created_at' => \Carbon\Carbon::now()->addHours(3),
-
-                        ]
-                    );
-                    $product_movement_another_branch_items = product_movement_another_branch_items::create(
-                        [
-                            'order_id' => $order_id_send,
-                            'product_id' => $product->product_id,
-                            'quantity' => $product->quantity,
-                            'cost_per_each_withoud_tax' => $productdata->cost_price,
-                            'created_at' => \Carbon\Carbon::now()->addHours(3),
-                            'updated_at' => \Carbon\Carbon::now()->addHours(3),
-                        ]
-                    );
-
-                    $productdata = products::find($product->product_id);
-
-                    if ( $productdata->parent_inv_itemcard_id == 0) {
-                        $updatedproduct = products::where('id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->QUENTITY_all_Retails - $product->quantity) / $productdata->retail_uom_quntToParent,
-                                'QUENTITY' => (int)(($productdata->QUENTITY_all_Retails - $product->quantity) / $productdata->retail_uom_quntToParent),
-                                'QUENTITY_Retail' => ((($productdata->QUENTITY_all_Retails - $product->quantity) ) % $productdata->retail_uom_quntToParent) ,
-                                'QUENTITY_all_Retails' => ($productdata->QUENTITY_all_Retails - $product->quantity),
-                            ]
-                        ); 
-                        products::where('parent_inv_itemcard_id', $request->id)->update(
-                            [
-                                'All_QUENTITY' =>  ($productdata->QUENTITY_all_Retails - $product->quantity),
-                            ]);
-                    } else {
-                        $updatedproduct = products::where('id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->All_QUENTITY - $product->quantity),
-                                'QUENTITY' => (int)($productdata->All_QUENTITY - $product->quantity),
-                                'QUENTITY_Retail' => ($productdata->All_QUENTITY - $product->quantity) -((int)($product->All_QUENTITY - $request->return_quentity)),
-                                'QUENTITY_all_Retails' => ($productdata->All_QUENTITY - $product->quantity)* $product->retail_uom_quntToParent,
-                            ]
-                        );
-                        products::where('parent_inv_itemcard_id', $request->id)->update(
-                            [
-                                'All_QUENTITY' => ($productdata->All_QUENTITY )- ($product->quantity* $product->retail_uom_quntToParent),
-                            ]);
+                // حساب إجمالي تكلفة المنتجات بناءً على أسعار الشراء الحالية لتسجيلها في رأس الفاتورة
+                $totalCost = 0;
+                foreach ($deliveryItems as $item) {
+                    $productData = products::find($item->product_id);
+                    if ($productData) {
+                        $totalCost += ($productData->purchasingـprice * $item->quantity);
                     }
                 }
-            }
 
-            $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'تم تسجيل عميلة التسليم بنجاح' : 'Delivery customer registered successfully';
+                // 2. إنشاء رأس حركة المخزون (Master Record) مرة واحدة فقط خارج الحلقة
+                $movement = product_movement_another_branch::create([
+                    'branch_from'         => $currentBranchId,
+                    'branch_to'           => $deliveryItems[0]->branch_from,
+                    'user_from'           => $currentUserId,
+                    'reciveInvoiceNumber' => 10, // يمكن ربطها ديناميكياً لاحقاً
+                    'user_to'             => $deliveryItems[0]->user_from,
+                    'Totalcost'           => $totalCost,
+                    'created_at'          => $currentTime,
+                ]);
+
+                // 3. تدوير العناصر لخصم المخزون وإنشاء تفاصيل الحركة (Items)
+                foreach ($deliveryItems as $product) {
+                    $productdata = products::find($product->product_id);
+                    if (!$productdata) continue;
+
+                    // إدخال تفاصيل حركة الصنف
+                    product_movement_another_branch_items::create([
+                        'order_id'                  => $movement->id,
+                        'product_id'                => $product->product_id,
+                        'quantity'                  => $product->quantity,
+                        'cost_per_each_withoud_tax' => $productdata->purchasingـprice,
+                        'created_at'                => $currentTime,
+                        'updated_at'                => $currentTime,
+                    ]);
+
+                    // 4. معالجة خصم كميات المخزون (منتج عادي أم منتج مركب/مزيج)
+                    if ($productdata->products_mix == 0) {
+                        // صنف عادي: خصم مباشر من جدول المنتجات
+                        products::where('id', $product->product_id)->decrement('numberofpice', $product->quantity);
+                    } else {
+                        // صنف مركب (Mix): جلب مكونات المزيج وخصم كمياتها التناسبية
+                        $mixItems = products_mix_items::where('products_mix_id', $productdata->products_mix)->get();
+                        
+                        foreach ($mixItems as $itemmix) {
+                            // استخدام دالة decrement المباشرة والسريعة بدلاً من البحث ثم التعديل لحماية أداء قاعدة البيانات
+                            products::where('id', $itemmix->product_id)->decrement('numberofpice', $itemmix->quantity * $product->quantity);
+                        }
+                    }
+                }
+            });
+
+            $message = LaravelLocalization::getCurrentLocale() == 'ar' 
+                ? 'تم تسجيل عملية التسليم وتحديث المخزون بنجاح' 
+                : 'Delivery registered and inventory updated successfully';
 
             session()->flash('foundinvoice', $message);
 
-            $data = [];
-            return view('products.confirm_delivery_another_branch', compact('data'));
+        } catch (\Exception $e) {
+            $message = LaravelLocalization::getCurrentLocale() == 'ar' 
+                ? 'حدث خطأ أثناء معالجة المخزون: ' . $e->getMessage()
+                : 'An error occurred while updating stock: ' . $e->getMessage();
+
+            session()->flash('notfountreturnproduct', $message);
         }
-    }
 
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Delivery_product_to_the_customer  $delivery_product_to_the_customer
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Delivery_product_to_the_customer $delivery_product_to_the_customer)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Delivery_product_to_the_customer  $delivery_product_to_the_customer
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Delivery_product_to_the_customer $delivery_product_to_the_customer)
-    {
-        //
+        $data = [];
+        return view('products.confirm_delivery_another_branch', compact('data'));
     }
 }

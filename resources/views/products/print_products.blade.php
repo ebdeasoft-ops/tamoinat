@@ -37,24 +37,11 @@ border-style: solid;
             <div class=" main-content-body-invoice" id="print">
                 <div class="card card-invoice">
                     <div class="card-body">
-                        <div class="invoice-header">
-                            <h6 class="invoice-title">{{__('home.quantity')}}</h6>
-                            
-                            <div >
-                            <?php
+                    <?php
 $logo=camplogo;
     ?>
     <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
 
-                        </div>
-                     
-                         
-                            <div class="billed-from">
-                               <br>
-                               <p>{{__('home.cam_name_owner')}}</p>
-                               <p>{{__('home.TaxNumber')}}</p>
-                            </div><!-- billed-from -->
-                        </div><!-- invoice-header -->
                         <div class="row mg-t-12">
                         <br>
                         <br>

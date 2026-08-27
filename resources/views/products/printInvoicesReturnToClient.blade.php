@@ -1,17 +1,150 @@
 @extends('layouts.master')
 @section('css')
 <style>
-    @media print {
-        #print_Button {
-            display: none;
-        }
+    /* ==========================================================================
+       معاينة طباعة الفاتورة — شاشة أنيقة + طباعة نظيفة موفّرة للحبر
+       ========================================================================== */
+    :root {
+        --inv-navy: #1b3358;
+        --inv-navy-light: #23395D;
+        --inv-border: #d9dee6;
+        --inv-bg-soft: #f8fafc;
+        --inv-radius: 12px;
+        --inv-shadow: 0 8px 24px rgba(16, 24, 40, .08);
     }
 
     body {
         font: 13pt Georgia, "Times New Roman", Times, serif;
         line-height: 1.5;
-        border-style: solid;
+    }
 
+    /* ---------- شكل الشاشة (لا يظهر عند الطباعة) ---------- */
+    .card-invoice {
+        border: 1px solid var(--inv-border) !important;
+        border-radius: var(--inv-radius) !important;
+        box-shadow: var(--inv-shadow) !important;
+        overflow: hidden;
+    }
+
+    .invoice-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
+        border-bottom: 2px solid var(--inv-navy);
+        padding-bottom: 16px;
+        margin-bottom: 10px;
+    }
+
+    .invoice-header .billed-from {
+        text-align: center;
+        min-width: 220px;
+    }
+
+    .invoice-header .billed-from span[style*="25px"] {
+        color: var(--inv-navy) !important;
+        font-weight: 800;
+    }
+
+    .invoice-header .logo-1 {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, .12);
+    }
+
+    .invoice-table thead th,
+    table.table thead th {
+        background: linear-gradient(180deg, #f4f6fb 0%, #eef1f8 100%) !important;
+        color: var(--inv-navy) !important;
+        font-weight: 700 !important;
+        border-color: var(--inv-border) !important;
+    }
+
+    .invoice-table td,
+    table.table td {
+        border-color: var(--inv-border) !important;
+        vertical-align: middle;
+    }
+
+    .table-padding table.table-invoice td {
+        padding: 10px 16px;
+        font-weight: 600;
+    }
+
+    .table-padding table.table-invoice tr:last-child {
+        background: var(--inv-navy) !important;
+        color: #fff !important;
+        font-weight: 800;
+    }
+
+    .table-padding table.table-invoice tr:last-child td {
+        color: #fff !important;
+        border-color: var(--inv-navy) !important;
+    }
+
+    .invoice-header + .table-responsive + .table-responsive .card,
+    div.card:has(> span) {
+        background: var(--inv-bg-soft);
+        border: 1px dashed var(--inv-border);
+        border-radius: var(--inv-radius);
+        padding: 14px 18px;
+        text-align: center;
+        font-size: 11pt;
+        color: #475569;
+    }
+
+    #print_Button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--inv-navy) 0%, var(--inv-navy-light) 100%) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        padding: 10px 22px !important;
+        box-shadow: var(--inv-shadow);
+        transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+
+    #print_Button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+    }
+
+    /* ---------- شكل الطباعة (نظيف بدون ظلال/تدرجات لتوفير الحبر) ---------- */
+    @media print {
+        #print_Button {
+            display: none;
+        }
+
+        body {
+            border-style: solid;
+        }
+
+        .card-invoice {
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .invoice-header {
+            background: none !important;
+        }
+
+        .invoice-table thead th,
+        table.table thead th {
+            background: #f1f1f1 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .table-padding table.table-invoice tr:last-child,
+        .table-padding table.table-invoice tr:last-child td {
+            background: #eee !important;
+            color: #000 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
     }
 </style>
 @endsection
@@ -63,7 +196,6 @@ $logo=camplogo;
 
                         </div><!-- billed-from -->
                     </div><!-- invoice-header -->
-                    <br>
                     <div class="table-responsive mg-t-40">
                         <table style="border:2px solid rgba(0,0,0,.3)" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
                             <thead>
@@ -141,7 +273,7 @@ $logo=camplogo;
 
                                 <tr>
                                     <td class="wd-10p">{{$i}}</td>
-                                    <td class="tx-center">{{ $product->productData->name}}</td>
+                                    <td class="tx-center">{{ $product->productData->product_name}}</td>
                                     <td class="tx-center">{{ $product->Unit_Price}}</td>
                                     <td class="tx-center">{{ $product->quantity}}</td>
                                     <td class="tx-center">{{ $product->Unit_Price*$product->quantity}}</td>

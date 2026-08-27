@@ -1,312 +1,376 @@
 @extends('layouts.master')
+
 @section('css')
 <style>
     @media print {
-        #print_Button {
-            display: none;
+        .text {
+            width: 320px;
+            overflow: hidden;
+            white-space: pre-wrap;
+            text-overflow: ellipsis;
+        }
+        @page {
+            size: auto;
+            margin: 5mm 2mm 18mm 2mm;
+        }
+        header, tfoot {
+            display: table-header-group;
+        }
+        #print_Button, #export_Button {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
         }
     }
 
     body {
         font: 13pt Georgia, "Times New Roman", Times, serif;
         line-height: 1.5;
-        border-style: solid;
+        background-color: #f8f9fa;
+    }
 
+    .invoice-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .invoice-header-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+
+    .table-custom th, .table-custom td {
+        vertical-align: middle !important;
     }
 </style>
 @endsection
+
 @section('title')
 {{ __('home.print') }}
 @stop
+
 @section('page-header')
-<!-- breadcrumb -->
-<div class="breadcrumb-header justify-content-between">
-</div>
-<!-- breadcrumb -->
+<div class="breadcrumb-header justify-content-between"></div>
 @endsection
+
 @section('content')
-<!-- row -->
 <div class="row row-sm">
     <div class="col-md-12 col-xl-12">
-        <div class=" main-content-body-invoice" id="print">
-            <div class="card card-invoice">
+        
+        <!-- أزرة التحكم (طباعة وتصدير) -->
+        <div class="d-flex justify-content-center mb-3">
+            <button class="btn btn-danger float-left mt-3 mr-2 shadow-sm" id="print_Button" onclick="printDiv()">
+                {{ __('home.print') }} <i class="mdi mdi-printer ml-1"></i>
+            </button>
+            <button class="btn btn-success float-left mt-3 shadow-sm" id="export_Button" onclick="exportExcel()">
+                تصدير اكسيل <i class="mdi mdi-file-excel ml-1"></i>
+            </button>
+        </div>
+
+        <div class="main-content-body-invoice" id="print">
+            <div class="card invoice-card">
                 <div class="card-body">
-                <div class="invoice-header">
-
-<div class="billed-from">
-    <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-    <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <p dir=ltr> {{Taxen}} </p>
-
-</div>
-<div class="row">
-<?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
-
-</div>
-
-
-<div class="billed-from">
-    <br>
-
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-    <br>
-    <p> {{describtionar}}</p>
-    <p>{{STar}}</p>
-    <p>{{Taxar}}</p>
-
-</div><!-- billed-from -->
-</div><!-- invoice-header -->
-                    <br>
-                    <br><!-- invoice-header -->
+                    
                     <?php
-                    $Invoices = $data['invoices']
+                    $Invoices = $data['invoices'];
+                    function ConvertToHEX($value) {
+                        return pack("H*", sprintf("%02X", $value));
+                    }
+                    $coun = 0;
+                    $y = count($Invoices);
                     ?>
-
 
                     @if (isset($Invoices))
-                    <br>
-                    <br>
-                    <br>
-                    <div class="row d-flex justify-content-center">
+                        @foreach ($Invoices as $invoice)
+                            <?php $coun++; ?>
 
+                            <!-- رأس الفاتورة -->
+                            <div class="invoice-header-box">
+                                <div style="width:33%; text-align: center;">
+                                    <span style="font-size:16px; font-weight: bold;">{{Namear}}</span>
+                                    <p class="mb-1 text-muted">{{describtionar}}</p>
+                                    <p class="mb-1">{{STar}}</p>
+                                    <p class="mb-0">{{Taxar}}</p>
+                                </div>
+                                
+                                <div style="width:33%; text-align: center;">
+                                    <?php $logo = camplogo; ?>
+                                    <a href="https://ebdeasoft.com/">
+                                        <img src="{{ asset('assets/img/brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 100px; height: 90px; object-fit: contain;">
+                                    </a>
+                                </div>
 
-                        <div class="col-lg-3" id="start_at">
-                            <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} : </label>
-                            <?php
-                            $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
+                                <div style="width:33%; text-align: center;">
+                                    <span style="font-size:16px; font-weight: bold;">{{Nameen}}</span>
+                                    <p class="mb-1 text-muted" dir="ltr">{{describtionen}}</p>
+                                    <span dir="ltr">{{STen}}</span>
+                                    <p class="mb-0" dir="ltr">{{Taxen}}</p>
+                                </div>
+                            </div>
 
-                            ?>
-                            <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ $currentdata }}</label>
+                            <div class="text-center mb-3">
+                                <h5 class="font-weight-bold text-primary">{{ $invoice->branch->name }}</h5>
+                                <h4 class="font-weight-bold text-dark">فاتورة ضريبية - Tax Invoice</h4>
+                            </div>
 
-                        </div>
+                            @if($invoice->note)
+                                <div class="alert alert-light border mb-3">
+                                    <strong>{{__('home.notesClient')}} :</strong> {{$invoice->note}}
+                                </div>
+                            @endif
 
-                    </div>
-                    <br>
-                    <?php
-                    $userId = 0;
-                    $count = 0;
-                    ?>
-                    <?php
-                    $userId = 0;
-                    $startat = '';
-                    $endat = '';
-                    $totalpriceall = 0;
-                    $totaladdedvalue = 0;
-                    $totaldiscount = 0;
-                    $totalpricefinal = 0;
-                    ?>
+                            <!-- بيانات العميل ومعلومات الفاتورة -->
+                            <div class="row mb-4" style="justify-content: space-between;">
+                                <table style="border:1px solid #dee2e6; width:48%;" class="table table-sm table-bordered mb-0 text-center table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-light w-50">اسم العميل <br> CLIENT NAME</th>
+                                            <td class="font-weight-bold">{{$invoice->customer->name}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">الرقم الضريبي <br> TAX NUMBER</th>
+                                            <td>{{$invoice->customer->tax_no}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">عنوان العميل <br> CLIENT ADDRESS</th>
+                                            <td>{{$invoice->customer->address}}</td>
+                                        </tr>
+                                    </thead>
+                                </table>
 
+                                <table style="border:1px solid #dee2e6; width:48%;" class="table table-sm table-bordered mb-0 text-center table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-light w-50">طريقة الدفع <br> PAYMENT METHOD</th>
+                                            <?php
+                                            $pay = '';
+                                            if ($invoice->Pay == "Cash") { $pay = __('report.cash'); }
+                                            elseif ($invoice->Pay == "Shabka") { $pay = __('report.shabka'); }
+                                            elseif ($invoice->Pay == "Credit") { $pay = __('report.credit'); }
+                                            elseif ($invoice->Pay == "Bank_transfer") { $pay = __('home.Bank_transfer'); }
+                                            else { $pay = __('home.Partition of the amount'); }
+                                            ?>
+                                            <td class="font-weight-bold">{{$pay}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">تاريخ الفاتورة <br> INVOICE DATE</th>
+                                            <td>{{$invoice->created_at}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">رقم الفاتورة <br> INVOICE NUMBER</th>
+                                            <td>{{$invoice->id}}</td>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
 
-                    <br>
+                            <!-- جدول المنتجات -->
+                            <div class="table-responsive mg-t-20 mb-4">
+                                <table style="border:1px solid #dee2e6;" class="table table-bordered table-striped text-center table-custom">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>رقم <br> NO</th>
+                                            <th>رقم منتج <br> Item NO</th>
+                                            <th>اسم الصنف <br> ITEM NAME</th>
+                                            <th>سعر القطعة <br> PRICE</th>
+                                            <th>الكمية <br> QTY</th>
+                                            <th>الاجمالي <br> TOTAL</th>
+                                            <th>الخصم <br> DISCOUNT</th>
+                                            <th>الإجمالي بعد الخصم <br> NET TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $i = 0;
+                                        $discountreturn = 0;
+                                        ?>
 
+                                        @foreach (App\Models\sales::where('invoice_id', $invoice->id)->get() as $product)
+                                            <?php $i++; ?>
+                                            @if($product->quantity != 0)
+                                            <tr>
+                                                <td>{{$i}}</td>
+                                                <td dir="ltr">{{$product->productData->Product_Code}}</td>
+                                                <td class="text text-right">{{ $product->productData->product_name}}</td>
+                                                <td>{{ number_format($product->Unit_Price, 2) }}</td>
+                                                <td>{{ $product->quantity}}</td>
+                                                <td>{{ number_format($product->Unit_Price * $product->quantity, 2) }}</td>
+                                                <td>{{ number_format($product->Discount_Value, 2) }}</td>
+                                                <td>{{ number_format(($product->Unit_Price * $product->quantity) - $product->Discount_Value, 2) }}</td>
+                                            </tr>
+                                            @endif
+                                        @endforeach
 
+                                        @foreach (App\Models\return_sales::where('invoice_id', $invoice->id)->get() as $product)
+                                            <?php 
+                                            $i++;
+                                            $discountreturn += $product->discountvalue + $product->discountoninvoice;
+                                            ?>
+                                            @if($product->return_quantity != 0)
+                                            <tr class="text-danger">
+                                                <td>{{$i}}</td>
+                                                <td dir="ltr">{{$product->productData->Product_Code}}</td>
+                                                <td class="text text-right">{{ $product->productData->product_name}} (مرتجع)</td>
+                                                <td>{{ number_format($product->return_Unit_Price, 2) }}</td>
+                                                <td>{{ $product->return_quantity}}</td>
+                                                <td>{{ number_format($product->return_Unit_Price * $product->return_quantity, 2) }}</td>
+                                                <td>{{ number_format($product->discountvalue, 2) }}</td>
+                                                <td>{{ number_format(($product->return_Unit_Price * $product->return_quantity) - $product->discountvalue, 2) }}</td>
+                                            </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
 
+                            <!-- QR Code وملخص الحسابات -->
+                            <div class="row align-items-center justify-content-between mt-4">
+                                <div class="col-md-4 text-center mb-3">
+                                    <?php
+                                    $price = $invoice->cashamount + $invoice->Bank_transfer + $invoice->bankamount + $invoice->creaditamount;
+                                    $avt = App\Models\Avt::find(1);
 
-                    <br>
+                                    $price_befor_tax = $price * 100 / (100 + ($avt->AVT * 100));
+                                    $invoicetotal_addedvalue = ($price_befor_tax) * $avt->AVT;
+                                    $invoicetotal_price = $price_befor_tax;
+                                    $invoicetotal_discount = $invoice->discount + $discountreturn;
 
-                    </span>
+                                    $sellerName = sallerQrCode;
+                                    $varNumber = TaxQrCode;
+                                    $time = $invoice->created_at;
+                                    $issue_time = substr($time, 11);
+                                    $issue_date = substr($time, 0, 10);
+                                    $time = (string)$issue_date . 'T' . (string)$issue_time;
 
-                    <div class="table-responsive hoverable-table">
-                        <table class="table table-hover table-bordered" id="example1" data-page-length='50' style=" text-align: center;">
-                            <thead>
-                                <tr>
-                                    <th class="border-bottom-0">#</th>
+                                    $total = (round($invoicetotal_addedvalue + $invoicetotal_price, 2));
+                                    $tax = round($invoicetotal_addedvalue, 2);
+                                    
+                                    $HexSeller = ConvertToHEX(1) . ConvertToHEX(strlen($sellerName));
+                                    $seller = $HexSeller . $sellerName;
+                                    $HexVAT = ConvertToHEX(2) . ConvertToHEX(strlen($varNumber));
+                                    $vat = $HexVAT . $varNumber;
+                                    $HexTime = ConvertToHEX(3) . ConvertToHEX(strlen($time));
+                                    $time = $HexTime . $time;
+                                    $HexTotal = ConvertToHEX(4) . ConvertToHEX(strlen($total));
+                                    $total = $HexTotal . $total;
+                                    $HexVATN = ConvertToHEX(5) . ConvertToHEX(strlen($tax));
+                                    $VATN = $HexVATN . $tax;
 
-                                    <th class="border-bottom-0">{{ __('report.date') }}</th>
+                                    $empty = '';
+                                    $Hexempty = ConvertToHEX(6) . ConvertToHEX(strlen($empty));
+                                    $empty6 = $Hexempty . $empty;
+                                    $Hexempty = ConvertToHEX(7) . ConvertToHEX(strlen($empty));
+                                    $empty7 = $Hexempty . $empty;
+                                    $Hexempty = ConvertToHEX(8) . ConvertToHEX(strlen($empty));
+                                    $empty8 = $Hexempty . $empty;
+                                    $Hexempty = ConvertToHEX(9) . ConvertToHEX(strlen($empty));
+                                    $empty9 = $Hexempty . $empty;
+                                    $tobase = $seller . $vat . $time . $total . $VATN . $empty6 . $empty7 . $empty8 . $empty9;
+                                    $dataforQRcode = base64_encode($tobase);
+                                    ?>
+                                    {!! QrCode::size(110)->generate($dataforQRcode) !!}
+                                </div>
 
-                                    <th class="border-bottom-0"> {{ __('home.productNo') }}</th>
-                                    <th class="border-bottom-0"> {{ __('home.product') }}</th>
-                                    <th class="border-bottom-0"> {{ __('home.quantity') }}</th>
+                                <div class="col-md-7">
+                                    <table style="border:1px solid #dee2e6;" class="table table-sm table-bordered mb-0 table-custom">
+                                        <tr>
+                                            <th class="bg-light">الاجمالي - SUB TOTAL</th>
+                                            <td class="text-center font-weight-bold">{{ number_format(round($invoicetotal_price, 2) + round($invoicetotal_discount, 2), 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">الخصم - DISCOUNT</th>
+                                            <td class="text-center font-weight-bold text-danger">{{ number_format(round($invoicetotal_discount, 2), 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">الاجمالي بعد الخصم - SUB TOTAL AFTER DISCOUNT</th>
+                                            <td class="text-center font-weight-bold">{{ number_format(round($invoicetotal_price, 2), 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="bg-light">ضريبة القيمة المضافة ({{$avt->AVT*100}}%) - VAT</th>
+                                            <td class="text-center font-weight-bold">{{ number_format(round($invoicetotal_addedvalue, 2), 2) }}</td>
+                                        </tr>
+                                        <tr class="table-active">
+                                            <th class="font-weight-bold">الاجمالي الكلي - NET TOTAL</th>
+                                            <td class="text-center font-weight-bold text-success" style="font-size: 1.1rem;">
+                                                {{ number_format(round($invoicetotal_addedvalue + $invoicetotal_price, 2), 2) }}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
 
-                                    <th class="border-bottom-0">{{ __('home.price') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.discount') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.priceafterDiscount') }}</th>
+                            <!-- تذييل الصفحة / العنوان -->
+                            @if(Auth()->user()->branchs_id == 1)
+                                <div class="text-center mt-5 pt-3 border-top text-muted" style="font-size: 11pt;">
+                                    <p class="mb-1">{{addressar}}</p>
+                                    <p class="mb-0">{{addressen}}</p>
+                                </div>
+                            @endif
 
-                                    <th class="border-bottom-0"> {{ __('home.addedValue') }}</th>
-                                    <th class="border-bottom-0"> {{ __('home.total') }}</th>
-                                </tr>
-                            </thead>
-                            <?php
-                            ?>
-                            <tbody>
+                            @if($coun != $y)
+                                <p style="page-break-after: always;"></p>
+                            @endif
 
+                        @endforeach
+                    @endif
 
-
-
-                                @foreach ($Invoices as $invoice)
-                                @if($invoice->Price!=0)
-
-                                <?php
-                                $totaldiscount += $invoice->discount;
-
-                                $i = 0;
-
-                                $totalpriceall += $invoice->Price;
-                                if ($count == 0) {
-                                    $userId = $invoice->user_id;
-                                    $startat = $invoice->created_at;
-                                }
-                                $endat = $invoice->created_at;
-                                $count++;
-                                $avt = App\Models\Avt::find(1);
-                                $saleavt = $avt->AVT;
-                                $totalPriceDay = ($invoice->Price - $invoice->discount) + (($invoice->Price - $invoice->discount) * $saleavt);
-
-                                ?>
-
-
-
-
-                                @foreach (App\Models\sales::where('invoice_id', $invoice->id)->get() as $product)
-                                <?php
-                                $i++;
-                                $date = explode(' ', $product->created_at);
-                                ?>
-                                <tr class="">
-                                    <td>{{ $i }}</td>
-
-                                    <td>{{ $date[0] }}</td>
-
-                                    <td dir='ltr'>{{ $product->productData->Product_Code }}</td>
-                                    <td>{{ $product->productData->product_name }}</td>
-                                    <td>{{ $product->quantity }}</td>
-
-
-                                    <td>{{ $product->Unit_Price }}</td>
-                                    <td>{{ $product->Discount_Value }}</td>
-                                    <td>{{ $product->Unit_Price -$product->Discount_Value }}</td>
-                                    <td>{{ (( ($product->quantity * $product->Unit_Price )-$product->Discount_Value)*$saleavt) }}</td>
-                                    <td>{{ ( ($product->quantity * $product->Unit_Price )-$product->Discount_Value) +(( ($product->quantity * $product->Unit_Price )-$product->Discount_Value)*$saleavt)}}
-                                    </td>
-
-
-
-                                </tr>
-
-                                <tr>
-
-
-                                    @endforeach
-                                <tr style="background-color: #419BB2;">
-
-                                    <td> {{ __('report.invoiceNo') }}</td>
-                                    <td> {{ $invoice->id }} </td>
-                                    <td> {{ __('users.branch') }} : {{ $invoice->branch->name }}</td>
-                                    <td> {{ __('home.clietName') }} : {{ $invoice->customer->name }} </td>
-                                    <td>
-
-                                        {{ __('home.paymentmethod') }} :
-                                        @if ($invoice->Pay == 'Cash')
-                                        <span style="color:white !important" class="text-success">{{ __('report.cash') }}</span>
-                                        @elseif($invoice->Pay == 'Credit')
-                                        <span class="text-danger">{{ __('report.credit') }}</span>
-                                        @elseif($invoice->Pay == 'Bank_transfer')
-                                        <span class="text-danger">{{ __('home.Bank_transfer') }}</span>
-                                        @else
-                                        <span class="text-warning">{{ __('report.shabka') }}</span>
-                                        @endif
-                                    </td>
-                                    <td>{{__('home.the amount')}} : {{$invoice->Price }}</td>
-                                    <td> {{__('home.addedValue')}} : {{$invoice->Added_Value }} </td>
-                                    <td> {{__('home.discount')}} : {{$invoice->discount }} </td>
-
-                                    <td> {{ __('home.total') }}</td>
-                                    <td>{{ round($totalPriceDay ,2)}}</td>
-
-                                </tr>
-                                @endif
-
-                                @endforeach
-
-                            </tbody>
-
-                        </table>
-
-                        <table class="table table-bordered table-hover text-center table-striped mt-5">
-                            <thead>
-                                <tr>
-                                    <th scope="col"></th>
-                                    <th scope="col">{{ __('report.totalprice') }}</th>
-                                    <th>{{ __('home.the amount') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">1</th>
-                                    <td>{{ __('report.totalpricewithoudtax') }}</td>
-                                    <td>{{ $totalpriceall-$totaldiscount }}</td>
-                                </tr>
-
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>{{ __('report.totaltax') }}</td>
-                                    <td> {{ round(($totalpriceall-$totaldiscount )*$saleavt,2) }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>{{ __('home.totaldiscount') }}</td>
-                                    <td> {{ $totaldiscount }}</td>
-                                </tr>
-
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>{{ __('report.totalallprice') }}</td>
-                                    <td>{{ round(($totalpriceall-$totaldiscount )+(($totalpriceall-$totaldiscount )*$saleavt),2)  }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <br>
-
-
-
-                        <br>
-
-
-
-                        @endif
-                        <hr class="mg-b-40">
-
-
-
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div><!-- COL-END -->
+    </div>
 </div>
-<!-- row closed -->
-</div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
 @endsection
+
 @section('js')
-<!--Internal  Chart.bundle js -->
 <script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-
-
 <script type="text/javascript">
-    function printDiv() {
-        var printContents = document.getElementById('print').innerHTML;
-        var originalContents = document.body.innerHTML;
-        document.body.innerHTML = printContents;
-        window.print();
-        document.body.innerHTML = originalContents;
-        location.reload();
-    }
-</script>
+   function printDiv() {
+      var printContents = document.getElementById('print').innerHTML;
+      var originalContents = document.body.innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+      location.reload();
+   }
 
+   function exportExcel() {
+      var printContents = document.getElementById('print').innerHTML;
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = printContents;
+      
+      var printBtn = tempDiv.querySelector('#print_Button');
+      var exportBtn = tempDiv.querySelector('#export_Button');
+      if (printBtn) printBtn.remove();
+      if (exportBtn) exportBtn.remove();
+
+      var dataType = 'application/vnd.ms-excel;charset=utf-8';
+      var tableHTML = '<html dir="rtl"><head><meta charset="utf-8"><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 5px; text-align: center; }</style></head><body>' + tempDiv.innerHTML + '</body></html>';
+      
+      var filename = 'invoice_report.xls';
+      var downloadLink = document.createElement("a");
+      
+      document.body.appendChild(downloadLink);
+      
+      if (navigator.msSaveOrOpenBlob) {
+          var blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+          navigator.msSaveOrOpenBlob(blob, filename);
+      } else {
+          downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
+          downloadLink.download = filename;
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+      }
+   }
+</script>
 @endsection

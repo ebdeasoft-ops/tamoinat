@@ -1,239 +1,233 @@
 @extends('layouts.master')
 @section('css')
 <style>
+    /* تحسينات الطباعة العامة */
     @media print {
-        #print_Button {
-            display: none;
-        }
+        #print_Button, .main-footer, .header-icon, .breadcrumb-header, .main-header-message { display: none !important; }
+        body { background-color: #fff !important; margin: 0; padding: 0; }
+        .card { border: none !important; box-shadow: none !important; margin: 0; }
+        .main-content { margin-top: 0 !important; padding-top: 0 !important; }
+        /* لضمان ظهور الألوان في الطباعة */
+        .info-table td:first-child { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+        .table-main thead { background-color: #419BB2 !important; color: white !important; -webkit-print-color-adjust: exact; }
+        .total-highlight { background-color: #15803d !important; color: white !important; -webkit-print-color-adjust: exact; }
+    }
+
+    /* تنسيق الهوية البصرية */
+    .invoice-header-wrapper {
+        border-bottom: 2px solid #419BB2;
+        padding-bottom: 25px;
+        margin-bottom: 30px;
+    }
+    .company-name { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 5px; }
+    .company-info { font-size: 13px; color: #666; line-height: 1.5; }
+
+    /* تنسيق جدول البيانات (المورد والمعلومات) */
+    .info-table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+    .info-table td { padding: 8px 12px; border: 1px solid #eef0f7; font-size: 14px; }
+    .info-table td:first-child { 
+        font-weight: bold; color: #419BB2; width: 40%; 
+        background-color: #f8f9fa; border-radius: 5px 0 0 5px; 
+    }
+    .info-table td:last-child { border-radius: 0 5px 5px 0; text-align: center; font-weight: 500; }
+
+    /* تنسيق جدول المنتجات الرئيسي */
+    .table-main { border-radius: 8px; overflow: hidden; border: 1px solid #dee2e6 !important; }
+    .table-main thead th { border: none !important; font-weight: 600 !important; font-size: 13px; }
+    
+    /* تصميم عنوان الفاتورة المركزي */
+    .invoice-title-box {
+        border: 2px solid #419BB2;
+        padding: 8px 20px;
+        border-radius: 50px;
+        display: inline-block;
+        background-color: #f0f9ff;
+        min-width: 220px;
     }
 </style>
 @endsection
-@section('title')
-معاينه طباعة للموارد
-@stop
-@section('page-header')
-<!-- breadcrumb -->
-<div class="breadcrumb-header justify-content-between">
 
+@section('title') معاينة فاتورة مشتريات @stop
 
-</div>
-<!-- breadcrumb -->
-@endsection
 @section('content')
-<!-- row -->
-<div class="row row-sm">
-    <div class="col-md-12 col-xl-12">
-        <div class=" main-content-body-invoice" id="print">
-            <div class="card card-invoice">
-                <div class="card-body">
-                                                  <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+<div class="row row-sm mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm" id="print">
+            <div class="card-body">
+                
+                <button class="btn btn-info float-left mb-4 shadow-sm" id="print_Button" onclick="window.print()">
+                    <i class="fas fa-print ml-1"></i> طباعة الفاتورة
+                </button>
 
-                        <div class="billed-from" style="width:33%;text-align: center;" >
-                            <br>
-                             <span style="font-size:25px">{{Nameen}}</span>
-                            <br>
-                            <p dir=ltr> {{describtionen}} </p>
-                            <span dir=ltr>{{STen}} </span>
-                            <p dir=ltr> {{Taxen}} </p>
+                <div class="clearfix"></div>
 
-                        </div>
-                        <div class="row">
-                        <?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+            <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%" dir=rtl>
 
-                        </div>
+
 
 
                         <div class="billed-from" style="width:33%;text-align: center;">
                             <br>
 
-                           <span style="font-size:25px">{{Namear}}</span>
+                            <span class="thick" style="font-size:18px">{{Namear}}</span>
                             <br>
-                            <p> {{describtionar}}</p>
-                            <p>{{STar}}</p>
-                            <p>{{Taxar}}</p>
+                            <p class="tx-16 thick"> {{describtionar}}</p>
+                            <p class="tx-16 thick">{{STar}}</p>
+                            <p class="tx-16 thick">{{Taxar}}</p>
 
-                        </div><!-- billed-from -->
-                    </div><!-- invoice-header -->
+                        </div>
+                <div class="text-center" style="width: 40%;">
+                        @php $logo = defined('camplogo') ? camplogo : 'logo.png'; @endphp
+                        <img src="{{ asset('assets/img/brand/'.$logo) }}" style="max-width: 130px; height: auto; margin-bottom: 10px;" alt="logo">
+                        <br>
+                        <div class="invoice-title-box">
+                            <h4 class="mb-0 font-weight-bold" style="color: #419BB2;">
+                                فاتورة مشتريات
+                                <div style="font-size: 12px; font-weight: normal; letter-spacing: 1px;">PURCHASE INVOICE</div>
+                            </h4>
+                        </div>
+                    </div>
 
-                    <div class="row mg-t-12">
-                        <div class="col-md">
-                            <div class="col-md">
-                                <h5 class="tx-gray-600">معلومات المورد</h5>
+                        <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
 
+                            <span class="thick" style="font-size:19px">{{Nameen}}</span>
+                            <br>
+                            <p class="tx-16 thick" > {{describtionen}} </p>
+                            <span class="tx-16 thick">{{STen}} </span>
+                            <p class="tx-16 thick"> {{Taxen}} </p>
 
-                                <div style="padding:0 0% 0% 40%" class="table-responsive mg-t-30">
-                                    <table style="border:1px solid black" class="table table-invoice table-bordered table-striped text-md-nowrap mb-0 text-center" id="tableTotalPrice" name="tableTotalPrice" width="50%">
-                                        <thead>
-                                            <tr>
-                                                <th class="border-bottom-0"><span>{{__('home.Invoice_no')}} </span></th>
-                                                <th class="border-bottom-0"><span>{{$data['resource_purchases']->orderId}}</span> </th>
-                                            </tr>
-                                        </thead>
-                                        <?php
-                                        $paymethod = '';
-                                        ?>
-
-                                        <body>
-                                            <tr>
-                                                <td><span>  {{__('home.paymentmethod')}}</span></td>
-                                                <td>
-                                                    <?php
-
-                                                    if ($data['pay'] == "Cash") {
-                                                        $paymethod = __('report.cash');
-                                                    } elseif ($data['pay'] == "Shabka") {
-                                                        $paymethod = __('report.shabka');
-                                                    } elseif ($data['pay'] == "Bank_transfer") {
-                                                        $paymethod = __('home.Bank_transfer');
-                                                    } else {
-                                                        $paymethod = __('report.credit');
-                                                    }
-                                                    ?>
-                                                    <span>{{ $paymethod}}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><span> {{ __('home.date') }}</span></td>
-                                                <td><span> {{$data['resource_purchases']->created_at}}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><span> {{ __('home.entersuppliername') }} </span></td>
-                                                <td><span>{{$data['supllierdata']->name}}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><span>{{ __('supprocesses.Location') }}</span></td>
-                                                <td><span>{{$data['supllierdata']->location}}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><span> {{ __('supprocesses.phone') }} </span></td>
-                                                <td><span>{{$data['supllierdata']->phone}}</span></td>
-                                            </tr>
-                                            
-                                        </body>
-
-                                    </table>
-                                </div>
-
-
-
-                            </div>
                         </div>
 
+                    </div><!-- invoice-header -->
+
+                <div class="row mb-4">
+                    <div class="col-md-5">
+                        <table class="info-table">
+                            <tr>
+                                <td>{{__('home.Invoice_no')}}</td>
+                                <td>#{{$data['resource_purchases']->orderId}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ __('home.date') }}</td>
+                                <td>{{ date('Y-m-d H:i', strtotime($data['resource_purchases']->created_at)) }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{__('home.paymentmethod')}}</td>
+                                <td>
+                                    @php
+                                        $methods = [
+                                            'Cash' => __('report.cash'),
+                                            'Shabka' => __('report.shabka'),
+                                            'Bank_transfer' => __('home.Bank_transfer')
+                                        ];
+                                        echo $methods[$data['pay']] ?? __('report.credit');
+                                    @endphp
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <div class="table-responsive mg-t-40">
-                        <table class="table table-invoice border text-md-nowrap mb-0 table-bordered table-striped text-center">
-                            <thead>
-                                <tr>
-                                    <th class="wd-20p">#</th>
-                                    <th class="wd-40p"> {{ __('home.productNo') }}</th>
-                                    <th class="wd-40p">{{ __('home.product') }}</th>
-                                    <th class="tx-center"> {{__('home.quantity')}} </th>
-                                    <th class="tx-center"> {{__('home.price')}} </th>
-                                    <th class="tx-center"> {{__('home.addedValue')}} </th>
-                                    <th class="tx-center"> {{__('home.total')}} </th>
+                    <div class="col-md-2"></div>
+                    <div class="col-md-5">
+                        <table class="info-table">
+                            <tr>
+                                <td>{{ __('home.entersuppliername') }}</td>
+                                <td>{{$data['supllierdata']->name}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ __('home.tax_number') }}</td>
+                                <td>{{$data['supllierdata']->TaxـNumber}}</td>
+                            </tr>
+                            <tr>
+                                <td>حالة الفاتورة</td>
+                                <td><span class="text-success font-weight-bold">مكتملة</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
+                <div class="table-responsive">
+                    <table class="table table-main table-striped text-center">
+                        <thead class="text-white" style="background-color: #419BB2;">
+                            <tr>
+                                <th>#</th>
+                                <th>{{ __('home.productNo') }}</th>
+                                <th>{{ __('home.product') }}</th>
+                                <th>{{__('home.quantity')}}</th>
+                                <th>{{__('home.price')}}</th>
+                                <th>{{__('home.addedValue')}}</th>
+                                <th>{{__('home.total')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php 
+                                $i = 0; $totalprice = 0; $totalAddedvalue = 0; 
+                            @endphp
+                            @foreach ($data['productsdata'] as $product)
+                                @if($product->numberofpice != 0)
+                                    @php
+                                        $i++;
+                                        $lineTotal = ($product->purchasingـprice * $product->numberofpice);
+                                        $lineTax = ($product->Added_Value * $product->numberofpice);
+                                        $totalprice += $lineTotal;
+                                        $totalAddedvalue += $lineTax;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $i }}</td>
+                                        <td dir="ltr" class="text-muted small">{{$product->productData->Product_Code}}</td>
+                                        <td class="font-weight-bold">{{$product->product_name}}</td>
+                                        <td>{{ number_format($product->numberofpice, 2) }}</td>
+                                        <td>{{ number_format($product->purchasingـprice, 2) }}</td>
+                                        <td>{{ number_format($product->Added_Value, 2) }}</td>
+                                        <td class="font-weight-bold">{{ number_format($lineTotal + $lineTax, 2) }}</td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-
+                <div class="row justify-content-end mt-4">
+                    <div class="col-md-7">
+                        <table class="table table-bordered text-center shadow-sm">
+                            <thead class="bg-light">
+                                <tr style="font-size: 13px;">
+                                    <th>{{ __('home.the amount') }}</th>
+                                    <th>{{ __('home.discount') }}</th>
+                                    <th>{{ __('home.addedValue') }}</th>
+                                    <th>{{ __('home.shipping fee') }}</th>
+                                    <th >{{ __('home.total') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php $i = 0;
-                                $totalprice = 0;
-                                $totalAddedvalue = 0; ?>
-
-                                @foreach ($data['productsdata'] as $product)
-                                <?php $i++;
-                                $totalprice += $product->purchasingـprice  * $product->numberofpice;
-                                $totalAddedvalue += $product->Added_Value * $product->numberofpice;
-                                ?>
-                                @if($product->numberofpice!=0)
-                                <tr>
-                                    <td>{{ $i }}</td>
-
-                                    <td dir=ltr>{{$product->productData->Product_Code}}</td>
-                                    <td class="tx-12">{{$product->product_name}}</td>
-                                    <td class="tx-center">{{ $product->numberofpice}}</td>
-                                    <td class="tx-center">{{ $product->purchasingـprice}}</td>
-                                    <td class="tx-center">{{ $product->Added_Value}}</td>
-                                    <td class="tx-center">{{ ($product->Added_Value*$product->numberofpice)+($product->purchasingـprice  *$product->numberofpice)}}</td>
-
+                                <tr style="font-size: 16px; font-weight: bold;">
+                                    <td>{{ number_format($totalprice, 2) }}</td>
+                                    <td class="text-danger">{{ number_format($data['resource_purchases']->discount, 2) }}</td>
+                                    <td>{{ number_format($data['resource_purchases']->In_debt - ($totalprice - $data['resource_purchases']->discount), 2) }}</td>
+                                    <td>{{ number_format($data['resource_purchases']['shipping fee'], 2) }}</td>
+                                    <td >
+                                        {{ number_format($data['resource_purchases']->In_debt + $data['resource_purchases']['shipping fee'], 2) }}
+                                    </td>
                                 </tr>
-                                @endif
-                                @endforeach
-
-
-
                             </tbody>
                         </table>
                     </div>
-                    <br>
-                    <div class="table-responsive mg-t-30 table-padding">
-                        <table class="table table-invoice border text-md-nowrap mb-0 table-bordered table-striped" id="tableTotalPrice" name="tableTotalPrice" width="50%">
-                            <col style="width:15%">
-                            <col style="width:15%">
-                            <col style="width:15%">
-                            <col style="width:20%">
-                            <thead>
-                                <tr>
-                                    <th class="border-bottom-0">{{ __('home.the amount') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.addedValue') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.discount') }}</th>
-                                    <th class="border-bottom-0">{{ __('home.total') }} </th>
-
-                                </tr>
-                            </thead>
-
-                            <body>
-                                <tr>
-                                    <td> {{$totalprice}}</td>
-                                    <td>{{$totalAddedvalue}}</td>
-                                    <td>{{$data['resource_purchases']->discount}}</td>
-                                    <td>{{$totalAddedvalue+ $totalprice-$data['resource_purchases']->discount}}</td>
-                                </tr>
-
-                            </body>
-
-                        </table>
-                        <br>
-                        <br>
-                        <br>
-
-
-                        <hr class="mg-b-40">
-
-
-
-                        <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()"> <i class="mdi mdi-printer ml-1"></i>طباعة</button>
-                    </div>
-
-
                 </div>
+
+                <div class="mt-5 text-center text-muted small">
+                    <hr>
+                    <p class="mb-0">صدرت هذه الفاتورة آلياً من نظام إبداع سوفت المحاسبي - EbdeaSoft</p>
+                    <p>نشكركم لثقتكم بنا</p>
+                </div>
+
             </div>
-        </div><!-- COL-END -->
+        </div>
     </div>
-    <!-- row closed -->
 </div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
 @endsection
+
 @section('js')
-<!--Internal  Chart.bundle js -->
-<script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-
-
-<script type="text/javascript">
-    function printDiv() {
-        var printContents = document.getElementById('print').innerHTML;
-        var originalContents = document.body.innerHTML;
-        document.body.innerHTML = printContents;
-        window.print();
-        document.body.innerHTML = originalContents;
-        location.reload();
-    }
+<script>
+    // لا حاجة لأكواد JS معقدة، window.print() مع CSS Media Query هو الحل الأكثر استقراراً.
 </script>
-
 @endsection

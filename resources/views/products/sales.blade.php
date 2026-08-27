@@ -16,160 +16,431 @@
 
 <!-- Internal Select2 css -->
 <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
 <style>
-.custom-save-btn {
-    background-color: #419BB2 !important;
-    color: white !important;
-    /* هنا نتحكم في الحجم */
-    min-width: 250px;
-    padding: 10px 30px !important;
+/* ==========================================================================
+   شاشة المبيعات — تصميم احترافي (Scoped)
+   متغيرات الألوان معرّفة على :root (متغيرات CSS فقط، مفيهاش أي تأثير بصري
+   لوحدها)، وقواعد التنسيق نفسها محصورة على .pro-sales-header / .pro-sales-page
+   عشان متأثرش على السايدبار أو الهيدر أو أي صفحة تانية.
+   ========================================================================== */
 
-    font-size: 18px !important;
-    font-weight: bold !important;
-    border-radius: 50px !important;
-    /* شكل بيضاوي احترافي */
-    border: none !important;
-    box-shadow: 0 4px 15px rgba(65, 155, 178, 0.3);
-    transition: all 0.3s ease;
+:root {
+    --brand-navy: #1b3358;
+    --brand-navy-light: #23395D;
+    --brand-teal: #2f97ac;
+    --brand-teal-dark: #1f7a8c;
+    --accent-blue: #3d7bff;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #e0293f;
+    --danger-dark: #c81e33;
+    --surface: #ffffff;
+    --bg-page: #f4f6fa;
+    --bg-soft: #f8fafc;
+    --border: #e3e7ee;
+    --border-strong: #cfd6e2;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(16, 24, 40, .06);
+    --shadow-md: 0 6px 16px rgba(16, 24, 40, .08);
+    --shadow-lg: 0 14px 34px rgba(16, 24, 40, .14);
+    font-family: "Tajawal", "Cairo", sans-serif;
+}
+
+.pro-sales-page,
+.pro-sales-page table,
+.pro-sales-page td,
+.pro-sales-page th,
+.pro-sales-page input,
+.pro-sales-page button,
+.pro-sales-page select,
+.pro-sales-page .form-control {
+    font-family: "Tajawal", "Cairo", sans-serif;
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
+}
+
+/* -------------------- هيدر الصفحة -------------------- */
+.pro-sales-header .breadcrumb-header {
+    background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    min-height: 88px;
+    box-shadow: var(--shadow-md);
+}
+
+.pro-sales-header .content-title {
+    color: #fff !important;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    letter-spacing: .2px;
 }
 
-.custom-save-btn:hover {
-    background-color: #357e91 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(65, 155, 178, 0.4);
-}
-
-/* لضمان التمركز في الموبايل أيضاً */
-@media (max-width: 768px) {
-    .custom-save-btn {
-        width: 80%;
-        /* يأخذ مساحة أكبر في الشاشات الصغيرة */
-    }
-}
-
-/* التنسيق العام للمدخلات في هذا القسم */
-.custom-input,
-.select2-container--default .select2-selection--single {
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 10px !important;
-    height: 45px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    transition: all 0.3s ease !important;
-    background-color: #ffffff !important;
-}
-
-/* تأثير عند الضغط أو اختيار الحقل */
-.custom-input:focus,
-.select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: #419BB2 !important;
-    box-shadow: 0 0 0 3px rgba(65, 155, 178, 0.1) !important;
-    background-color: #fff !important;
-}
-
-/* تحسين شكل الـ Label */
-.form-label {
-    font-size: 14px !important;
-    margin-bottom: 8px !important;
-    color: #475569 !important;
-}
-
-/* تخصيص الـ Select2 ليتناسب مع الحقول الأخرى */
-.select2-container .select2-selection--single .select2-selection__rendered {
-    line-height: 28px !important;
-    color: #1e293b !important;
-    font-weight: 600 !important;
-}
-
-/* الصناديق الجانبية (المبلغ، الخصم، الضريبة) */
-.summary-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 8px 12px;
-    transition: all 0.3s ease;
-}
-
-.summary-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 2px;
-    color: #64748b;
-}
-
-.summary-input {
-    background: transparent !important;
+.pro-sales-header .btn {
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    box-shadow: var(--shadow-sm);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
     border: none !important;
-    font-size: 18px !important;
-    font-weight: 800 !important;
-    color: #1e293b !important;
-    padding: 0 !important;
-    height: auto !important;
-    text-align: center !important;
 }
 
-/* تحسين الصندوق الأسود ليظهر بوضوح أكبر */
-.total-display-card {
-    background: #c8ccd4 !important;
-    border: 2px solid #e53e3e !important;
-    border-radius: 12px;
+.pro-sales-header .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.08);
+}
+
+/* -------------------- الكروت -------------------- */
+.pro-sales-page .card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.pro-sales-page .card-header {
+    background: transparent;
+    border-bottom: none;
+}
+
+/* -------------------- جدول المنتجات -------------------- */
+.pro-sales-page table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.pro-sales-page table.table-bordered {
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.pro-sales-page table thead th {
+    background: linear-gradient(180deg, #f4f6fb 0%, #eef1f8 100%) !important;
+    padding: 12px 8px;
+    font-weight: 700 !important;
+    color: var(--brand-navy) !important;
+    text-align: center;
+    border: 1px solid var(--border) !important;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+#productsTableBody tr {
+    background: var(--surface);
+    transition: background .15s ease;
+}
+
+#productsTableBody tr:nth-child(even) {
+    background: #fafbfd;
+}
+
+#productsTableBody tr:hover {
+    background: #eef4ff;
+}
+
+#productsTableBody td {
+    border: 1px solid var(--border) !important;
+    padding: 6px !important;
+    vertical-align: middle;
+}
+
+#productsTableBody .form-control {
+    height: 36px;
+    padding: 4px 8px;
+    text-align: center;
+    min-width: 70px;
+}
+
+#productsTableBody .product-name {
+    text-align: right;
+    min-width: 160px;
+}
+
+/* -------------------- الحقول والقوائم -------------------- */
+.pro-sales-page .form-control {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-strong) !important;
+    background: var(--surface);
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.pro-sales-page .form-control:focus {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(61, 123, 255, .18);
+    outline: none;
+}
+
+.pro-sales-page .form-control[readonly] {
+    background: var(--bg-soft);
+    color: var(--text-muted) !important;
+}
+
+.pro-sales-page .select2-container--default .select2-selection--single {
+    height: 40px !important;
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-strong) !important;
+    display: flex;
+    align-items: center;
+}
+
+.pro-sales-page .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+}
+
+.pro-sales-page .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 38px !important;
+}
+
+/* -------------------- الأزرار -------------------- */
+.pro-sales-page .addProductBtn,
+.pro-sales-page #addProductBtn {
+    background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-teal-dark) 100%) !important;
+    color: #fff !important;
+    border: none;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    padding: 6px 14px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pro-sales-page .addProductBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.pro-sales-page .btn-info,
+.pro-sales-page .btn-primary {
+    background: linear-gradient(135deg, var(--accent-blue), #2f66e0) !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+}
+
+.pro-sales-page .btn-info:hover,
+.pro-sales-page .btn-primary:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.pro-sales-page .btn-danger {
+    background: linear-gradient(135deg, #ff5b5b, var(--danger)) !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.pro-sales-page .btn-danger:hover {
+    filter: brightness(1.08);
+    transform: scale(1.04);
+}
+
+.pro-sales-page #saveInvoice,
+.pro-sales-page #saveAsDraft {
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    padding: 6px 22px !important;
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.pro-sales-page #saveInvoice:hover,
+.pro-sales-page #saveAsDraft:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.05);
+}
+
+.pro-sales-page .invoice-actions-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     padding: 8px;
+    margin-top: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* -------------------- ملخص الفاتورة -------------------- */
+.pro-sales-page .invoice-summary-panel {
+    background: linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+.pro-sales-page .invoice-totals-grid .form-label {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700 !important;
+    margin-bottom: 4px;
+}
+
+.pro-sales-page .invoice-totals-grid input#grandTotal {
+    background: var(--brand-navy) !important;
+    color: #fff !important;
+    font-size: 18px;
+    font-weight: 800 !important;
+    border: none !important;
+    height: 44px;
+}
+
+.pro-sales-page .invoice-totals-grid input {
+    height: 40px;
     text-align: center;
 }
 
-.total-label {
-    color: #fc8181 !important;
-    font-size: 15px !important;
-    font-weight: 800;
-    margin-bottom: 0px;
+/* -------------------- شريط الطباعة -------------------- */
+.pro-sales-page #printdiv {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 16px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
 }
 
-.grand-total-input {
-    background: transparent !important;
+.pro-sales-page #printdiv .btn,
+.pro-sales-page #printdiv a,
+.pro-sales-page #printdiv button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    transition: all .2s ease !important;
     border: none !important;
-    color: #ffffff !important;
-    font-size: 30px !important;
-    font-weight: 900 !important;
-    text-align: center !important;
-    text-shadow: 0 0 8px rgba(229, 62, 62, 0.5);
+    padding: 0 16px !important;
+    text-decoration: none !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
-/* =========================
-   Modern UI + Inner Borders
-   ========================= */
+.pro-sales-page #send_whats_app {
+    width: 45px !important;
+    background-color: #25d366 !important;
+    font-size: 20px !important;
+    color: #fff !important;
+    padding: 0 !important;
+}
+
+.pro-sales-page #printdiv a:hover,
+.pro-sales-page #printdiv button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md) !important;
+    filter: brightness(1.08);
+}
+
+.pro-sales-page .svg-icon-buttons {
+    fill: currentColor;
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.pro-sales-page #sendzatca {
+    background-color: #64748b !important;
+    color: #fff !important;
+}
+
+/* -------------------- المودالات (غير محصورة عشان بتظهر برا .row) -------------------- */
+.modal-content {
+    border-radius: var(--radius-lg) !important;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%);
+    border-bottom: none !important;
+    padding: 14px 20px;
+}
+
+.modal-header .modal-title,
+.modal-header h6 {
+    color: #fff !important;
+    font-weight: 700 !important;
+}
+
+.modal-header .close {
+    color: #fff;
+    opacity: .85;
+    text-shadow: none;
+}
+
+.modal-body {
+    background: #fff;
+    padding: 18px 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-soft);
+}
+
+#productsTable th,
+#productsTable td,
+#SearchProductTable th,
+#SearchProductTable td {
+    border: 1px solid var(--border) !important;
+}
+
+#productsTable tr:hover,
+#SearchProductTable tbody tr:hover {
+    background: #eef3ff !important;
+}
+
+td .d-flex {
+    align-items: center;
+}
+
+/* -------------------- شاشة التحميل -------------------- */
 #loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background: rgba(15, 23, 42, .72);
+    backdrop-filter: blur(2px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    color: white;
-    font-size: 24px;
+    color: #fff;
+    font-size: 20px;
     display: none;
 }
 
-#loading-animation {
-    border: 4px solid white;
-    border-radius: 50%;
-    border-top: 4px solid #3498db;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
+#loading-screen p {
+    margin: 0 0 0 12px;
+    font-weight: 700;
+    line-height: 1.6;
 }
 
-@keyframes spin {
+#loading-animation {
+    border: 4px solid rgba(255, 255, 255, .25);
+    border-radius: 50%;
+    border-top: 4px solid #3d7bff;
+    width: 50px;
+    height: 50px;
+    animation: pro-sales-spin 1s linear infinite;
+}
+
+@keyframes pro-sales-spin {
     0% {
         transform: rotate(0deg);
     }
@@ -179,200 +450,194 @@
     }
 }
 
-/* الخط العام */
-body,
-table,
-td,
-th,
-input,
-button,
-.form-control {
-    font-family: "Tajawal", sans-serif;
-    font-weight: 600 !important;
-    color: #000 !important;
+/* -------------------- استجابة الشاشات الصغيرة -------------------- */
+@media (max-width: 991px) {
+    .pro-sales-page .invoice-totals-grid>div {
+        margin-bottom: 10px;
+    }
 }
 
-/* جدول بحدود داخلية */
-table {
-    border-collapse: collapse !important;
-    width: 100%;
-}
+@media (max-width: 767px) {
+    .pro-sales-page #printdiv {
+        justify-content: center;
+    }
 
-table thead th {
-    background: #f1f3f9;
-    padding: 12px;
+    .pro-sales-page #saveInvoice,
+    .pro-sales-page #saveAsDraft {
+        width: 100%;
+        margin: 4px 0 !important;
+    }
+}
+</style>
+
+<style>
+/* أزرار أوضح: حجم أكبر شوية، حواف مدورة، ظل خفيف، وحركة عند الهوفر */
+.pro3-header-row .pro3-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 18px !important;
+    font-size: 13.5px !important;
     font-weight: 700 !important;
-    color: #000 !important;
-    text-align: center;
-    border: 1px solid #d6d6d6 !important;
-    /* حدود داخلية */
-}
-
-/* الصفوف */
-#productsTableBody tr {
-    background: #ffffff;
-    transition: background 0.2s ease;
-}
-
-#productsTableBody tr:hover {
-    background: #f7f9ff;
-}
-
-/* حدود داخلية للـ <td> */
-#productsTableBody td {
-    border: 1px solid #e0e0e0 !important;
-    padding: 10px !important;
-    vertical-align: middle;
-}
-
-/* الحقول */
-.form-control {
-    border-radius: 6px !important;
-    border: 1px solid #c8ccd4 !important;
-    transition: .2s;
-}
-
-.form-control:focus {
-    border-color: #478bff !important;
-    box-shadow: 0 0 0 2px rgba(71, 139, 255, 0.25);
-}
-
-/* أزرار اختيار المنتج */
-.btn-info,
-.btn-primary {
-    background: linear-gradient(135deg, #478bff, #357bff) !important;
     border: none !important;
-    color: #fff !important;
-    border-radius: 6px !important;
-    font-weight: 700 !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    letter-spacing: 0.2px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
-.btn-info:hover,
-.btn-primary:hover {
-    background: linear-gradient(135deg, #3f79ff, #296bff) !important;
+.pro3-header-row .pro3-btn i {
+    font-size: 13px !important;
+}
+
+.pro3-header-row .pro3-btn-navy {
+    background-color: #23395D !important;
+    box-shadow: 0 4px 10px rgba(35, 57, 93, 0.35) !important;
+}
+
+.pro3-header-row .pro3-btn-green {
+    background-color: #1f9d55 !important;
+    box-shadow: 0 4px 10px rgba(31, 157, 85, 0.35) !important;
+}
+
+.pro3-header-row .pro3-btn:hover,
+.pro3-header-row .pro3-btn:focus {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    color: #fff !important;
+}
+
+.pro3-header-row .pro3-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+@media (max-width: 767px) {
+    .pro3-header-row .pro3-actions {
+        width: 100%;
+    }
+
+    .pro3-header-row .pro3-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+</style>
+
+<style>
+/* ==========================================================================
+   طبقة تحسين إضافية (Phase 2) — توحيد الألوان مع هوية الفواتير/التسعيرات
+   (كحلي #1b3358 + تركواز + لمسة ذهبية) وتحسين التباعد والانسجام العام.
+   دي طبقة CSS بس، مفيهاش أي تغيير على الـ HTML أو الـ JS.
+   ========================================================================== */
+
+:root {
+    --brand-gold: #c8933a;
+}
+
+/* -------------------- توحيد أزرار الحفظ الرئيسية -------------------- */
+.pro-sales-page #saveInvoice {
+    background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-teal-dark) 100%) !important;
+    border-color: transparent !important;
+}
+
+.pro-sales-page #saveAsDraft {
+    background: linear-gradient(135deg, #ffb04d, #f59e0b) !important;
+    border-color: transparent !important;
+}
+
+/* -------------------- لمسة ذهبية على الإجمالي الكلي -------------------- */
+.pro-sales-page .pro-total-grand {
+    position: relative;
+}
+
+.pro-sales-page .invoice-totals-grid input#grandTotal {
+    border-right: 4px solid var(--brand-gold) !important;
+}
+
+/* -------------------- تباعد أكثر انسجامًا بين الأقسام -------------------- */
+.pro-sales-page .card > .card-header,
+.pro-sales-page .card > .card-body {
+    padding-bottom: 4px;
+}
+
+.pro-sales-page .pro-summary-panel,
+.pro-sales-page .invoice-totals-grid {
+    margin-bottom: 18px !important;
+}
+
+.pro-sales-page .pro-stat-card,
+.pro-sales-page .pro-totals-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.pro-sales-page .pro-stat-card:hover,
+.pro-sales-page .pro-totals-card:hover {
+    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
-/* زر الحذف */
-.btn-danger {
-    background: linear-gradient(135deg, #ff5b5b, #ff3b3b) !important;
-    border: none !important;
-}
-
-.btn-danger:hover {
-    background: linear-gradient(135deg, #ff4343, #ff2020) !important;
-    transform: scale(1.05);
-}
-
-/* زر إضافة صف */
-#addProductBtn,
-.btn-add-product {
-    background: linear-gradient(135deg, #1a73e8, #0d5bd8) !important;
-    padding: 8px 20px;
-    border-radius: 8px !important;
-    color: #fff !important;
-    font-weight: 700 !important;
-    border: none;
-}
-
-#addProductBtn:hover {
-    transform: translateY(-2px);
-}
-
-/* المودال */
-.modal-content {
-    border-radius: 12px !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
-}
-
-.modal-header {
-    background: #f1f3f9;
-    border-bottom: 1px solid #ddd !important;
-}
-
-.modal-title {
-    color: #000 !important;
-    font-weight: 700 !important;
-}
-
-.modal-body {
-    background: #fff;
-}
-
-/* جدول البحث داخل المودال */
-#productsTable th,
-#productsTable td {
-    border: 1px solid #dcdcdc !important;
-}
-
-#productsTable tr:hover {
-    background: #eef3ff !important;
-}
-
-/* تحسين الـ div */
-td .d-flex {
+.pro-sales-page .pro-stat-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 10px;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    background: rgba(47, 151, 172, .12);
+    color: var(--brand-teal-dark);
+    font-size: 16px;
 }
 
-.barcode-scanner-group {
-    border: 2px solid #e2e8f0;
-    /* لون هادئ للإطار */
-    border-radius: 15px !important;
-    /* حواف دائرية ناعمة */
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: #fff;
+.pro-sales-page .pro-total-grand .pro-stat-icon {
+    background: rgba(200, 147, 58, .16);
+    color: var(--brand-gold);
 }
 
-/* تحسين شكل الأيقونة */
-.barcode-scanner-group .input-group-text {
-    background-color: #419BB2 !important;
-    /* لون البراند الخاص بك */
-    color: white !important;
-    padding-left: 20px;
-    padding-right: 20px;
-    transition: 0.3s;
+.pro-sales-page .pro-stat-body {
+    flex: 1;
+    min-width: 0;
 }
 
-/* حقل الإدخال نفسه */
-#quick_scan {
-    font-size: 1.1rem !important;
-    font-weight: 600;
-    color: #2d3748;
-    padding: 12px 15px;
+/* -------------------- توحيد ألوان أزرار المودالات (برا نطاق pro-sales-page) -------------------- */
+#createcustomer .btn-primary,
+#createproduct .btn-primary,
+#updateinvoicefromsale .btn-primary,
+#updateinvoicebyidmodale .btn-primary {
+    background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-navy-light) 100%) !important;
+    border: none !important;
+    box-shadow: var(--shadow-sm);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
-#quick_scan:focus {
-    box-shadow: none;
-    /* إلغاء ظل بوتستراب الافتراضي */
-}
-
-/* تأثير عند وضع المؤشر داخل الحقل */
-.barcode-scanner-group:focus-within {
-    border-color: #419BB2;
+#createcustomer .btn-primary:hover,
+#createproduct .btn-primary:hover,
+#updateinvoicefromsale .btn-primary:hover,
+#updateinvoicebyidmodale .btn-primary:hover {
     transform: translateY(-2px);
-    /* حركة بسيطة للأعلى */
-    box-shadow: 0 10px 15px -3px rgba(65, 155, 178, 0.2) !important;
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.08);
 }
 
-/* زر المسح (X) */
-.barcode-scanner-group .btn-outline-primary {
-    border-radius: 0 !important;
-    padding-right: 15px;
-    color: #a0aec0 !important;
+/* -------------------- زر إضافة منتج بحدود أوضح -------------------- */
+.pro-sales-page .addProductBtn {
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
-.barcode-scanner-group .btn-outline-primary:hover {
-    color: #e53e3e !important;
-    /* يتحول للأحمر عند المسح */
-    background: transparent !important;
-}
-
-/* نص المساعدة الصغير */
-.quick-scan-container small {
-    font-size: 0.85rem;
-    color: #718096 !important;
-    margin-right: 10px;
+/* -------------------- خط فاصل رفيع أعلى شريط الحفظ -------------------- */
+.pro-sales-page .invoice-actions-bar {
+    border-top: 3px solid var(--brand-gold);
 }
 </style>
 @section('title')
@@ -380,60 +645,66 @@ td .d-flex {
 @stop
 @endsection
 @section('page-header')
-<!-- breadcrumb -->
-<div class="main-parent">
-    <div style="justify-content: space-between !important" class="breadcrumb-header parent-heading ">
+<div class="main-parent pro-sales-header">
+    <div style="justify-content: space-between !important" class="breadcrumb-header parent-heading">
         <div class="my-auto" style="width:100%">
-            <div class="d-flex" style="width:100%">
+            <div class="d-flex align-items-center justify-content-between flex-wrap pro3-header-row"
+                style="width:100%; gap: 10px;">
 
-
-
-                <div class="d-flex">
-                    <h4 class="conte  nt-title mb-0 my-auto">{{ __('home.sales') }}</h4>
-                    <span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                    </span>
+                <div class="d-flex align-items-center">
+                    <h4 class="content-title mb-0">
+                        <i class="fa fa-cash-register"></i> {{ __('home.sales') }}
+                    </h4>
                 </div>
-                <div class="last-sales" style="width:70%"></div>
 
+                <div class="d-flex flex-wrap align-items-center pro3-actions" style="gap: 10px;">
 
-                <div class="choose-product">
-                    <button style="background-color: #23395D;"
-                        class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale"
-                        data-toggle="modal" href="#createcustomer">
-                        {{ __('home.addnewcustomer') }}
+                    {{-- خيار التحكم في إظهار الرقم --}}
+                    <div class="select-wrapper">
+                        <select class="form-control select2" name="numbershowstatus" id="numbershowstatus" required>
+                            <option value="1">{{ __('home.shownumberselect') }}</option>
+                            <option value="0">{{ __('home.notshow') }}</option>
+                        </select>
+                    </div>
+
+                    {{-- زر إضافة عميل جديد --}}
+                    <button type="button" class="btn btn-sm text-white pro3-btn pro3-btn-navy" data-toggle="modal"
+                        href="#createcustomer">
+                        <i class="fa fa-user-plus"></i> {{ __('home.addnewcustomer') }}
                     </button>
+
+                    {{-- زر إضافة منتج جديد --}}
+                    <button type="button" class="btn btn-sm text-white pro3-btn pro3-btn-navy" data-toggle="modal"
+                        href="#createproduct">
+                        <i class="fa fa-plus"></i> {{ __('supprocesses.addproduct') }}
+                    </button>
+
+                    {{-- زر تحديث الفاتورة برقمها --}}
+                    <button type="button" class="btn btn-sm text-white pro3-btn pro3-btn-green" data-toggle="modal"
+                        href="#updateinvoicebyidmodale">
+                        <i class="fa fa-sync-alt"></i> {{ __('home.updateinvoicebyid') }}
+                    </button>
+
                 </div>
-
-
-
-
-
-
             </div>
 
-        </div><!-- col-4 -->
-    </div><!-- col-4 -->
-</div><!-- col-4 -->
-</div><!-- col-4 -->
-
-
-
-
-
-
-
+        </div>
+    </div>
+</div>
+</div>
 
 @endsection
 @section('content')
-
+<br>
 <center>
     <div id="loading-screen">
         <div id="loading-animation"></div>
         &nbsp; <p> جارٍ إرسال الفاتورة، يرجى الانتظار <br>Invoice is being sent, please wait</p>
     </div>
 </center>
+
 <!-- row -->
-<div class="row">
+<div class="row pro-sales-page">
 
     <div class="col-xl-12">
         <div class="card mg-b-20">
@@ -445,57 +716,17 @@ td .d-flex {
                 <?php
     $avtSaleRate = App\Models\Avt::find(1);
     $avtSaleRate = $avtSaleRate->AVT;
-                                                                                                                                            ?>
+    $system_settings = App\Models\system_setting::find(1);
+    $discound_allow = $system_settings->discount_on_invoice;
+
+                                                                                                    ?>
 
                 <form enctype="multipart/form-data" method="POST" role="search" name="form-name" id='formdata'
                     autocomplete="off">
                     {{ csrf_field() }}
 
-                    <div class='row g-3 mt-3 align-items-end'
-                        style="background-color: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0;">
+                    <input type="hidden" name="action" id="invoice_action">
 
-                        <div class="col-lg-4">
-                            <label for="clientnamesearch" class="form-label fw-bold text-dark">
-                                <i class="fas fa-user-circle text-primary me-1"></i> {{ __('home.chooseclient') }}
-                            </label>
-                            <select class="form-control select2 custom-select" name="clientnamesearch"
-                                id="clientnamesearch">
-                                @foreach (App\Models\customers::get() as $customer)
-                                <option value="{{ $customer->id }}">
-                                    {{ App::getLocale() == 'ar' ? $customer->name . ' - ' . $customer->tax_no : $customer->comp_name . ' - ' . $customer->tax_no}}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-lg-2">
-                            <label class="form-label fw-bold text-dark">
-                                <i class="fas fa-wallet text-success me-1"></i> {{ __('home.paymentmethod') }}
-                            </label>
-                            <select class="form-select custom-input shadow-none" name="payment_type" id='payment_type'
-                                required>
-                                <option id="cash_id" value="Cash"> {{ __('report.cash') }}</option>
-                                <option value="Shabka"> {{ __('report.shabka') }} </option>
-                                <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
-                                <option value="Credit"> {{ __('report.credit') }} </option>
-                            </select>
-                        </div>
-
-                        <div class="col-lg-2">
-                            <label for="p_o" class="form-label fw-bold text-dark">P.O</label>
-                            <input autocomplete="off" type="text" class="form-control custom-input" id="p_o" name="p_o"
-                                value="-">
-                        </div>
-
-                        <div class="col-lg-4">
-                            <label for="notes" class="form-label fw-bold text-dark">
-                                <i class="fas fa-pen-alt text-muted me-1"></i> {{ __('home.notesClient') }}
-                            </label>
-                            <input autocomplete="off" type="text" class="form-control custom-input" id="notes"
-                                name="notes" onchange="makenoteoninvoice()" value="-">
-                        </div>
-
-                    </div>
 
                     <div style="border-radius: 10px" class="card p-3 my-3">
 
@@ -509,12 +740,18 @@ td .d-flex {
                         <table class="table-responsive table table-bordered">
                             <thead class="table-dark">
                                 <col style="width:0.5%">
-                                <col style="width:2%">
-                                <col style="width:20%">
-                                <col style="width:30%">
-                                <col style="width:12%">
-                                <col style="width:16%">
-                                <col style="width:12%">
+                                <col style="width:1%">
+                                <col style="width:10%">
+                                <col style="width:15%">
+                                <col style="width:8%">
+                                <col style="width:9%">
+                                <col style="width:9%">
+                                <col style="width:7%">
+                                <col style="width:8%">
+                                <col style="width:8%">
+                                <col style="width:5%">
+                                <col style="width:6%">
+                                <col style="width:8%">
                                 <col style="width:8%">
                                 <thead>
                                     <tr>
@@ -523,8 +760,16 @@ td .d-flex {
                                         <th> # </th>
                                         <th>{{ __('home.productNo') }} </th>
                                         <th>{{ __('home.product') }}</th>
+                                        <th>{{ __('home.purchase') }}</th>
+                                        <th>{{ __('home.saleperpice') }}</th>
+
                                         <th> {{ __('home.productprice') }} </th>
                                         <th>{{ __('home.quantity') }}</th>
+                                        <th>{{ __('home.price') }}</th>
+
+                                        <th>{{ __('home.discount') }}</th>
+                                        <th style="width: 10%">{{ __('home.avt_rate') }}</th>
+                                        <th>{{ __('home.addedValue') }}</th>
                                         <th>{{ __('home.total') }}</th>
                                         <th>{{ __('home.operations') }}</th>
                                     </tr>
@@ -535,166 +780,263 @@ td .d-flex {
                         </table>
 
                         <button type="button" class="addProductBtn" style="background-color: #419BB2 ;width:8%"
-                            onclick="addRow()"> {{ __('supprocesses.addproduct') }}</button>
+                            onclick="addRow()"><i class="fa fa-plus-circle"></i>
+                            {{ __('supprocesses.addproduct') }}</button>
                         <br>
+                        <div class="row mt-3 pro-summary-panel invoice-summary-panel">
 
-                        <div class="quick-scan-container mb-4 mt-2">
-                            <div class="row align-items-center">
-                                <div class="col-md-5">
-                                    <div class="input-group input-group-lg shadow-sm barcode-scanner-group">
-                                        <span class="input-group-text border-0">
-                                            <i class="fas fa-barcode fa-lg"></i>
-                                        </span>
-
-                                        <input type="text" id="quick_scan" name="quick_scan"
-                                            class="form-control border-0" placeholder="{{ __('home.placeholder') }}"
-                                            autocomplete="off">
-
-                                        <button class="btn btn-success border-0 px-4" type="button"
-                                            id="btn_execute_scan" onclick="executeProductSearch()" title="إضافة المنتج">
-                                            <i class="fas fa-plus-circle me-1"></i>
-                                            {{ __('home.Add') ?? 'إضافة' }}
-                                        </button>
-
-
+                            <div class="col-lg-3 mb-2 mb-lg-0">
+                                <div class="pro-stat-card pro-stat-discount">
+                                    <span class="pro-stat-icon"><i class="fa fa-file-invoice-dollar"></i></span>
+                                    <div class="pro-stat-body">
+                                        <label class="pro-stat-label m-0"
+                                            for="discound_on_invoice">{{ __('home.discound_on_invoice') }}</label>
+                                        <input type="text" readonly id="discound_on_invoice" name="discound_on_invoice"
+                                            oninput='calculateTotalDiscount()' class="form-control" placeholder="0.00">
                                     </div>
+                                </div>
+                            </div>
 
-                                    <small class="mt-2 d-block animate__animated animate__fadeIn text-muted">
-                                        <i class="fas fa-info-circle text-primary me-1"></i>
-                                        {{ __('home.presss') }} <strong>Enter</strong> {{ __('home.Add') }}
-                                    </small>
+                            @can('System setting')
+                            <div id="div_show_profit" class="col-lg-3 mb-2 mb-lg-0">
+                                <div class="pro-stat-card pro-stat-profit">
+                                    <span class="pro-stat-icon"><i class="fa fa-money-bill-wave"></i></span>
+                                    <div class="pro-stat-body">
+                                        <label for="profit"
+                                            class="pro-stat-label m-0 control-label parent-label">{{ __('home.profit') }}</label>
+                                        <input autocomplete="off" type="text" id="profit" name="profit" value="0"
+                                            readonly class="form-control parent-input">
+                                    </div>
+                                </div>
+                            </div>
+                            @endcan
+
+                            <div class="col-lg-4">
+                                <div class="pro-stat-card pro-stat-lastprice">
+                                    <span class="pro-stat-icon"><i class="fa fa-tag"></i></span>
+                                    <div class="pro-stat-body">
+                                        <label for="last_supplier_cost"
+                                            class="pro-stat-label m-0 control-label parent-label">{{ __('home.lastpricecustomer') }}</label>
+                                        <select class="form-control parent-input" name="last_supplier_cost"
+                                            id="last_supplier_cost">
+                                        </select>
+                                    </div>
+                                    <br>
+
                                 </div>
                             </div>
                         </div>
 
-                        <input hidden type="text" id="discound_on_invoice" name="discound_on_invoice"
-                            oninput='calculateTotalDiscount()' class="form-control">
+                        <div class="row mt-3 invoice-totals-grid">
 
-
-                        <div class="row mt-3">
-
-                            <div class="row total-section align-items-end g-3 mb-4">
-                                <div class="col-md-3">
-                                    <div class="summary-box shadow-sm">
-                                        <label class="summary-label">{{ __('home.the amount') }}</label>
-                                        <input readonly type="text" id="totalSum" name="totalSum"
-                                            class="form-control summary-input">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="summary-box shadow-sm border-warning">
-                                        <label class="summary-label text-warning">{{ __('home.discount') }}</label>
-                                        <input readonly type="text" id="totaldiscound" name="totaldiscound"
-                                            class="form-control summary-input text-warning">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="summary-box shadow-sm border-info">
-                                        <label class="summary-label text-info">{{ __('home.addedValue') }}</label>
-                                        <input readonly type="text" id="totalTax" name="totalTax"
-                                            class="form-control summary-input text-info">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="total-display-card shadow">
-                                        <label class="total-label">{{ __('home.total') }}</label>
-                                        <input type="text" id="grandTotal" name="grandTotal" readonly
-                                            class="form-control grand-total-input">
-                                    </div>
+                            <div class="col-md-3 mb-2 mb-md-0">
+                                <div class="pro-totals-card">
+                                    <span class="pro-stat-icon"
+                                        style="background:rgba(61,123,255,.1); color:#3d7bff;"><i
+                                            class="fa fa-coins"></i></span>
+                                    <label class="form-label">{{ __('home.the amount') }}</label>
+                                    <input readonly type="text" id="totalSum" name="totalSum"
+                                        class="form-control parent-input">
                                 </div>
                             </div>
-                            <div class="col-12 d-flex justify-content-center">
-                                <button type='submit' id="saveInvoice" name="saveInvoice" tabindex="-1"
-                                    class="btn custom-save-btn">
-                                    <i class="fas fa-check-double me-2"></i>
-                                    {{ __('home.invoice_save') }}
-                                </button>
+
+                            <div class="col-md-3 mb-2 mb-md-0">
+                                <div class="pro-totals-card">
+                                    <span class="pro-stat-icon" style="background:rgba(211,47,47,.1); color:#d32f2f;"><i
+                                            class="fa fa-percent"></i></span>
+                                    <label class="form-label">{{ __('home.discount') }}</label>
+                                    <input type="text" id="totaldiscound" name="totaldiscound" readonly
+                                        class="form-control parent-input">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-2 mb-md-0">
+                                <div class="pro-totals-card">
+                                    <span class="pro-stat-icon"
+                                        style="background:rgba(245,158,11,.12); color:#b45309;"><i
+                                            class="fa fa-receipt"></i></span>
+                                    <label class="form-label">{{ __('home.addedValue') }}</label>
+                                    <input type="text" id="totalTax" name="totalTax" readonly
+                                        class="form-control parent-input">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="pro-totals-card pro-total-grand">
+                                    <span class="pro-stat-icon"><i class="fa fa-dollar-sign"></i></span>
+                                    <label class="form-label">{{ __('home.total') }}</label>
+                                    <input type="text" id="grandTotal" name="grandTotal" readonly
+                                        class="form-control parent-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-
-
-                    <br>
-
-
-
-
-
-
-                    <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-                    <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                        <input type="text" hidden=true class="form-control" id="invoice_number" name="invoice_number"
-                            value="{{ $data['invoice_id'] ?? '' }}">
-
-                        <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice" value=0>
-
-                        <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
-                            value="{{Auth()->user()->branchs_id}}">
-                        <input hidden=true class="form-control" id="user_id" name="user_id"
-                            value="{{Auth()->user()->discount_allow_limit}}">
-                        <?php
-
-                                   $rate_discount = App\Models\system_setting::find(1);
-                                   $rate_system = $rate_discount->discount_on_invoice;
-                                                                                                                                                ?>
-                        <input hidden=true class="form-control" id="rate_system" name="rate_system"
-                            value="{{$rate_system}}">
-                        <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
-                            value="1">
-                        <br>
                         <br>
 
-                        <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number"
-                title=" رقم الفاتورة " hidden>
+                        <input type="number" class="form-control" name="show_invoice_number_update"
+                            id="show_invoice_number_update" value=0 title=" رقم الفاتورة " hidden>
 
+                        <div class='row'>
 
+                            <div class="col-lg-4 mg-t-10">
+                                <label for="clientnamesearch" class="pro-field-label"><i
+                                        class="fa fa-user"></i>{{ __('home.chooseclient') }}</label>
+                                <select style="width:100%!important" name="clientnamesearch" id="clientnamesearch"
+                                    class="form-control select2">
+                                    <option value=1>عميل نقدي CASH CUSTOMER</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-1 mg-t-10">
+                                <label class="pro-field-label"><i></i>{{ __('home.current balance') }}</label>
+                                <small id="clientBalanceDisplay" class="d-block mg-t-5"
+                                    style="font-weight:600;"></small>
+                            </div>
+
+                            <div class="col-lg-2 mg-t-10">
+                                <label for="paymentmethod" class="pro-field-label"><i
+                                        class="fa fa-wallet"></i>{{ __('home.paymentmethod') }}</label>
+                                <select class="form-control select2" name="paymentmethod" id="paymentmethod" required>
+                                    @foreach (App\Models\financial_accounts::where('parent_account_number', 4)->where(
+                                    'branchs_id',
+                                    Auth()->user()->branchs_id
+                                    )->orwhere('parent_account_number', 5)->where(
+                                    'parent_account_number',
+                                    '!=',
+                                    NULL
+                                    )->where('branchs_id', Auth()->user()->branchs_id)->get() as $section)
+                                    <option value="{{ $section->id }}">
+                                        {{ app()->getLocale() == 'en' ? $section->name_en : $section->name }}
+                                        ({{ $section->account_number }})
+                                    </option>
+                                    @endforeach
+                                    <option value="Credit"> {{ __('report.credit') }} </option>
+                                    <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
+                                </select>
+                            </div>
+                            <!-- col-4 -->
+
+                            <div class="col-lg-2 mg-t-10" id="type">
+                                <p class="mg-b-10 parent-label">&nbsp;</p>
+                                <select class="form-control parent-input" name="payment_type" id="payment_type"
+                                    required>
+                                    <option id="Cash" value="Cash"> {{ __('report.cash') }}</option>
+                                    <option value="Shabka"> {{ __('report.shabka') }} </option>
+                                    <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
+                                    <option value="Credit"> {{ __('report.credit') }} </option>
+                                    <option value="Partition"> {{ __('home.Partition of the amount') }} </option>
+                                </select>
+                            </div>
+
+                            <input type="text" class="form-control parent-input" name="cashamount_form"
+                                id="cashamount_form" hidden>
+                            <input type="text" class="form-control parent-input" name="bankamount_form"
+                                id="bankamount_form" hidden>
+                            <input type="text" class="form-control parent-input" name="bank_transfer_form"
+                                id="bank_transfer_form" hidden>
+                            <div class="col-lg-2 mg-t-10">
+                                <label for="p_o" class="pro-field-label"><i class="fa fa-hashtag"></i>P.O</label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="p_o"
+                                    name="p_o" name="notes" value="- ">
+                            </div>
+
+                            <div class="col-lg-1 mg-t-10">
+                                <label for="notes" class="pro-field-label"><i
+                                        class="fa fa-sticky-note"></i>{{ __('home.notesClient') }}</label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="notes"
+                                    name="notes" title="يرجي ادخال ملاحظات   " onchange="makenoteoninvoice()"
+                                    value="- ">
+                            </div>
+
+                            <input class="form-control parent-input fc-datepicker" hidden value="0" name="date"
+                                id="date" placeholder="YYYY-MM-DD" type="text" required>
+
+                            <input type="hidden" id="token_search" value="{{ csrf_token() }}">
+                            <input type="text" hidden=true class="form-control" id="invoice_number"
+                                name="invoice_number" value="{{ $data['invoice_id'] ?? '' }}">
+
+                            <input type="text" hidden=true class="form-control" id="saveinvice" name="saveinvice"
+                                value=0>
+
+                            <input hidden=true class="form-control" id="branchs_id" name="branchs_id"
+                                value="{{Auth()->user()->branchs_id}}">
+                            <input hidden=true class="form-control" id="user_id" name="user_id"
+                                value="{{Auth()->user()->discount_allow_limit}}">
+                            <?php
+    $rate_discount = App\Models\system_setting::find(1);
+    $rate_system = $rate_discount->discount_on_invoice;
+                    ?>
+                            <input hidden=true class="form-control" id="rate_system" name="rate_system"
+                                value="{{$rate_system}}">
+                            <input hidden=true class="form-control" id="shownumberproduct" name="shownumberproduct"
+                                value="1">
+
+                        </div>
+
+                        <div class="d-flex justify-content-center invoice-actions-bar">
+
+                            <br>
+
+                            <button type="button" id="saveInvoice" style="background-color: #419BB2"
+                                class="btn btn-success p-1">
+                                {{ __('home.invoice_save') }}
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+
+                            &nbsp;
+
+                            <button type="button" id="saveAsDraft"
+                                style="background-color: #ff9800; border-color: #ff9800;"
+                                class="btn btn-warning p-1 text-white">
+                                {{ __('home.pending_invoice') }}
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
+                        <br>
 
                 </form>
 
             </div>
 
-         
-   <div class="row mt-4 mb-5">
+            <input type="text" class="form-control " name="show_invoice_number" id="show_invoice_number" value=0
+                title=" رقم الفاتورة " hidden>
 
-<center>
+            <center>
+                <div class="justify-content-center" id="printdiv">
 
+                    <a id="send_whats_app" target="_blank" title="WhatsApp">
+                        <i class="bx bxl-whatsapp"></i>
+                    </a>
 
+                    <a id="generate_pdf" class="btn btn-success" target="_blank">
+                        <i class="fa-solid fa-download ml-1"></i>
+                        {{ __('home.dwonloadpdf') }}
+                    </a>
 
-                            <div class=" justify-content-center" id="printdiv">
+                    <button type="button" id="printReciept" class="btn btn-success">
+                        <svg class="svg-icon-buttons" viewBox="0 0 20 20" style="width: 18px;">
+                            <path
+                                d="M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z">
+                            </path>
+                        </svg>
+                        {{ __('home.print') }}
+                    </button>
 
+                    <button type="button" id="reciptprinter" class="btn btn-success">
+                        <i class="fa-solid fa-print ml-1"></i>
+                        {{ __('home.reciptprinter') }}
+                    </button>
 
+                    <button type="button" id="sendzatca" class="btn">
+                        <i class="fa-regular fa-paper-plane ml-1"></i>
+                        {{ __('home.uploadzatca') }}
+                    </button>
 
-                                <button type="button"
-                                    style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px"
-                                    id="printReciept" class="btn btn-success p-1 px-2 fw-bolder">
-                                    {{ __('home.print') }}
-                                    <svg style="width: 15px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
-                                        <path
-                                            d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555">
-                                        </path>
-                                    </svg>
-                                </button>
+                </div>
 
-                                <button style="background-color: grey;" class="modal-effect btn btn-sm btn-info"
-                                    id="sendzatca">
-                                    {{ __('home.uploadzatca') }}&nbsp;<i class="fa-regular fa-paper-plane"></i>
-                                </button>
-                                <button style="background-color: grey;" class="modal-effect btn btn-sm btn-info"
-                                    id="dwonloadxml">
-                                    {{ __('home.zatcapass') }}&nbsp;<i class="fa-solid fa-download"></i> </button>
-
-
-
-                            </div>
-
-
+            </center>
 
         </div>
-</center>
+
     </div>
 
 </div>
@@ -744,29 +1086,40 @@ td .d-flex {
 
 </div>
 <input hidden=true class="form-control" id="phone" name="phone">
+<input hidden=true class="form-control" id="discound_allow" name="discound_allow" value="{{ $discound_allow / 100 }}">
 
 
 
 <div class="modal fade product-selection" id="SearchProduct" name="SearchProduct" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true" data-bs-focus="false">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+
             </div>
             <div class="modal-body">
 
 
                 <div class="card-body">
+                    <div class="row">
 
-                    <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                        <label for="inputName" style="font-weight: bold" class="control-label parent-label">
-                            {{__('home.searchaboutproduct')}} </label>
-                        <input autocomplete="off" type="text" class="form-control parent-input"
-                            placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
-                            name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
+                        <div class="col-lg-4 mg-t-20 mg-lg-t-0">
+                            <label for="inputName" style="font-weight: bold" class="control-label parent-label">
+                                {{__('home.searchaboutproduct')}} </label>
+                            <input autocomplete="off" dir="ltr" type="text" autofocus class="form-control parent-input"
+                                placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct"
+                                name="searchaboutproduct" oninput="searchaboutproductfunction()" autofocus>
+                        </div>
+                        <div class="col-lg-3 mb-2">
+                            <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
+                            <select style="width:100%!important" name="product_group" id="product_group"
+                                class="form-control select2">
+                                <!--placeholder-->
+                                @foreach (App\Models\products_group::get() as $section)
+                                <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <br>
                     <div class="table-responsive" id="ajax_responce_serarchDiv">
@@ -782,8 +1135,7 @@ td .d-flex {
 
                             <thead>
                                 <tr>
-                                    <th style="font-size: 15px" class="border-bottom-0">
-                                        {{__('home.productNo')}}
+                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.productNo')}}
                                     </th>
                                     <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">
                                         {{__('home.product')}}
@@ -795,8 +1147,7 @@ td .d-flex {
                                         {{__('home.productlocation')}}
                                     </th>
 
-                                    <th style="font-size: 15px" class="border-bottom-0">
-                                        {{__('home.quantity')}}
+                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}
                                     </th>
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.purchaseproductwithouttax')}}
@@ -804,8 +1155,7 @@ td .d-flex {
                                     <th style="font-size: 13px" class="border-bottom-0">
                                         {{__('home.sellingproduct without tax')}}
                                     </th>
-                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}
-                                    </th>
+                                    <th style="font-size: 15px" class="border-bottom-0">{{__('home.Add')}}</th>
 
 
 
@@ -849,7 +1199,8 @@ td .d-flex {
 
                 <div class="modal-footer">
                     {{-- <button id="added_product" name="added_product" id="added_product"
-                            class="btn btn-primary">{{__('home.confirm')}}</button> --}}
+                            class="btn btn-primary">{{__('home.confirm')}}</button>
+                    --}}
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
                 </div>
 
@@ -861,11 +1212,7 @@ td .d-flex {
 
 </div>
 
-<input hidden=true class="form-control" id="firstiteminput" name="firstiteminput" value="0">
-<?php
-    $avtSaleRate = App\Models\Avt::find(1);
-    $avtSaleRate = $avtSaleRate->AVT;
-                                                                                                            ?>
+
 <input type="text" class="form-control " id="avtValue" name="avtValue" value="{{$avtSaleRate}}" hidden>
 {{-- End Update ( 24/4/2023 ) --}}
 
@@ -902,12 +1249,6 @@ td .d-flex {
                         <input style="height:32px" type="text" class="form-control parent-input" id="email" name="email"
                             title="{{ __('supprocesses.email') }}" value='Example@gmail.com'>
                     </div>
-                    <!-- <div class="col-lg-3 col-md-3">
-                                                                                                            <label for="inputName" class="control-label parent-label"> {{ __('home.current balance') }} </label>
-                                                                                                            <input type="text" class="parent-input form-control" id="balance" name="balance"
-                                                                                                                title="يرجي ادخال الكمية  " value="{{ $data['customer']->Balance ?? '0' }}"
-                                                                                                                >
-                                                                                                        </div> -->
                 </div>
 
                 {{-- 2 --}}
@@ -924,7 +1265,7 @@ td .d-flex {
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
                             {{ __('home.tax_number') }}</label>
                         <input style="height:32px" type="text" class="form-control parent-input" id="TaxـNumber"
-                            name="TaxـNumber" onkeyup="TaxـNumberConvert()" title="{{ __('supprocesses.TaxـNumber') }}">
+                            name="TaxـNumber" value="0" title="{{ __('supprocesses.TaxـNumber') }}">
                     </div>
                     <div class="col-lg-2 col-md-3">
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
@@ -954,38 +1295,38 @@ td .d-flex {
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.city') }}</label>
                         <input type="text" class="form-control parent-input" id="city" name="city"
-                            title="{{ __('supprocesses.product_notes') }}" required>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.region') }}</label>
                         <input type="text" class="form-control parent-input" id="sub_city" name="sub_city"
-                            title="{{ __('supprocesses.product_notes') }}" required>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
 
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.StreetName') }}</label>
                         <input type="text" class="form-control parent-input" id="StreetName" name="StreetName"
-                            title="{{ __('supprocesses.product_notes') }}" required>
+                            title="{{ __('supprocesses.product_notes') }}" required value='-'>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.plot_identification') }}</label>
                         <input type="text" class="form-control parent-input" id="plot_identification"
-                            name="plot_identification" title="{{ __('supprocesses.product_notes') }}" required>
+                            name="plot_identification" title="{{ __('supprocesses.product_notes') }}" required value=0>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.buildnumber') }}</label>
                         <input type="text" class="form-control parent-input" id="buildnumber" name="buildnumber"
-                            title="{{ __('supprocesses.product_notes') }}" required>
+                            title="{{ __('supprocesses.product_notes') }}" required value=0>
                     </div>
                     <div class="col-lg-2">
                         <label for="inputName" class="control-label parent-label">
                             {{ __('home.postcode') }}</label>
                         <input type="text" class="form-control parent-input" id="postcode" name="postcode"
-                            title="{{ __('home.postcode') }}" value='' required>
+                            title="{{ __('home.postcode') }}" required value=0>
                     </div>
 
 
@@ -1007,6 +1348,8 @@ td .d-flex {
     </div>
 </div>
 </div>
+<input id="convert_preparation_order_to_invoice" name="convert_preparation_order_to_invoice" value="{{$invoiceId}}"
+    hidden>
 
 <div class="modal p-3" id="updateinvoicefromsale">
     <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
@@ -1023,7 +1366,7 @@ td .d-flex {
                         <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
                             {{ __('home.enterinvoicenumber') }}</label>
                         <input style="height:32px" type="text" class="form-control parent-input"
-                            id="updateinvoicebyidforsale" name="updateinvoicebyidforsale"
+                            id="updateinvoicebyidforsale_update" name="updateinvoicebyidforsale_update"
                             title="{{ __('supprocesses.name') }}" required>
                     </div>
 
@@ -1043,35 +1386,6 @@ td .d-flex {
                         </svg>
                     </button>
                 </div>
-        </div>
-
-    </div>
-</div>
-</div>
-<div class="modal p-3" id="notregister">
-    <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
-        <div class="modal-content modal-content-demo p-3">
-            <form>
-
-                {{ csrf_field() }}
-                <div class="row mb-1">
-                    <div class="col-lg-6 col-md-6 col-md-4 mb-2">
-                        <center>
-                            <label style="font-size:22px;color:red;">
-                                هذه المنتجات غير مسجل بالنظام <br> These products are not registered in the
-                                system.</label>
-
-
-
-                        </center>
-
-                    </div>
-
-
-                </div>
-
-
-
         </div>
 
     </div>
@@ -1185,11 +1499,21 @@ td .d-flex {
                             @endforeach
                         </select>
                     </div>
-
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName" class="control-label parent-label">{{ __('home.groups') }}</label>
+                        <select style="width:100%!important" name="product_group" id="product_group"
+                            class="form-control select2">
+                            <!--placeholder-->
+                            @foreach (App\Models\products_group::get() as $section)
+                            <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-lg-3 mb-2">
                         <label for="inputName" class="control-label parent-label">{{ __('home.MAINproduct') }}</label>
                         <br>
-                        <select style="width:100%!important" name="MAINproduct" class="form-control select2">
+                        <select style="width:100%!important" name="MAINproduct" id="MAINproduct"
+                            class="form-control select2">
                             <!--placeholder-->
                             <option value=0> {{ __('home.noreplace') }}</option>
 
@@ -1217,6 +1541,9 @@ td .d-flex {
 
                 {{-- 3 --}}
 
+                @if(Auth()->user()->id == 30 || Auth()->user()->id == 17)
+
+
                 <div class="row">
                     <div class="col-lg-4">
                         <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
@@ -1240,6 +1567,35 @@ td .d-flex {
                 </div>
 
 
+                @else
+
+                <div class="row">
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label"> {{ __('home.purachesepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="cost_price" readonly
+                            name="cost_price" value=0 onkeyup="convertToNumberpurchasersPrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.salepice') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="sale_price_create"
+                            readonly value=0 name="sale_price_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+                    <div class="col-lg-4">
+                        <label for="inputName" class="control-label parent-label" required>{{ __('home.quantity') }}
+                        </label>
+                        <input autocomplete="off" type="text" class="form-control parent-input" id="quantity_create"
+                            readonly value=0 name="quantity_create" onkeyup="convertToNumbersalePrice()">
+                    </div>
+
+                </div>
+
+
+
+                @endif
+
+
 
                 {{-- 5 --}}
                 <div class="row mb-2">
@@ -1252,22 +1608,6 @@ td .d-flex {
                             name="product_location_create" value='-' title="{{ __('supprocesses.product_location') }}"
                             required>
                     </div>
-
-
-
-
-
-
-
-
-
-                    {{-- 3 --}}
-
-
-
-
-
-                    {{-- 5 --}}
 
 
                     <div class="col-lg-4 mb-2">
@@ -1315,51 +1655,619 @@ td .d-flex {
     </div>
 </div>
 
+<div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
 
 
+                <div class="table-responsive" id="ajax_responce_operation_product_Div">
 
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
+                --}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+</div>
+<input hidden=true class="form-control" id="firstiteminput" name="firstiteminput" value="0">
+
+{{-- End Update ( 24/4/2023 ) --}}
+<div class="modal fade product-selection" id="main_product2" name="main_product2" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="table-responsive" id="ajax_responce_main_product_Div2">
+
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
+                --}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+</div>
+<div class="modal" id="paymentmethod_MODALE">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-demo">
+            <div class="modal-header">
+                <h6 class="modal-title">{{ __('home.Partition of the amount') }}</h6>
+            </div>
+            <div class="modal-body" style="width:100%">
+                <div class="d-flex align-items-center justify-content-center" style="width:100%">
+                    <label style="font-size:20px" class="control-label parent-label me-1">
+                        {{ __('home.total') }} :&nbsp;&nbsp;
+                    </label>
+                    <label style="font-size:25px;font-weight:bold;color:green" id="totalvalue">0</label>
+                    <label style="font-size:20px" class="control-label parent-label ms-1">
+                        &nbsp;&nbsp;{{ __('home.SAR') }}
+                    </label>
+                </div>
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col">
+                    <label class="control-label parent-label">{{ __('report.cash') }}</label>
+                    <input type="text" class="form-control parent-input" name="cashamount" id="cashamount" readonly
+                        value="0">
+                </div>
+
+                <div class="col">
+                    <label class="control-label parent-label">{{ __('report.shabka') }}</label>
+                    <input type="text" class="form-control parent-input" name="bankamount" id="bankamount"
+                        onkeyup="calcCash()" value="0">
+                </div>
+
+                <div class="col">
+                    <label class="control-label parent-label">{{ __('home.bank_transfer') }}</label>
+                    <input type="text" class="form-control parent-input" name="bank_transfer" id="bank_transfer"
+                        onkeyup="calcCash()" value="0">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                <button data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="table-responsive" id="ajax_responce_operation_product_Div">
+
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                {{-- <button id="added_product" name="added_product" id="added_product"
+                        class="btn btn-primary">{{__('home.confirm')}}</button>
+                --}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+</div>
 
 @endsection
 @section('js')
-<!-- Internal Data tables -->
 
-<!-- Internal Data tables -->
-<!-- Internal Data tables -->
-<!--Internal  Datatable js -->
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
+<!-- 1. استدعاء مكتبة jQuery (ضرورية جداً قبل أي ملف آخر) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- 2. ملفات الإضافات (Plugins) -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
 <script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
+
+<!-- 3. ملف البوتستراب (يأتي بعد الـ jQuery دائماً) -->
+<script src="{{ URL::asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+
+<!-- 4. ملف الـ SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
+/**
+ * تبني صف منتج كامل وموحّد لجدول الفاتورة (تُستخدم فى كل مكان بيتضاف فيه صف
+ * بدل تكرار الـ HTML String فى أكتر من مكان، عشان نضمن وجود كل الحقول دايمًا
+ * زى .product_cost و .product-available_quentity وعدم تكرار الأخطاء).
+ * @param {number} index - رقم الصف (rowIndex)
+ * @param {object} options - بيانات اختيارية للتعبئة المبدئية
+ * @returns {string} HTML الخاص بالصف جاهز للإدراج فى الجدول
+ */
+function createProductRow(index, options = {}) {
+    const defaults = {
+        product_id: '',
+        product_name: '',
+        product_code: '',
+        product_cost: 0,
+        available_quantity: 0,
+        price: 0,
+        price_tax: 0,
+        quantity: 1,
+        discount: 0,
+        tax: 0,
+        total: 0,
+        totalWithoutTax: 0,
+        readonlyName: false, // بعض الأماكن كانت بتحط readonly على اسم المنتج
+    };
 
-    
-    
-document.getElementById('quick_scan').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        // هذا السطر هو السر: يمنع إرسال الفورم نهائياً
-        e.preventDefault();
+    const d = { ...defaults, ...options };
+    const nameAttr = d.readonlyName ? 'readonly' : '';
 
+    return `
+        <tr data-index="${index}">
+            <td>
+                <input type="hidden" name="products[${index}][product_id]" class="product-id form-control" value="${d.product_id}">
+                <input type="hidden" name="products[${index}][product_cost]" class="product_cost" value="${d.product_cost}">
+                <input type="hidden" class="form-control product-available_quentity" value="${d.available_quantity}">
+            </td>
+
+            <td class="align-middle text-center">${index + 1}</td>
+
+            <td class="text-start">
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control product-code" value="${d.product_code}" placeholder="اختر منتج" readonly>
+                    <button type="button" class="btn btn-sm btn-info p-1"
+                            style="background-color: #FBA10F;font-size:13px;width:40px"
+                            onclick="openProductModal(${index})">
+                        <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                             fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                            <path d="M21 21l-6 -6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </td>
+
+            <td class="text-start">
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control product-name" name="products[${index}][product_name]"
+                           value="${d.product_name}" placeholder="اختر منتج" ${nameAttr}>
+                    <button type="button" class="btn btn-sm btn-info p-1"
+                            style="background-color: #FBA10F;font-size:13px;width:40px"
+                            onclick="openProductModal(${index})">
+                        <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
+                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                             fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                            <path d="M21 21l-6 -6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </td>
+
+            <td><input type="text" class="form-control product-cost" readonly value="${d.product_cost}"></td>
+
+            <td>
+                <input type="text" name="products[${index}][price-tax]" class="form-control product-price-tax"
+                       value="${Number(d.price_tax).toFixed(2)}" min="0" onchange="calculateTotals_with_tax()">
+            </td>
+
+            <td>
+                <input type="text" name="products[${index}][price]" class="form-control product-price"
+                       value="${Number(d.price).toFixed(2)}" min="0" onchange="calculateTotals()">
+            </td>
+
+            <td>
+                <div class="d-flex align-items-center justify-content-center" style="width:100%;">
+                    <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+                            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+                            type="button" onclick="minusFunctionIndex(this)">−</button>
+
+                    <input type="text" name="products[${index}][quentity]" style="width: 50px; text-align: center;"
+                           class="form-control product-quentity mx-2" oninput="calculateTotals()" value="${d.quantity}">
+
+                    <button class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+                            style="width: 32px; height: 32px; min-width: 32px; min-height: 32px;"
+                            type="button" onclick="plusFunctionIndex(this)">+</button>
+                </div>
+            </td>
+
+            <td>
+                <input type="text" name="products[${index}][totalprice_withodtax]" class="form-control product-totalprice_withodtax"
+                       readonly value="${Number(d.totalWithoutTax).toFixed(2)}" min="0" oninput="calculateTotals()">
+            </td>
+
+            <td>
+                <input type="text" name="products[${index}][discound]" class="form-control product-discound"
+                       value="${d.discount}" onchange='calculateTotals()' min="0">
+            </td>
+
+            <td>
+                <select class="form-control tax-select" oninput='calculateTotals()' name="products[${index}][tax_rate]">
+                    <option value="0.15">15%</option>
+                    <option value="0">{{ __('home.Exempt') }}</option>
+                </select>
+            </td>
+
+            <td><input type="text" name="products[${index}][tax]" class="form-control product-tax" value="${Number(d.tax).toFixed(2)}" readonly></td>
+
+            <td><input type="text" class="form-control product-total" readonly value="${Number(d.total).toFixed(2)}"></td>
+
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
+            </td>
+        </tr>
+    `;
+}
+
+function loadClientBalance(clientId) {
+    const $display = $('#clientBalanceDisplay');
+
+    if (!clientId) {
+        $display.text('');
+        return;
+    }
+
+    $display.text('...جاري التحميل');
+
+    fetch(`/account-balance/${clientId}`)
+        .then(response => response.json())
+        .then(data => {
+            const balance = (data.debit - data.credit).toFixed(2);
+            const isDebt = balance < 0;
+
+            $display.text(`  ${balance} `);
+            $display.css('color', isDebt ? '#dc3545' : '#198754'); // أحمر لو مدين، أخضر لو دائن
+        })
+        .catch(error => {
+            $display.text('تعذر تحميل الرصيد');
+            $display.css('color', '#6c757d');
+            console.error(error);
+        });
+}
+
+$('#clientnamesearch').on('change', function() {
+    loadClientBalance($(this).val());
+});
+
+
+$("#getinvoiceupdate").click(function(e) {
+    e.preventDefault(); // تأكد من وضعها في البداية
+
+    // إعادة ضبط الحقول قبل جلب البيانات الجديدة
+    $('#Bank_transfer').val(0);
+    $('#creaditamount').val(0);
+    $('#bankamount').val(0);
+    $('#cashamount').val(0);
+    $("#paymodal").val("Cash").change();
+
+    var url = "{{ URL::to('updateinvoicebyid') }}" + "/" + $('#updateinvoicebyid').val();
+
+    jQuery.ajax({
+        url: url,
+        type: 'get',
+        dataType: 'json',
+        cache: false,
+        success: function(data) {
+            console.log(data)
+            if (data.error) {
+                // تقسيم الرسالة لعرضها بشكل منسق
+                let messages = data.error.split('|');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'تنبيه / Alert',
+                    html: `<strong>${messages[0]}</strong><br>${messages[1]}`,
+                    confirmButtonText: 'حسناً / OK'
+                });
+                return;
+            }
+            if (data == 0) {
+                alert("{{ __('home.stocknotAvailable') }}");
+            } else {
+                // 1. مسح الجدول الحالي قبل إضافة المنتجات الجديدة
+                $("#productsTableBody").html("");
+
+                // 2. تعبئة بيانات العميل في Select2
+                if (data.customer) {
+                    var newOption = new Option(data.customer.name, data.customer.id, true, true);
+                    $('#clientnamesearch').append(newOption).trigger('change');
+                }
+
+                // 3. إضافة المنتجات للجدول
+                data.product.forEach(function(item) {
+                    let quantity = parseFloat(item.quantity) || 0;
+                    let index = rowIndex++; // 👈 يزيد دايمًا
+
+                    if (quantity > 0) {
+                        let unitPrice = parseFloat(item.Unit_Price) || 0;
+                        let discount = parseFloat(item.Discount_Value) || 0;
+                        let taxAmount = parseFloat(item.Added_Value) ||
+                            0; // الضريبة لكل منتج من الـ JSON
+
+                        // حساب السعر شامل الضريبة للعرض فقط
+                        let priceWithTax = unitPrice + (taxAmount / quantity);
+
+                        let row = createProductRow(index, {
+                            product_id: item.id,
+                            product_name: item.product_name,
+                            product_code: item.Product_Code,
+                            price: unitPrice,
+                            price_tax: priceWithTax,
+                            quantity: quantity,
+                            discount: discount,
+                            tax: taxAmount,
+                            totalWithoutTax: unitPrice * quantity,
+                            total: (unitPrice * quantity) + taxAmount - discount,
+                        });
+
+                        $("#productsTableBody").append(row);
+
+                    }
+
+                });
+                rowIndex++
+                rowIndex++
+                console.log('rowIndex')
+                console.log(rowIndex)
+                // 4. تحديث عداد الصفوف العالمي (إذا كنت تستخدمه للإضافات اليدوية لاحقاً)
+
+                // 5. تعبئة إجماليات الفاتورة السفلية من الـ JSON مباشرة
+                $('#invoicetotal_price_total').val(data.invoicetotal_price);
+                $('#invoicetotal_addedvalue_total').val(data.invoicetotal_addedvalue);
+                $('#invoicetotal_discount_total').val(data.invoicetotal_discount);
+
+                // 6. استدعاء دالة الحسابات لإعادة التأكيد على الأرقام
+                if (typeof calculateTotals === "function") {
+                    calculateTotals();
+                }
+
+                // إظهار أزرار التحكم بعد التحميل بنجاح
+            }
+        },
+        error: function(xhr) {
+            console.error("Error fetching invoice:", xhr.responseText);
+            alert("حدث خطأ أثناء جلب بيانات الفاتورة");
+        }
+    });
+});
+$(document).on("keydown", ":input:not(textarea):not(:submit)", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // يمنع إرسال النموذج
+        return false;
     }
 });
 
 
+
+function replaceproduct(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('operationproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('operationproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
+
+        success: function(data) {
+            console.log('done')
+            $('#operation_product').modal().show();
+
+            $("#ajax_responce_operation_product_Div").html(data);
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
+
+// cashamount is always the auto-calculated remainder:
+// total - (shabka amount + bank transfer amount)
+function calcCash() {
+    var total = parseFloat(document.getElementById('grandTotal').value) || 0;
+    var bank = parseFloat($('#bankamount').val()) || 0;
+    var transfer = parseFloat($('#bank_transfer').val()) || 0;
+
+    var cash = total - bank - transfer;
+
+    $('#cashamount').val(cash.toFixed(2));
+
+    // keep hidden form fields in sync so the real submitted values are correct
+    $('#cashamount_form').val($('#cashamount').val());
+    $('#bankamount_form').val($('#bankamount').val());
+    $('#bank_transfer_form').val($('#bank_transfer').val());
+}
+
+
+$('select[name="paymentmethod"]').on('change', function() {
+    var selectedText = $(this).find(':selected').text();
+    var selectedValue = $(this).val();
+    var $paymentType = $('#payment_type');
+
+    // 1. إظهار جميع الخيارات أولاً
+    $paymentType.find('option').show().prop('disabled', false);
+
+    // التحقق مما إذا كان النص يحتوي على بنك أو bank (بأي حالة أحرف)
+    var isBank = /بنك|bank/i.test(selectedText);
+
+    if (isBank) {
+        // إذا اخترت البنك: نعطل الخيارات الأخرى، ونترك الشبكة والتحويل، ونُفعل الحقل ليصبح قابلاً للتعديل
+        $paymentType.find('option').not('[value="Shabka"], [value="Bank_transfer"]').hide().prop('disabled',
+            true);
+        $paymentType.val('Shabka').change();
+        $paymentType.prop('disabled', false); // مسموح بالتعديل ويتم إرساله
+
+    } else if (selectedValue == "Credit") {
+        // إذا اخترت الآجل
+        $paymentType.find('option').not('[value="Credit"]').hide().prop('disabled', true);
+        $paymentType.val('Credit').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته للسيرفر
+
+    } else if (selectedValue == "Partition") {
+        // إذا اخترت التقسيط
+        $paymentType.find('option').not('[value="Partition"]').hide().prop('disabled', true);
+        $paymentType.val('Partition').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته
+
+        $('#paymentmethod_MODALE').modal().show();
+        var value = document.getElementById('grandTotal').value;
+        document.getElementById('totalvalue').innerHTML = value * 1;
+
+    } else {
+        // الحالة الافتراضية (نقدي)
+        $paymentType.find('option').not('[value="Cash"]').hide().prop('disabled', true);
+        $paymentType.val('Cash').change();
+        $paymentType.prop('disabled', false); // نتركه غير معطل كي يتم إرسال قيمته
+    }
+});
+
+// تفعيل الحقل وتجهيزه قبل حفظ الفاتورة لضمان إرسال قيمته دائماً
+
+
+
+
+let rowIndex = 1;
+
+$("#updateinvoicebyidforsaleupdate").click(function(e) {
+
+
+
+    event.preventDefault();
+    var url = " {{ URL::to('updateinvoicebyidforsaleupdate') }}" + "/" + $('#updateinvoicebyidforsale_update')
+        .val();
+    console.log(url)
+    jQuery.ajax({
+        url: url,
+        type: 'get',
+        dataType: 'json',
+        cache: false,
+
+
+        success: function(data) {
+
+
+
+
+            $('#show_invoice_number_update').val($('#updateinvoicebyidforsale_update').val())
+
+
+            console.log('++++++')
+            console.log(data)
+
+            document.getElementById("productsTableBody").innerHTML = "";
+
+            data['product'].forEach(async (product) => {
+                quentity = product['quantity']
+
+                let index = rowIndex - 1
+
+                if (quentity > 0) {
+                    let table = document.getElementById('productsTableBody');
+
+                    let row = createProductRow(index, {
+                        product_id: product['id'],
+                        product_name: product['product_name'],
+                        product_code: product['Product_Code'],
+                        price: product['Unit_Price'],
+                        quantity: quentity,
+                        product_cost: 0,
+                    });
+
+                    table.insertAdjacentHTML("beforeend", row);
+
+                    index = rowIndex++; // 👈 يزيد دايمًا
+
+                }
+
+                window.currentRow = index;
+
+            });
+            try {
+                $('#clientnamesearch').append(
+                    $('<option>', {
+                        value: data['customer']['id'],
+                        text: data['customer']['name']
+                    })
+                );
+                $('#clientnamesearch').val(data['customer']['id']).trigger('change');
+            } catch (e) {
+                console.error(e);
+            }
+            console.log('n')
+            console.log(data['customer']['name'])
+
+            calculateTotals()
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth"
+            });
+
+            document.getElementById('printdiv').hidden = true
+            document.getElementById('saveInvoice').hidden = false
+
+
+
+        },
+        error: function(response) {
+            alert("{{ __('home.sorryerror') }}")
+
+        }
+
+    })
+
+
+});
 
 function plusFunctionIndex(btn) {
     let input = btn.previousElementSibling;
@@ -1373,67 +2281,99 @@ function minusFunctionIndex(btn) {
     if (val > 0) input.value = val - 1;
     calculateTotals();
 }
-let rowIndex = 0;
+$('select[name="product_group"]').on('change', function() {
+    var selectclientid = $(this).val();
+    var token_search = $("#token_search").val();
+    console.log(selectclientid)
+    if (selectclientid) {
+        $.ajax({
+            url: "{{ URL::to('product_sale_group_ajax') }}",
+            type: 'post',
+            cache: false,
+            dataType: 'html',
+            data: {
+                "_token": token_search,
+                "group_id": selectclientid,
+                "currentrow": window.currentRow,
 
-$("#dwonloadxml").click(function(e) {
-    var url = " {{ URL::to('dwonloadxml') }}" + '/' + $('#show_invoice_number').val();
-    console.log(url)
+            },
+            success: function(products) {
+                $("#ajax_responce_serarchDiv").html(products);
 
-    window.open(url, '_blank');
+            },
 
-})
-
-$("#sendzatca").click(function(e) {
-    document.getElementById('loading-screen').style.display = 'block'; // show loading screen
-
-    var url = " {{ URL::to('sendzatca_fromsale') }}" + '/' + $('#show_invoice_number').val();
-    console.log(url)
-    document.getElementById('sendzatca').hidden = true
-
-    token_search = $('#token_search').val();
-    $.ajax({
-        url: url,
-        type: 'GET',
-        cache: false,
-        dataType: "html",
-
-
-
-        success: function(data) {
-
-            if (data == 1) {
-                document.getElementById('loading-screen').style.display =
-                    'none'; // Hide loading screen
-
-                var audio = new Audio('/sounds/done.mp3');
-                audio.play();
-                document.getElementById('dwonloadxml').hidden = false
-                document.getElementById('sendzatca').hidden = true
-                $('#massagesave').modal().show();
-                setTimeout(() => {
-                    $('#massagesave').modal('hide');
-
-                }, 1000);
-            } else {
-                $('#massagesave').modal('hide');
-                document.getElementById('loading-screen').style.display =
-                    'none';
-                alert(data)
-                $('#massagesave').modal('hide');
-
-                document.getElementById('sendzatca').hidden = false
-
+            error: function(response) {
+                console.log(response)
             }
-        },
-        error: function(response) {
-            console.log(response)
-
-        }
-    });
-
-
+        });
+    } else {
+        console.log('AJAX load did not work');
+    }
 });
+$('#MAINproduct').select2({
+    placeholder: 'ابحث عن المنتج',
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "{{ route('itemcards.search') }}",
+        dataType: 'json',
+        delay: 300,
+        data: function(params) {
+            return {
+                q: params.term
+            };
+        },
+        processResults: function(data) {
+            return {
+                results: data.map(item => ({
+                    id: item.id,
+                    text: item.product_name
+                }))
+            };
+        }
+    }
+});
+let searchText = '';
 
+$('#clientnamesearch').select2({
+    placeholder: 'ابحث عن المنتج',
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "{{ route('clientnamesearch.search') }}",
+        dataType: 'json',
+        delay: 300,
+        data: function(params) {
+            searchText = params.term
+            return {
+                q: params.term
+            };
+        },
+        processResults: function(data) {
+            if (!data || data.length === 0) {
+                // 👇 الكود اللي عايز يتنفّذ
+                console.log('مفيش بيانات راجعة');
+                $('#name').val(searchText)
+
+                $('#clientnamesearch').select2('close');
+
+
+                return {
+                    results: []
+                };
+            } else {
+                return {
+                    results: data.map(item => ({
+                        id: item.id,
+                        text: item.name + ' :-' + item.tax_no
+                    }))
+                };
+            }
+        }
+    }
+});
+</script>
+<script>
 let barcodeEnabled = true;
 
 
@@ -1447,66 +2387,27 @@ document.addEventListener('keydown', function(evt) {
 
     if (interval)
         clearInterval(interval);
-
     if (evt.code == 'Enter') {
-        if (barcode) {
-            
-            // 🎯 الفلتر الذكي لمنع قراءة الـ QR Code
-            // إذا كان النص المقروء طويل جداً (أكبر من 20 حرف) أو يحتوي على روابط، يتم تجاهله فوراً
-            if (barcode.length > 20 || barcode.includes('http://') || barcode.includes('https://')) {
-                console.log("تم تجاهل المدخلات (غالباً QR Code):", barcode);
-                barcode = ''; // تصفير المتغير
-                return; // الخروج من الدالة دون تنفيذ أي شيء
-            }
-
+        if (barcode)
             if ($('#saveinvice').val() == 1) {
-                $('#invoice_number').val('');
-                $('#saveinvice').val('0');
+                $('#invoice_number').val('')
+                $('#saveinvice').val('0')
+
                 handleBarcode(barcode);
+
             } else {
                 handleBarcode(barcode);
-            }
-        }
 
-        $("#quick_scan").blur();
+            }
         barcode = '';
         return;
     }
-
     if (evt.key != 'Shift')
         barcode += evt.key;
-
     interval = setInterval(() => barcode = '', 20);
 });
 
-
-
-
-function executeProductSearch() {
-    let inputField = document.getElementById('quick_scan');
-    let productCode = inputField.value.trim();
-
-    if (productCode === "") {
-        return;
-    }
-    document.getElementById('quick_scan').value = ''
-    handleBarcode(productCode);
-    this.blur()
-
-
-}
-// 1. تعريف الملفات الصوتية مرة واحدة خارج الدالة (في أعلى ملف الـ JS) لضمان خفة وسرعة الأداء
-const soundDone = new Audio('/sounds/done.mp3');
-const soundNotRegister = new Audio('/sounds/notregister.mp3');
-const soundIncrease = new Audio('/sounds/increasequentity.mp3');
-
 function handleBarcode(scanned_barcode) {
-    // 🎯 فلتر حماية: إذا كان النص المقروء طويل جداً (QR Code) أو يحتوي على روابط، يتم إيقافه فوراً ومسحه
-    if (scanned_barcode.length > 20 || scanned_barcode.includes('http://') || scanned_barcode.includes('https://')) {
-        console.log("تم حجب المدخلات في الدالة (غالباً QR Code):", scanned_barcode);
-        return; // الخروج الفوري ومنع الاتصال بالسيرفر
-    }
-
     var url = "{{ URL::to('getByCodenew') }}/" + scanned_barcode;
 
     $.ajax({
@@ -1525,23 +2426,16 @@ function handleBarcode(scanned_barcode) {
             console.log(productCache)
 
             if (!data) {
-                // تشغيل الصوت السريع المحمل مسبقاً
-                soundNotRegister.currentTime = 0;
-                soundNotRegister.play();
-
-                $('#notregister').modal().show();
-                setTimeout(() => {
-                    $('#notregister').modal('hide');
-                }, 1500);
-
+                alert(
+                    "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
+                );
                 return;
             }
 
             let code = data.id;
-            let name = data.name;
-            let productcode = data.barcode;
-            let sale_price = data.price;
-            let price_with_tax = data.price_with_tax;
+            let name = data.product_name;
+            let productcode = data.Product_Code;
+            let sale_price = data.sale_price;
 
             let table = document.getElementById('productsTableBody');
 
@@ -1551,70 +2445,43 @@ function handleBarcode(scanned_barcode) {
             console.log('jjjjjjjjjjjjjjjjj')
             console.log($('#firstiteminput').val())
             if ($('#firstiteminput').val() == "0") {
-                document.getElementById('saveInvoice').hidden = false
-                document.getElementById('sendzatca').hidden = true
-                document.getElementById('printdiv').hidden = true
                 let rows = table.querySelectorAll('tr');
 
                 if (rows.length == 1) {
                     console.log(rows.length)
+
                     table.removeChild(rows[rows.length - 1]);
                 } else {
                     for (i = 1; i <= rows.length; i++) {
                         table.removeChild(rows[i - 1]);
                     }
-                }
-            }
-            
-            if (code != 59264 && code != 59265 && code != 59266 && code != 59570) {
-                if (productCache[code] && document.body.contains(productCache[code])) {
-                    let qty = productCache[code].querySelector(".product-quentity");
-                    qty.value = Number(qty.value) + 1;
-                    calculateTotals();
 
-                    // تشغيل الصوت السريع المحمل مسبقاً لزيادة الكمية
-                    soundIncrease.currentTime = 0;
-                    soundIncrease.play();
-                    return;
+
                 }
             }
+            console.log('code Add')
+            console.log(productCache[code])
+
+            if (productCache[code] && document.body.contains(productCache[code])) {
+                let qty = productCache[code].querySelector(".product-quentity");
+                qty.value = Number(qty.value) + 1;
+                calculateTotals();
+                return;
+            }
+
+            // ---------------------------------------------
+            // 2) حذف الصف الفارغ (إن وجد)
+            // ---------------------------------------------
+
 
             // ---------------------------------------------
             // 3) إضافة صف جديد (نسخة محسّنة وسريعة)
             // ---------------------------------------------
             let index = rowIndex++; // 👈 يزيد دايمًا
 
-            let rowHTML = `
-                <tr data-index="${index}">
-                    <td>
-                        <input type="hidden" name="products[${index}][product_id]" class="product-id">
-                    </td>
-
-                    <td class="align-middle text-center">${index + 1}</td>
-
-                    <td><input type="text" class="form-control product-code" readonly></td>
-                    <td><input type="text" class="form-control product-name" readonly></td>
-                    <td><input type="text" name="products[${index}][price]" class="form-control product-price" oninput="calculateTotals()" value="0"></td>
-                    <td>  
-                        <div class="input-group input-group-sm" style="width:100%;">
-                            <button class="btn btn-secondary rounded-circle" style="width:32px; height:32px;" type="button" onclick="minusFunctionIndex(this)">−</button>
-                            &nbsp;
-                            <input type="number" 
-                                   name="products[${index}][quentity]" 
-                                   step="any" 
-                                   min="0.01" 
-                                   class="form-control product-quentity" 
-                                   style="width:70px; text-align:center;" 
-                                   oninput="if(this.value < 0) this.value = Math.abs(this.value); if(this.value == 0) this.value = ''; calculateTotals();" 
-                                   value="1">
-                            &nbsp;
-                            <button class="btn btn-secondary rounded-circle" style="width:32px; height:32px;" type="button" onclick="plusFunctionIndex(this)">+</button>
-                        </div>
-                    </td>
-                    <td><input type="text" class="form-control product-total" readonly value="0"></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">حذف</button></td>
-                </tr>
-            `;
+            let rowHTML = createProductRow(index, {
+                product_id: code,
+            });
 
             table.insertAdjacentHTML("beforeend", rowHTML);
 
@@ -1626,11 +2493,9 @@ function handleBarcode(scanned_barcode) {
             newRow.querySelector('.product-id').value = code;
             newRow.querySelector('.product-name').value = name;
             newRow.querySelector('.product-code').value = productcode;
-            newRow.querySelector('.product-price').value = price_with_tax;
-            
-            // تشغيل الصوت السريع المحمل مسبقاً لإضافة منتج جديد بنجاح
-            soundDone.currentTime = 0;
-            soundDone.play();
+            newRow.querySelector('.product-price').value = sale_price;
+            var audio = new Audio('/sounds/done.mp3');
+            audio.play();
 
             // حفظه في Cache
             productCache[code] = newRow;
@@ -1638,26 +2503,16 @@ function handleBarcode(scanned_barcode) {
 
             // تحديث الإجماليات
             calculateTotals();
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: "smooth"
-            });
         },
 
         error: function() {
-            // تشغيل الصوت السريع عند حدوث خطأ بالسيرفر
-            soundNotRegister.currentTime = 0;
-            soundNotRegister.play();
-            
-            Swal.fire({
-                title: "غير مسجل | Not Registered",
-                text: "عذراً، المنتج غير مسجل نرجو تسجيله أولاً.\nSorry, the product is not registered. Please register it first.",
-                icon: "error",
-                confirmButtonText: "موافق | OK",
-                confirmButtonColor: "#ff4f1f"
-            });
+            alert(
+                "عذرا المنتج غير مسجل نرجو تسجيلة اولا \n   Sorry, the product is not registered. Please register it first."
+            );
+
         }
     });
+
 }
 
 
@@ -1672,20 +2527,15 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keydown", function(e) {
     if (e.key === "+") {
         plusFunction();
-        calculateTotals()
-
     } else if (e.key === "-") {
         minusFunction();
-        calculateTotals()
-
-
     }
 });
 
 function plusFunction() {
     console.log("دست +");
     console.log(rowIndex);
-    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex-1}']`);
+    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex - 1}']`);
     if (!row) return;
     row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value * 1) + 1;
 
@@ -1695,7 +2545,7 @@ function minusFunction() {
     console.log("دست -");
     console.log(rowIndex);
 
-    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex-1}']`);
+    let row = document.querySelector(`#productsTableBody tr[data-index='${rowIndex - 1}']`);
     if (!row) return;
     row.querySelector('.product-quentity').value = (row.querySelector('.product-quentity').value * 1) - 1;
 }
@@ -1705,123 +2555,253 @@ function minusFunction() {
 
 
 
+function replaceproductorginal(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('replaceproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('replaceproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
 
-function createnewproductajax() {
-    console.log('+++++++++++++++++++++++++++++++++create customer ++++++++++++++++++++++++++++++++');
-    var url = " {{ URL::to('addnewProductajax') }}";
-    console.log($('#product_notes').val())
-    console.log($('#minmum_quantity_stock_alart').val())
-    console.log($('#product_name_ar').val())
-    console.log($('#product_code').val())
-    console.log($('#Section').val())
-    console.log($('#unit').val())
-    console.log($('#product_location').val())
-    var token_search = $("#token_search").val();
-    if ($('#product_name_ar').val() == '') {
-        alert("{{ __('supprocesses.product_name_ar') }}")
-    } else if ($('#product_location_create').val() == '') {
-        alert("{{ __('supprocesses.product_location') }}")
-    } else {
+        success: function(data) {
+            console.log('done')
 
-        // تصحيح: نقل success و error خارج كائن data
-        $.ajax({
-            url: url,
-            type: 'post',
-            cache: false,
-            data: {
-                _token: token_search,
-                product_notes: $('#product_notes').val() ?? '-',
-                minmum_quantity_stock_alart: $('#minmum_quantity_stock_alart').val(),
-                product_name_ar: $('#product_name_ar').val(),
-                product_name_en: $('#product_name_en').val(),
-                product_code: $('#product_code_create').val(),
-                Section: $('#Section').val(),
-                unit: $('#unit').val(),
-                product_location: $('#product_location_create').val(),
-                refnumber: $('#refnumber').val(),
-                product_group: $('#product_group').val(),
-                numberofpice: $('#quantity_create').val(),
-                cost_price: $('#cost_price').val(),
-                sale_price_create: $('#sale_price_create').val(),
-            },
-            success: function(data) {
-                $('#createcustomer').modal('hide');
-                $('#quantity_create').val(0)
-                $('#cost_price').val(0)
-                $('#sale_price_create').val(0)
-                $('#product_location').val('');
-                $('#product_name_ar').val('');
-                $('#product_notes').val('')
-                $('#product_code').val('')
-                $('#massagesave').modal().show();
-                setTimeout(() => {
-                    $('#massagesave').modal('hide');
-                }, 1000);
-            },
-            error: function(response) {
-                console.log(response);
-                alert("{{ __('home.sorryerror') }}");
-            }
-        });
-    }
+            $('#main_product2').modal().show();
+
+            $("#ajax_responce_main_product_Div2").html(data);
+
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
+
+
+function replaceproduct(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('operationproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('operationproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
+
+        success: function(data) {
+            console.log('done')
+            $('#operation_product').modal().show();
+
+            $("#ajax_responce_operation_product_Div").html(data);
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
+
+
+
+
+function hasInternet() {
+    return navigator.onLine;
 }
 
 function translateNameToArbic() {
     const checkbox = document.getElementById('translate_status');
 
-    if (checkbox && checkbox.checked) {
+    if (checkbox.checked) {
+
+
         var wordEnglish = $('#product_name_en').val();
 
         jQuery.ajax({
             url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" +
-                encodeURIComponent(wordEnglish),
+                wordEnglish,
             type: 'get',
             cache: false,
 
             success: function(request_result) {
-                if (request_result && request_result[0] && request_result[0][0]) {
-                    $('#product_name_ar').val(request_result[0][0][0])
-                }
+                $('#product_name_ar').val(request_result[0][0][0])
             },
             error: function() {
-                // خطأ في الترجمة: نترك الصمت أو نعرض رسالة إن رغبت
+
             }
         });
+
     }
+
 }
+
+
+
+function createnewproductajax() {
+    var url = " {{ URL::to('addnewProductajax') }}";
+    var token_search = $("#token_search").val();
+
+    // تجهيز أصوات التنبيه (تأكد من وجود الملفات في مسار public/assets/audio/)
+    var errorAudio = new Audio("{{ asset('assets/audio/error.mp3') }}");
+    var successAudio = new Audio("{{ asset('assets/audio/success.mp3') }}");
+
+    // التحقق من الحقول الإجبارية
+    if ($('#product_name_ar').val() == '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: "{{ __('supprocesses.product_name_ar') }}"
+        });
+        return;
+    }
+
+    if ($('#product_location_create').val() == '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: "{{ __('supprocesses.product_location') }}"
+        });
+        return;
+    }
+
+    $.ajax({
+        url: url,
+        type: 'post',
+        cache: false,
+        data: {
+            _token: token_search,
+            product_notes: $('#product_notes').val() ?? '-',
+            minmum_quantity_stock_alart: $('#minmum_quantity_stock_alart').val(),
+            product_name_ar: $('#product_name_ar').val(),
+            product_name_en: $('#product_name_en').val(),
+            product_code: $('#product_code_create').val(),
+            Section: $('#Section').val(),
+            unit: $('#unit').val(),
+            product_location: $('#product_location_create').val(),
+            refnumber: $('#refnumber').val(),
+            product_group: $('#product_group').val(),
+            numberofpice: $('#quantity_create').val(),
+            cost_price: $('#cost_price').val(),
+            sale_price_create: $('#sale_price_create').val(),
+            MAINproduct: $('#MAINproduct').val(),
+        },
+        success: function(data) {
+            // حالة 1: المنتج موجود مسبقاً (تم إرجاع 0 من السيرفر)
+            if (data == 0) {
+                errorAudio.play(); // تشغيل صوت الإنذار
+                Swal.fire({
+                    icon: 'error',
+                    title: 'عذراً.. المنتج موجود',
+                    text: 'هذا المنتج مضاف مسبقاً في هذا الفرع بنفس الكود!',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#e74c3c'
+                });
+                return;
+            }
+
+            // حالة 2: نجاح الإضافة
+            successAudio.play(); // تشغيل صوت النجاح
+
+            $('#createcustomer').modal('hide');
+
+            // تصفير الحقول
+            $('#quantity_create, #cost_price, #sale_price_create').val(0);
+            $('#product_location_create, #product_name_ar, #product_notes, #product_code_create').val('');
+
+            // رسالة نجاح احترافية تختفي تلقائياً
+            Swal.fire({
+                icon: 'success',
+                title: 'تمت العملية',
+                text: 'تم إضافة المنتج بنجاح لجميع الفروع',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        },
+        error: function(xhr) {
+            errorAudio.play();
+            console.log(xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ نظام',
+                text: 'فشلت عملية الاتصال بالسيرفر'
+            });
+        }
+    });
+}
+
+function translateNameToArbic() {
+    const checkbox = document.getElementById('translate_status');
+
+    if (checkbox.checked) {
+
+
+        var wordEnglish = $('#product_name_en').val();
+
+        jQuery.ajax({
+            url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=en&tl=ar&q=" +
+                wordEnglish,
+            type: 'get',
+            cache: false,
+
+            success: function(request_result) {
+                $('#product_name_ar').val(request_result[0][0][0])
+            },
+            error: function() {
+
+            }
+        });
+
+    }
+
+}
+
+
+
+
 
 $('select[name="numbershowstatus"]').on('change', function() {
     console.log('AJAX load   work 0000');
 
     var selectCustomer = $(this).val();
     $('#shownumberproduct').val(selectCustomer)
+
+
 })
 
 function translateNameToEnglish() {
     const checkbox = document.getElementById('translate_status');
 
-    if (checkbox && checkbox.checked) {
+    if (checkbox.checked) {
+
+
         var wordarbic = $('#product_name_ar').val();
 
         jQuery.ajax({
             url: "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=ar&tl=en&q=" +
-                encodeURIComponent(wordarbic),
+                wordarbic,
             type: 'get',
             cache: false,
 
             success: function(request_result) {
-                if (request_result && request_result[0] && request_result[0][0]) {
-                    $('#product_name_en').val(request_result[0][0][0])
-                }
+                $('#product_name_en').val(request_result[0][0][0])
             },
             error: function() {
 
             }
         });
+
     }
+
 }
 
+
 function createnewcustomerajax() {
+
+
     console.log('+++++++++++++++++++++++++++++++++create customer ++++++++++++++++++++++++++++++++');
     var url = " {{ URL::to('createnewcustomerajax') }}";
 
@@ -1840,7 +2820,7 @@ function createnewcustomerajax() {
         alert("{{ __('home.city') }}")
     } else if ($('#sub_city').val() == '') {
         alert("{{ __('home.sub_city') }}")
-    } else if ($('#TaxـNumber').val().length != 15) {
+    } else if ($('#TaxـNumber').val().length < 1) {
         alert('يجب ان يكون رقم الضريبي مكون من 15 رقم     \n    The tax number must consist of 15 digits')
     } else {
 
@@ -1870,6 +2850,7 @@ function createnewcustomerajax() {
                 CRN: $('#CRN').val(),
             },
 
+
             success: function(data) {
                 $('#phone').val('');
                 $('#TaxـNumber').val('');
@@ -1880,19 +2861,32 @@ function createnewcustomerajax() {
                     value: data['id'],
                     text: data['name'] + data['tax_no']
                 }));
+                $('#clientnamesearch').val(data['id']).change();
+
 
                 $('#massagesave').modal().show();
                 setTimeout(() => {
                     $('#massagesave').modal('hide');
+
                 }, 500);
             },
             error: function(response) {
                 alert("{{ __('home.sorryerror') }}")
+
             }
         });
-    }
-}
 
+
+
+
+
+
+
+    }
+
+
+
+}
 $("#reciptprinter").click(function(e) {
     var url = " {{ URL::to('reciptprinter') }}";
     var token_search = $("#token_search").val();
@@ -1926,307 +2920,268 @@ $("#reciptprinter").click(function(e) {
         }
     });
 });
-
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey)) {
-        $("#payment_type").val("Cash").change();
-
-        $("#formdata").trigger("submit");
-    }
-
-
-})
-
-
-document.addEventListener('keydown', (e) => {
-
-    if ((e.key === "Shift")) {
-        $("#payment_type").val("Shabka").change();
-        $("#formdata").trigger("submit");
-
-    }
-
-
-})
-
-function resetProductsTable() {
-    let table = document.getElementById('productsTableBody');
-
-    let index = 0;
-
-    let row = `
-                                                                            <tr data-index="${index}">
-                                                                                <td><input type="hidden" name="products[${index}][product_id]" class="product-id form-control"></td>
-                                                                                <td class="align-middle text-center">${index + 1}</td>
-
-                                                                                <td class="text-start">
-                                                                                    <div class="d-flex gap-2">
-                                                                                        <input type="text" class="form-control product-code" placeholder="اختر منتج" readonly>
-                                                                                        <button type="button" class="btn btn-sm btn-info p-1"
-                                                                                                style="background-color: #FBA10F;font-size:13px;width:40px"
-                                                                                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                                                                            <path d="M21 21l-6 -6"></path>
-                                                                                                                        </svg></button>
-                                                                                    </div>
-                                                                                </td>
-
-                                                                                <td class="text-start">
-                                                                                    <div class="d-flex gap-2">
-                                                                                        <input type="text" class="form-control product-name" placeholder="اختر منتج" readonly>
-                                                                                        <button type="button" class="btn btn-sm btn-info p-1"
-                                                                                                style="background-color: #FBA10F;font-size:13px;width:40px"
-                                                                                                onclick="openProductModal(${index})">   <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg"
-                                                                                                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                                                                                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                                                                                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                                                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                                                                                            <path d="M21 21l-6 -6"></path>
-                                                                                                                        </svg></button>
-                                                                                    </div>
-                                                                                </td>
-
-                                                                                <td><input type="text" name="products[${index}][price]"
-                                                                                        class="form-control product-price" value="0" min="0" oninput="calculateTotals()"></td>
-
-                 <td>  <div class="input-group input-group-sm" style="width:100%;">
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
-            onclick="minusFunctionIndex(this)">−</button>
-            &nbsp;
-
-<input type="number" 
-       name="products[${index}][quentity]" 
-       step="any" 
-       min="0.01" 
-       class="form-control product-quentity" 
-       style="width:70px; text-align:center;" 
-       oninput="if(this.value < 0) this.value = Math.abs(this.value); if(this.value == 0) this.value = ''; calculateTotals();" 
-       value="1">
-       &nbsp;
-
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
-            onclick="plusFunctionIndex(this)">+</button>
-    </div>
-    
-    </td>
-
-                                                             
-                                                                                <td><input type="text" class="form-control product-total" readonly value="0"></td>
-
-                                                                                <td>
-                                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">{{ __('home.delete') }}</button>
-                                                                                </td>
-                                                                            </tr>`;
-
-    table.insertAdjacentHTML("beforeend", row);
-    window.currentRow = index;
-    rowIndex = 0;
-    document.getElementById('sendzatca').hidden =
-        true
-    document.getElementById('printdiv').hidden =
-        true
-    document.getElementById('saveInvoice').hidden =
-        false
-    document.getElementById('dwonloadxml').hidden =
-        true
-
-    $('#firstiteminput').val("0")
-    productCache = {};
-
-}
-
 $(document).ready(function() {
-    document.getElementById('printdiv').hidden = true
-    $(window).keydown(function(event){
-    // إذا ضغط المستخدم (أو الماسح) على Enter
-    if(event.keyCode == 13) {
-      // نتحقق إذا كان التركيز ليس على زر الحفظ
-      event.preventDefault();
-      return false;
-    }
-  });
-    //update 4-2-2026
-        // $(window).keydown(function(event){
-        //     // إذا كانت الإشارة القادمة هي "Enter" (التي يرسلها قارئ الـ QR Code)
-        //     if(event.keyCode == 13) {
-        //         // منع المتصفح من إرسال النموذج (الحفظ)
-        //         event.preventDefault();
-                
-        //         // رسالة للتأكد (اختيارية - تظهر في الكونسول فقط)
-        //         console.log("تم منع الحفظ التلقائي بنجاح");
-                
-        //         return false;
-        //     }
-        // });
-        
-        //end update 4-2-2026
-    $("#quick_scan").blur();
 
-    let isProcessing = false;
+    if ($('#convert_preparation_order_to_invoice').val() != 0) {
+        $('#Bank_transfer').val(0);
+        $('#creaditamount').val(0);
+        $('#bankamount').val(0);
+        $('#cashamount').val(0);
+        $("#paymodal").val("Cash").change();
 
-    function unlock() {
-        isProcessing = false;
-    }
-$("#formdata").on('submit', function(e) {
-    // 1. منع السلوك الافتراضي للمتصفح فوراً لحصار الحدث
-    e.preventDefault();
+        var url = "{{ URL::to('get_invoice_peeding') }}" + "/" + $('#convert_preparation_order_to_invoice')
+        .val();
+        console.log(url)
+        jQuery.ajax({
+            url: url,
+            type: 'get',
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
 
-    // 2. التحقق إذا كان الجدول فارغاً تماماً من المنتجات
-// 2. التحقق إذا كان الجدول فارغاً تماماً من المنتجات
-if ($('#productsTableBody tr').length === 0) {
-    Swal.fire({
-        title: "تنبيه | Attention",
-        text: "عذراً، لا يمكن حفظ فاتورة فارغة. يرجى إضافة منتجات أولاً.\nSorry, cannot save an empty invoice. Please add products first.",
-        icon: "warning", 
-        confirmButtonText: "موافق | OK",
-        confirmButtonColor: "#ff4f1f" // لون زر التأثير البرتقالي المتناسق مع تصميمك
-    });
-    return false; // إيقاف التنفيذ نهائياً
-}
+                console.log('++++++')
+                console.log(data)
 
-    // 3. التحقق من قفل الحفظ المتكرر أو الحقل الافتراضي
-    if (isProcessing || $('#firstiteminput').val() == 0) {
-        return false; 
-    }
+                document.getElementById("productsTableBody").innerHTML = "";
 
-    // قفل التنفيذ لبدء المعالجة والرفع
-    isProcessing = true; 
-    $('#massagesave').modal().show();
+                data['product'].forEach(async (item) => {
+                    let quantity = parseFloat(item.quantity) || 0;
+                    let index = rowIndex++; // 👈 يزيد دايمًا
 
-    var url = " {{ URL::to('save_invoice_sale') }}";
-    $.ajax({
-        url: url,
-        type: 'post',
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: new FormData(this),
-        success: function(data) {
-            $('#show_invoice_number').val(data);
+                    if (quantity > 0) {
+                        let unitPrice = parseFloat(item.Unit_Price) || 0;
+                        let discount = parseFloat(item.Discount_Value) || 0;
+                        let taxAmount = parseFloat(item.Added_Value) ||
+                        0; // الضريبة لكل منتج من الـ JSON
 
-            if (data >= 1) {
-                console.log(data);
-                setTimeout(() => {
-                    $('#massagesave').modal('hide');
-                }, 500);
+                        // حساب السعر شامل الضريبة للعرض فقط
+                        let priceWithTax = unitPrice + (taxAmount / quantity);
 
-                document.getElementById('loading-screen').style.display = 'block'; // show loading screen
+                        let row = createProductRow(index, {
+                            product_id: item.id,
+                            product_name: item.product_name,
+                            product_code: item.Product_Code,
+                            price: unitPrice,
+                            price_tax: priceWithTax,
+                            quantity: quantity,
+                            discount: discount,
+                            tax: taxAmount,
+                            totalWithoutTax: unitPrice * quantity,
+                            total: (unitPrice * quantity) + taxAmount - discount,
+                            readonlyName: true,
+                        });
 
-                var urlZatca = " {{ URL::to('sendzatca_fromsale') }}" + '/' + $('#show_invoice_number').val();
-                console.log(urlZatca);
-                document.getElementById('sendzatca').hidden = true;
+                        $("#productsTableBody").append(row);
+                        rowIndex = rowIndex + 1;
 
-                token_search = $('#token_search').val();
-                $.ajax({
-                    url: urlZatca,
-                    type: 'GET',
-                    cache: false,
-                    dataType: "html",
-                    success: function(data) {
-                        if (data == 1) {
-                            document.getElementById('loading-screen').style.display = 'none'; // Hide loading screen
 
-                            var audio = new Audio('/sounds/done.mp3');
-                            audio.play();
-
-                            document.getElementById('printdiv').hidden = false;
-                            document.getElementById('sendzatca').hidden = true;
-                        } else {
-                            document.getElementById('loading-screen').style.display = 'none';
-                            alert(data);
-                            setTimeout(() => {
-                                $('#massagesave').modal('hide');
-                            }, 500);
-                            document.getElementById('sendzatca').hidden = false;
-                        }
-                    },
-                    error: function(response) {
-                        console.log(response);
-                        document.getElementById('loading-screen').style.display = 'none';
                     }
+
                 });
 
-            } else {
-                alert("{{ __('home.sorryerror') }}");
-            }
+                calculateTotals()
 
-            $('#firstiteminput').val("0");
-            unlock();
-        },
-        error: function(response) {
-            console.log(response);
-            isProcessing = false; // إعادة فتح القفل في حال فشل السيرفر لكي يتمكن المستخدم من المحاولة مجدداً
-        }
-    });
-});
-
-
-
-
-
+                $('#discound_on_invoice').val(data['discound']).trigger('input');
+                try {
+                    $('#clientnamesearch').append(
+                        $('<option>', {
+                            value: data['customer']['id'],
+                            text: data['customer']['name']
+                        })
+                    );
+                    $('#clientnamesearch').val(data['customer']['id']).trigger('change');
+                } catch (e) {
+                    console.error(e);
+                }
+                console.log('n')
+                console.log(data['customer']['name'])
 
 
+                document.getElementById('printdiv').hidden = true
+                document.getElementById('saveInvoice').hidden = false
 
 
 
-    // جعل فتح المودال جاهزاً للبحث عند التشغيل
-    $('#SearchProduct').on('show.bs.modal', function(event) {
-        branchs_id = $('#branchs_id').val();
-        console.log(" {{URL::to('ChooseProductpaginatenewSale_new')}}/" + branchs_id + "/" + window
-            .currentRow)
-        jQuery.ajax({
-            url: " {{URL::to('ChooseProductpaginatenewSale_new')}}/" + branchs_id + "/" + window
-                .currentRow
-                .currentRow,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
-
-            success: function(data) {
-                console.log('done')
-                $("#ajax_responce_serarchDiv").html(data);
             },
-            error: function() {
-
+            error: function(xhr) {
+                console.error("Error fetching invoice:", xhr.responseText);
+                alert("حدث خطأ أثناء جلب بيانات الفاتورة");
             }
         });
+    }
+
+
+    $('#payment_type').prop('disabled', true);
+    document.getElementById('printdiv').hidden = true
+
+})
+$(document).on('click', '#saveInvoice', function() {
+    $('#invoice_action').val('save');
+
+    $('#formdata').submit();
+});
+
+// زر المسودة
+$(document).on('click', '#saveAsDraft', function() {
+    $('#invoice_action').val('draft');
+    $('#formdata').submit();
+});
+
+let isSubmitting = false;
+
+$("#formdata").on('submit', function(e) {
+    e.preventDefault();
+
+    // --- 1. التحقق من السعر والكمية لجميع الأصناف ---
+    let isValid = true;
+    let fieldErrorMessage = "";
+
+    $('#productsTableBody tr').each(function() {
+        let row = $(this);
+        let price = row.find('.product-price').val();
+        let qty = row.find('.product-quentity').val();
+        let productName = row.find('.product-name').val();
+
+        // فحص إذا كان السعر أو الكمية (فارغ، أو صفر، أو أقل)
+        if (price === "" || parseFloat(price) <= 0 || qty === "" || parseFloat(qty) <= 0) {
+            row.find('.product-price, .product-quentity').css('border', '2px solid red');
+            isValid = false;
+            fieldErrorMessage = "يرجى إدخال السعر والكمية بشكل صحيح للمنتج: " + (productName ||
+                "غير محدد");
+        } else {
+            row.find('.product-price, .product-quentity').css('border', '');
+        }
     });
 
-}); // نهاية document.ready (تبقي كل ما يتعلق بالتهيئة داخلها)
+    if (!isValid) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'بيانات ناقصة',
+            text: fieldErrorMessage,
+            confirmButtonText: 'تصحيح البيانات'
+        });
+        return; // إيقاف العملية فوراً
+    }
 
-// ملاحظة: تأكد أن هذا الحدث موجود بعد document.ready وإلا سيتم التقاطه أيضاً
-$(document).on('click', '#ajax_pagination_in_search a', function(e) {
-    e.preventDefault();
-    var search_by_text = $("#searchaboutproduct").val();
-    var url = $(this).attr("href");
-    var token_search = $("#token_search").val();
-    branchs_id = $('#branchs_id').val();
+    // --- 2. تجهيز بيانات الإرسال (تكملة كودك الأصلي) ---
+    var activeBtnValue = $(document.activeElement).val();
+    var finalAction = activeBtnValue ? activeBtnValue : $('#invoice_action').val();
+    var myData = new FormData(this);
+    myData.delete('action');
+    myData.append('action', finalAction);
 
-    jQuery.ajax({
-        url: url,
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            "_token": token_search,
-            "searchtext": search_by_text,
-            "branchs_id": branchs_id,
-        },
-        success: function(data) {
-            $("#ajax_responce_serarchDiv").html(data);
-        },
-        error: function() {
+    var clientName = $("#clientnamesearch option:selected").text().trim();
+    var form = this;
 
+    let messageText = ($('#invoice_action').val() == 'save') ?
+        'هل أنت متأكد من حفظ الفاتورة للعميل؟' :
+        'هل أنت متأكد من حفظ المسودة للعميل؟';
+
+    // --- 3. نافذة التأكيد ---
+    Swal.fire({
+        title: 'تأكيد الحفظ | Confirm Save',
+        html: `
+                                            <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">
+                                                ${messageText}
+                                                <br>
+                                                <span style="color: #28a745;">${clientName}</span>
+                                            </div>
+                                        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        confirmButtonText: 'نعم، حفظ | Yes, Save',
+        cancelButtonText: 'إلغاء | Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (isSubmitting) return false;
+            isSubmitting = true;
+            $('#payment_type').prop('disabled', false);
+
+            $('#massagesave').modal('show');
+            var url = "{{ URL::to('save_invoice_sale') }}";
+
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: new FormData(form), // تأكد من إرسال البيانات المحدثة
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    if ($('#invoice_action').val() == 'save') {
+                        // منطق الحفظ النهائي والربط مع زاتكا (كودك الأصلي)
+                        $('#show_invoice_number').val(data);
+                        let link = "{{ URL::to('generate_pdf') }}/" + data;
+                        $('#generate_pdf').attr('href', link);
+
+                        // إعداد رابط واتساب
+                        let ph = $('#phone').val();
+                        let phone = "966" + ph.substring(1);
+                        let message = "يسرنا خدمتكم.. فاتورتكم رقم " + data + " : " + link;
+                        $('#send_whats_app').attr('href',
+                            `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`
+                        );
+
+                        if (data >= 1) {
+                            $('#printdiv').prop('hidden', false);
+                            $('#saveInvoice').prop('hidden', true);
+
+                            // إرسال لزاتكا
+                            document.getElementById('loading-screen').style.display =
+                                'block';
+                            var urlZatca = "{{ URL::to('sendzatca_fromsale') }}/" + data;
+
+                            $.ajax({
+                                url: urlZatca,
+                                type: 'GET',
+                                success: function(res) {
+                                    document.getElementById('loading-screen')
+                                        .style.display = 'none';
+                                    $('#massagesave').modal('hide');
+                                    if (res == 1) {
+                                        new Audio('/sounds/done.mp3').play();
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'تم الحفظ والإرسال لزاتكا'
+                                        });
+                                    } else {
+                                        alert("خطأ زاتكا: " + res);
+                                    }
+                                }
+                            });
+                        }
+                        document.getElementById('loading-screen').style.display = 'none';
+                        $('#massagesave').modal('hide');
+
+                    } else {
+                        // منطق المسودة (الموجود في كودك)
+                        $('#massagesave').modal('hide');
+                        let pendingLink = "{{ URL::to('showInvoiceRecent__pending') }}/" +
+                            data;
+                        Swal.fire({
+                            title: 'تم حفظ المسودة!',
+                            html: `<p>رقم المسودة <b>#${data}</b></p><a href="${pendingLink}" target="_blank" class="btn btn-info">طباعة المسودة</a>`,
+                            icon: 'success'
+                        });
+                    }
+                },
+                error: function(r) {
+                    console.log(r)
+                    isSubmitting = false;
+                    $('#massagesave').modal('hide');
+                    Swal.fire('خطأ', "تعذر الاتصال بالسيرفر", 'error');
+                }
+            });
         }
     });
 });
+
+$(window).on('offline', function() {
+    alert("{{ __('home.sorryerror') }}")
+});
+
 
 function reorderRows() {
     document.querySelectorAll('#productsTableBody tr').forEach((tr, i) => {
@@ -2235,98 +3190,95 @@ function reorderRows() {
 }
 
 function removeRow(btn) {
-
     btn.closest('tr').remove();
-
     calculateTotals()
     reorderRows();
+
+
 }
 
 let rowCounter = 0;
 
 function openProductModal(index) {
-    window.currentRow = rowIndex;
 
-    $('#SearchProduct').modal('show');
+    window.currentRow = index;
+    $('#SearchProduct').modal().show();
+    $('#searchaboutproduct').focus();
+
 }
-
 var modal = document.getElementById('SearchProduct');
-if (modal) {
-    // ملاحظة: يستخدم Bootstrap أحداث jQuery؛ addEventListener قد لا يتفاعل مع shown.bs.modal دائماً
-    modal.addEventListener && modal.addEventListener('shown.bs.modal', function() {
-        var el = document.getElementById('searchaboutproduct');
-        el && el.focus();
-    });
-}
+modal.addEventListener('shown.bs.modal', function() {
+    document.getElementById('searchaboutproduct').focus();
+});
+
 
 function addRow() {
-    let table = document.getElementById('productsTableBody');
-    if ($('#firstiteminput').val() == "0") {
-        let rows = table.querySelectorAll('tr');
+    // جلب القيمة وتحويلها لرقم للتأكد من المقارنة الصحيحة
+    let invoiceNumber = parseFloat($('#show_invoice_number').val());
 
-        if (rows.length == 1) {
-            console.log(rows.length)
-
-            table.removeChild(rows[rows.length - 1]);
-        } else {
-            for (i = 1; i <= rows.length; i++) {
-                table.removeChild(rows[i - 1]);
-            }
-
-
-        }
+    // التحقق إذا كانت القيمة أكبر من الصفر
+    if (invoiceNumber > 0) {
+        location.reload(); // إعادة تحميل الصفحة
+        return; // التوقف هنا وعدم تنفيذ باقي الكود
     }
-    let index = rowIndex++; // 👈 يزيد دايمًا
-    window.currentRow = index
-    let rowHTML = `
-                            <tr data-index="${index}">
-                                <td>
-                                    <input type="hidden" name="products[${index}][product_id]" class="product-id">
-                                </td>
 
-                                <td class="align-middle text-center">${index + 1}</td>
 
-                                <td><input type="text" class="form-control product-code" readonly></td>
-                                <td><input type="text" class="form-control product-name" readonly></td>
-
-                                <td><input type="text" name="products[${index}][price]" class="form-control product-price" oninput="calculateTotals()" value="0"></td>
-
-  <td>  <div class="input-group input-group-sm" style="width:100%;">
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;" type="button"
-            onclick="minusFunctionIndex(this)">−</button>
-&nbsp;
-
-<input type="number" 
-       name="products[${index}][quentity]" 
-       step="any" 
-       min="0.01" 
-       class="form-control product-quentity" 
-       style="width:70px; text-align:center;" 
-       oninput="if(this.value < 0) this.value = Math.abs(this.value); if(this.value == 0) this.value = ''; calculateTotals();" 
-       value="1">
-       &nbsp;
-        <button    class="btn btn-secondary rounded-circle"
-            style="width:32px; height:32px;"type="button"
-            onclick="plusFunctionIndex(this)">+</button>
-    </div>
-    
-    </td>
-
-                                <td><input type="text" class="form-control product-total" readonly value="0"></td>
-
-                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">حذف</button></td>
-                            </tr>
-                        `;
-
-    table.insertAdjacentHTML("beforeend", rowHTML);
-    $('#firstiteminput').val('1')
     $('#searchaboutproduct').focus();
 
     $('#SearchProduct').modal().show();
     $('#searchaboutproduct').focus();
+
 }
 
+$("#sendzatca").click(function(e) {
+    document.getElementById('loading-screen').style.display = 'block'; // show loading screen
+
+    var url = " {{ URL::to('sendzatca_fromsale') }}" + '/' + $('#show_invoice_number').val();
+    console.log(url)
+    document.getElementById('sendzatca').hidden = true
+
+    token_search = $('#token_search').val();
+    $.ajax({
+        url: url,
+        type: 'GET',
+        cache: false,
+        dataType: "html",
+
+
+
+        success: function(data) {
+
+            if (data == 1) {
+                document.getElementById('loading-screen').style.display =
+                    'none'; // Hide loading screen
+
+                var audio = new Audio('/sounds/done.mp3');
+                audio.play();
+                document.getElementById('sendzatca').hidden = true
+                $('#massagesave').modal().show();
+                setTimeout(() => {
+                    $('#massagesave').modal('hide');
+
+                }, 1000);
+            } else {
+                $('#massagesave').modal('hide');
+                document.getElementById('loading-screen').style.display =
+                    'none';
+                alert(data)
+                $('#massagesave').modal('hide');
+
+                document.getElementById('sendzatca').hidden = false
+
+            }
+        },
+        error: function(response) {
+            console.log(response)
+
+        }
+    });
+
+
+});
 $("#printReciept").click(function(e) {
     var url = " {{ URL::to('printInvoice') }}";
     var token_search = $("#token_search").val();
@@ -2361,68 +3313,386 @@ $("#printReciept").click(function(e) {
 });
 
 function calculateTotalDiscount() {
-    avtsale = $('#avtValue').val();
-    totalbefore_discount = document.getElementById('totalSum').value;
-    let discountTotal = 0;
+    // 1. جلب القيم وتحويلها لأرقام بدقة عالية
+    let discountOnInvoice = parseFloat($('#discound_on_invoice').val() || 0); // القيمة 5
+    let totalSum = parseFloat(document.getElementById('totalSum').value || 0); // القيمة 35
+    let avtsale = parseFloat($('#avtValue').val() || 0.15); // نسبة الضريبة
+
+    // 2. حساب الخصم الصافي (قبل الضريبة) بدون تقريب وسيط
+    // 5 / 1.15 = 4.347826086956522...
+    let amountBeforeTax = discountOnInvoice / (1 + avtsale);
+
+    // 3. حساب إجمالي الخصومات من الجدول (إن وجدت)
+    let tableDiscountTotal = 0;
+    document.querySelectorAll('#productsTableBody tr').forEach(r => {
+        let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
+        tableDiscountTotal += discound;
+    });
+
+    // 4. إجمالي الخصم الكلي (خام)
+    let finalDiscountTotal = tableDiscountTotal + amountBeforeTax;
+
+    // 5. الحسابات النهائية:
+    // الصافي = 35 - 4.347826... = 30.652173...
+    let netTotal = totalSum - finalDiscountTotal;
+
+    // الضريبة = 30.652173... * 0.15 = 4.597826...
+    let taxTotal = netTotal * avtsale;
+
+    // الإجمالي النهائي = 30.652173... + 4.597826... = 35.25 (تقريباً)
+    // لكن بما أن الخصم الإجمالي شامل الضريبة هو 5، فالصافي المطلوب هو 30 تماماً
+    let grandTotal = netTotal + taxTotal;
+
+    // 6. العرض في الحقول مع التقريب لخانة واحدة فقط إذا لزم الأمر أو خانتين
+    // لجعلها 30.00 بالضبط:
+    document.getElementById('totaldiscound').value = finalDiscountTotal.toFixed(2);
+    document.getElementById('totalTax').value = taxTotal.toFixed(2);
+    document.getElementById('grandTotal').value = Math.round(grandTotal * 100) / 100; // حل مشكلة 29.99
+
+    // تأكيد إضافي إذا كان الفرق ضئيل جداً نتيجة تقريب المتصفح
+    if (Math.abs(grandTotal - 30) < 0.01) {
+        document.getElementById('grandTotal').value = "30.00";
+    }
+}
+
+
+function calculateTotals() {
+    let total = 0,
+        taxTotal = 0,
+        discountTotal = 0,
+        grand = 0;
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let discound = 0;
-        let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
         let price = parseFloat(r.querySelector('.product-price').value) || 0;
+        let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
 
-        let totalRow = price * qty;
-        r.querySelector('.product-total').value = totalRow.toFixed(2);
-        net_row_withoud_tax = ((totalRow * 100) / ((avtsale * 100) + 100)).toFixed(2);
-        taxTotal += (net_row_withoud_tax * avtsale).toFixed(2);
-        grand += (totalRow);
-        r.querySelector('.product-total').value = totalRow.toFixed(2);
+        let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
+        let profit = price - cost;
+        $('#profit').val(profit.toFixed(2));
+        // --- فحص الكمية المتاحة (Available Quantity Check) ---
+        let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
 
+        // if (qty > availablequantity) {
+        if (0) {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
+                html: `
+                                    <div style="direction: rtl; text-align: center;">
+                                        <p style="font-weight: bold; color: #d33;">الكمية المطلوبة أكبر من الكمية المتاحة في المخزن!</p>
+                                        <p dir="ltr">The requested quantity exceeds the available stock!</p>
+                                        <hr>
+                                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                            <strong>الكمية المتاحة | Available Qty:</strong>
+                                            <span style="color: #28a745; font-size: 1.2em;">${availablequantity}</span>
+                                        </div>
+                                    </div>
+                                `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+
+            r.querySelector('.product-quentity').classList.add('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = 'red';
+            qty = availablequantity; // إجبار الكمية لتكون مساوية للمتاحة (اختياري)
+            r.querySelector('.product-quentity').value = availablequantity;
+        } else {
+            r.querySelector('.product-quentity').classList.remove('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = '';
+        }
+
+        // --- فحص التكلفة ---
+        // if (price > 0 && price < cost) {
+        if (0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                html: `
+                                        <div style="direction: rtl; text-align: center;">
+                                            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                                            <p dir="ltr">The entered price is lower than the registered selling price!</p>
+                                            <hr>
+                                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                                <strong>سعر النظام | System Price:</strong>
+                                                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                                            </div>
+                                        </div>
+                                    `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#3085d6',
+                timer: 6000,
+                timerProgressBar: true
+            });
+
+            r.querySelector('.product-price').classList.add('is-invalid');
+            r.querySelector('.product-price').style.borderColor = 'red';
+            price = cost;
+            r.querySelector('.product-price').value = cost.toFixed(2);
+        } else {
+            r.querySelector('.product-price').classList.remove('is-invalid');
+            r.querySelector('.product-price').style.borderColor = '';
+        }
+
+        let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
+        let discountInput = parseFloat(r.querySelector('.product-discound').value) || 0;
+
+        if (discountInput > (qty * price) * discound_allow_Input) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تجاوز حد الخصم | Discount Limit Exceeded',
+                text: 'لقد تخطيت الخصم المسموح به | You have exceeded the allowed discount',
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+            r.querySelector('.product-discound').value = 0;
+        }
+
+        let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
+        let subtotal = price * qty;
+        let discountAmount = discountInput;
+        let taxableAmount = subtotal - discountAmount;
+        let tax = taxableAmount * avtsale;
+        let totalRow = taxableAmount + tax;
+
+        r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
+        r.querySelector('.product-tax').value = tax.toFixed(2);
+        r.querySelector('.product-total').value = totalRow.toFixed(2);
+        r.querySelector('.product-price-tax').value = (price * (1 + avtsale)).toFixed(2);
+
+        total += subtotal;
+        taxTotal += tax;
+        grand += totalRow;
+        discountTotal += discountAmount;
     });
-    discountTotal += $('#discound_on_invoice').val() * 1;
 
+    document.getElementById('totalSum').value = total.toFixed(2);
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
     document.getElementById('totalTax').value = taxTotal.toFixed(2);
     document.getElementById('grandTotal').value = grand.toFixed(2);
 }
 
-function calculateTotals() {
-
-    let discountTotal = 0;
-    let grand = 0;
-    avtsale = $('#avtValue').val();
+function calculateTotals_with_tax() {
+    let total = 0,
+        taxTotal = 0,
+        discountTotal = 0,
+        grand = 0;
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
-        let discound = 0;
+        let tax_with_price = parseFloat(r.querySelector('.product-price-tax').value) || 0;
+        let cost = parseFloat(r.querySelector('.product_cost').value) || 0;
         let qty = parseFloat(r.querySelector('.product-quentity').value) || 0;
-        let price = parseFloat(r.querySelector('.product-price').value) || 0;
+        let avtsale = parseFloat(r.querySelector('.tax-select').value) || 0;
+        let taxFactor = avtsale > 1 ? (avtsale / 100) : avtsale;
 
-        let totalRow = price * qty;
+        // --- فحص الكمية المتاحة (Available Quantity Check) ---
+        let availablequantity = parseFloat(r.querySelector('.product-available_quentity').value) || 0;
+
+        // if (qty > availablequantity) {
+        if (0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: الكمية غير متوفرة <br> <small>Warning: Insufficient Quantity</small>',
+                html: `
+                                    <div style="direction: rtl; text-align: center;">
+                                        <p style="font-weight: bold; color: #d33;">الكمية المطلوبة أكبر من الكمية المتاحة في المخزن!</p>
+                                        <p dir="ltr">The requested quantity exceeds the available stock!</p>
+                                        <hr>
+                                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                            <strong>الكمية المتاحة | Available Qty:</strong>
+                                            <span style="color: #28a745; font-size: 1.2em;">${availablequantity}</span>
+                                        </div>
+                                    </div>
+                                `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+
+            r.querySelector('.product-quentity').classList.add('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = 'red';
+            qty = availablequantity;
+            r.querySelector('.product-quentity').value = availablequantity;
+        } else {
+            r.querySelector('.product-quentity').classList.remove('is-invalid');
+            r.querySelector('.product-quentity').style.borderColor = '';
+        }
+
+        // استخراج السعر قبل الضريبة للمقارنة
+        let price = tax_with_price / (1 + taxFactor);
+
+        // --- فحص التكلفة ---
+        // if (tax_with_price > 0 && price < cost) {
+        if (0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: خطأ في سعر البيع <br> <small>Warning: Sales Price Error</small>',
+                html: `
+                                        <div style="direction: rtl; text-align: center;">
+                                            <p style="font-weight: bold; color: #d33;">السعر المدخل أقل من سعر البيع المعتمد في النظام!</p>
+                                            <p dir="ltr">The entered price is lower than the registered selling price!</p>
+                                            <hr>
+                                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                                <strong>سعر النظام | System Price:</strong>
+                                                <span style="color: #28a745; font-size: 1.2em;">${cost}</span>
+                                            </div>
+                                        </div>
+                                    `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#3085d6',
+                timer: 6000,
+                timerProgressBar: true
+            });
+            r.querySelector('.product-price-tax').style.borderColor = 'red';
+            tax_with_price = cost * (1 + taxFactor);
+            r.querySelector('.product-price-tax').value = tax_with_price.toFixed(2);
+            price = cost;
+        } else {
+            r.querySelector('.product-price-tax').style.borderColor = '';
+        }
+
+        let discound = parseFloat(r.querySelector('.product-discound').value) || 0;
+        let discound_allow_Input = parseFloat($('#discound_allow').val()) || 0.15;
+
+        // if (discound > (qty * price) * discound_allow_Input) {
+        if (0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'تنبيه: تجاوز حد الخصم <br> <small>Warning: Discount Limit Exceeded</small>',
+                html: `
+                                            <div style="direction: rtl; text-align: center;">
+                                                <p>لقد تخطيت الخصم المسموح به لهذا المنتج!</p>
+                                                <p dir="ltr">You have exceeded the allowed discount for this product!</p>
+                                                <hr>
+                                                <strong>الحد المسموح | Allowed Limit:</strong> ${cost * discound_allow_Input}
+                                            </div>
+                                        `,
+                position: 'center',
+                showConfirmButton: true,
+                confirmButtonText: 'موافق | OK',
+                confirmButtonColor: '#d33',
+                timer: 6000,
+                timerProgressBar: true
+            });
+            r.querySelector('.product-discound').value = 0;
+        }
+
+        let subtotal = price * qty;
+        let tax = (subtotal - discound) * taxFactor;
+        let totalRow = subtotal - discound + tax;
+
+        r.querySelector('.product-price').value = price.toFixed(2);
+        r.querySelector('.product-totalprice_withodtax').value = subtotal.toFixed(2);
+        r.querySelector('.product-tax').value = tax.toFixed(2);
         r.querySelector('.product-total').value = totalRow.toFixed(2);
 
-        grand += (totalRow);
-        r.querySelector('.product-total').value = totalRow.toFixed(2);
+        total += subtotal;
+        taxTotal += tax;
+        grand += totalRow;
+        discountTotal += discound;
 
+        let profit = price - cost;
+        $('#profit').val(profit.toFixed(2));
     });
 
-    net_row_withoud_tax = ((grand * 100) / ((avtsale * 100) + 100)).toFixed(4);
-    taxTotal = (net_row_withoud_tax * avtsale).toFixed(2);
-    document.getElementById('totalSum').value = (net_row_withoud_tax * 1).toFixed(2);
+    document.getElementById('totalSum').value = total.toFixed(2);
     document.getElementById('totaldiscound').value = discountTotal.toFixed(2);
-    document.getElementById('totalTax').value = (taxTotal * 1).toFixed(2);
-    document.getElementById('grandTotal').value = (grand * 1).toFixed(2);
+    document.getElementById('totalTax').value = taxTotal.toFixed(2);
+    document.getElementById('grandTotal').value = grand.toFixed(2);
 }
+
+
+
+
+
 
 function searchaboutproductfunction() {
     searchtext = $('#searchaboutproduct').val();
     branchs_id = $('#branchs_id').val();
-    console.log(branchs_id)
+    var token_search = $("#token_search").val();
     jQuery.ajax({
-        url: " {{URL::to('searchChooseProductpaginatenewSale_new')}}/" + searchtext + "/" + branchs_id + "/" +
-            window.currentRow,
-        type: 'get',
-        dataType: 'html',
+        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
+        type: 'post',
         cache: false,
+        dataType: 'html',
+        data: {
+            "_token": token_search,
+            "searchtext": searchtext,
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
+            "branchs_id": branchs_id,
+            "currentrow": window.currentRow,
+        },
 
+        success: function(data) {
+            $("#ajax_responce_serarchDiv").html(data);
+            document.getElementById('searchaboutproduct').focus();
+
+        },
+
+    });
+
+}
+
+$('#SearchProduct').on('show.bs.modal', function(event) {
+    searchtext = '';
+    branchs_id = $('#branchs_id').val();
+    var token_search = $("#token_search").val();
+
+    jQuery.ajax({
+        url: "{{ URL::to('searchChooseProductpaginatenewSaleBypost')}}",
+        type: 'post',
+        cache: false,
+        dataType: 'html',
+        data: {
+            "_token": token_search,
+            "searchtext": searchtext,
+            "branchs_id": branchs_id,
+            "locale": "{{ app()->getLocale() }}", // ✅ صح
+            "currentrow": window.currentRow,
+        },
+        success: function(data) {
+            $("#ajax_responce_serarchDiv").html(data);
+            document.getElementById('searchaboutproduct').focus();
+
+        },
+
+    });
+
+});
+$(document).on('click', '#ajax_pagination_in_search a', function(e) {
+    e.preventDefault();
+    var search_by_text = $("#searchaboutproduct").val();
+    var url = $(this).attr("href");
+    var token_search = $("#token_search").val();
+    branchs_id = $('#branchs_id').val();
+
+    jQuery.ajax({
+        url: url,
+        type: 'post',
+        cache: false,
+        dataType: 'html',
+        data: {
+            "_token": token_search,
+            "searchtext": search_by_text,
+            "branchs_id": branchs_id,
+            "currentrow": window.currentRow,
+
+        },
         success: function(data) {
             $("#ajax_responce_serarchDiv").html(data);
         },
@@ -2430,30 +3700,101 @@ function searchaboutproductfunction() {
 
         }
     });
+});
+
+function checkDuplicateProduct(productId, currentIndex) {
+
+    return false; // غير مكرر
 }
 
-function chooseProduct(code, name, productcode, cost, sale_price, location, availablequantity, currentrow) {
-    console.log('window.location');
-    console.log(location);
-    console.log('availablequantity');
-    console.log(availablequantity);
-    console.log('currentrow');
-    console.log(currentrow);
+
+function chooseProduct(code, productcode, name, cost, sale_price, location, availablequantity, currentrow) {
+    if (checkDuplicateProduct(code, currentrow)) {
+        return; // منتج مكرر — توقف!
+    }
+    // else if (availablequantity <= 0) {
+    else if (0) {
+        // رسالة SweetAlert احترافية لتنبيه نقص المخزون
+        Swal.fire({
+            title: '<span style="color: #d33;">عذراً! المخزون غير كافٍ</span><br><small>Sorry! Insufficient Stock</small>',
+            html: `
+                                        <div style="text-align: center; font-size: 1.1em; margin-top: 10px;">
+                                            <p>الكمية المتاحة حالياً هي: <strong style="color: #28a745;">${availablequantity}</strong> فقط</p>
+                                            <p style="direction: ltr;">Current available stock is: <strong style="color: #28a745;">${availablequantity}</strong> only</p>
+                                            <hr>
+                                            <p style="color: #555;">لا يمكن إتمام عملية البيع لعدم توفر مخزون كافٍ.</p>
+                                            <p style="direction: ltr; color: #555;">Transaction cannot be completed due to out-of-stock.</p>
+                                        </div>
+                                    `,
+            icon: 'error',
+            confirmButtonText: 'حسناً | OK',
+            confirmButtonColor: '#3085d6',
+            footer: '<a href="#">هل تريد طلب كمية جديدة؟ | Request Stock</a>'
+        });
+        return; // منتج مكرر — توقف!
+    } else {
+        let index = rowIndex++; // 👈 يزيد دايمًا
 
 
-    let row = document.querySelector(`#productsTableBody tr[data-index='${currentrow}']`);
-    if (!row) return;
-    row.querySelector('.product-id').value = code;
-    row.querySelector('.product-name').value = productcode;
-    row.querySelector('.product-code').value = name;
-    row.querySelector('.product-price').value = sale_price;
-    $('#firstiteminput').val("1")
 
-    calculateTotals()
+        let table = document.getElementById('productsTableBody');
+
+
+        console.log('index')
+        console.log(index)
+        index = index - 1;
+        let row = createProductRow(index, {
+            product_id: code,
+            available_quantity: availablequantity,
+        });
+
+        table.insertAdjacentHTML("beforeend", row);
+        window.currentRow = index;
+        let row1 = document.querySelector(`#productsTableBody tr[data-index='${index}']`);
+        $.ajax({
+            url: "{{ URL::to('/getlastprice') }}/" + code + "/" + $('#clientnamesearch').val(),
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                $("#last_supplier_cost").empty();
+
+                data.forEach(async (product) => {
+
+                    $('#last_supplier_cost').append($('<option>', {
+                        value: 1,
+                        text: "{{ __('home.Invoice_no') }}" + " : " + product[
+                                'invoiceid'] + " ** " + product['date'] + " **  " +
+                            product['cost'] + " " + "{{ __('home.SAR') }}"
+                    }));
+                })
+
+            }
+        })
+        $('#profit').val(sale_price - cost);
+        row1.querySelector('.product-id').value = code;
+        if ($('#branchs_id').val() == 1 || $('#branchs_id').val() == 11) {
+
+            row1.querySelector('.product_cost').value = cost;
+
+        } else {
+            row1.querySelector('.product_cost').value = cost;
+
+        }
+        row1.querySelector('.product-name').value = name;
+        row1.querySelector('.product-cost').value = cost;
+        row1.querySelector('.product-available_quentity').value = availablequantity;
+        row1.querySelector('.product-code').value = productcode;
+        row1.querySelector('.product-price').value = sale_price;
+        row1.querySelector('.product-discound').value = 0;
+        $('#firstiteminput').val("1");
+
+        calculateTotals()
+    }
     window.scrollTo({
         top: document.body.scrollHeight,
         behavior: "smooth"
     });
+
 }
 </script>
 

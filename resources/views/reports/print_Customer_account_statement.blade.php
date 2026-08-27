@@ -5,13 +5,43 @@
         #print_Button {
             display: none;
         }
-    }
-
-    body {
-        font: 13pt Georgia, "Times New Roman", Times, serif;
+        
+                  @page
+        {
+                font: 13pt Georgia, "Times New Roman", Times, serif;
         line-height: 1.5;
         border-style: solid;
 
+            size: auto; /* auto is the initial value */
+            margin: 2mm 2mm 10mm 2mm; /* this affects the margin in the printer settings */
+                font-size:30px!important;
+
+        }
+        .tx-18{
+                            font-size:15px!important;
+
+        }
+         .tx-16{
+                            font-size:13px!important;
+
+        }
+                .text {
+  display: block;
+  width: 350px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+        .double{
+            border: 3px solid grey;
+            border-radius: 5px;
+            width:200px;
+
+        }
+    }
+
+    body {
+    
     }
 </style>
 @endsection
@@ -30,31 +60,38 @@
     <div class="col-md-12 col-xl-12">
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
-                <div class="card-body">
-                <div class="invoice-header">
+                   <div class="d-flex justify-content-center">
+                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
+                                {{ __('home.print') }}
+                                <i class="mdi mdi-printer ml-1"></i>
+                        </div>
+                        <br>
 
-<div class="billed-from">
+                <div class="card-body">
+                                   <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
+
+<div class="billed-from" style="width:33%;text-align: center;" >
     <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
+     <span style="font-size:20px">{{Nameen}}</span>
     <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <p dir=ltr> {{describtionen}} </p>
+    <span dir=ltr>{{STen}} </span>
     <p dir=ltr> {{Taxen}} </p>
 
 </div>
 <div class="row">
 <?php
 $logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+?>
+<a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
 
 </div>
 
 
-<div class="billed-from">
+<div class="billed-from" style="width:33%;text-align: center;">
     <br>
 
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
+   <span style="font-size:17px">{{Namear}}</span>
     <br>
     <p> {{describtionar}}</p>
     <p>{{STar}}</p>
@@ -63,6 +100,10 @@ $logo=camplogo;
 </div><!-- billed-from -->
 </div><!-- invoice-header -->
                     <br>
+  <center>  <p class="double"> كشف حساب العميل  <br>
+                   Customer account statement
+                   </p> </center>
+
                     <br>
                     <div class="col-lg-3" id="start_at">
                         <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} : </label>
@@ -109,40 +150,43 @@ $logo=camplogo;
                                         <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.branch') }}</th>
                                         <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
                                         <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.total') }}</th>
-                                        <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.Debit balance') }}</th>
+                                        <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.debit') }}</th>
+                                        <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.credit') }}</th>
+                                        <th style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.current balance') }}</th>
+                                        <th id="print_Button" style="color: #FF4F1F;font-size:12px" class="border-bottom-0">{{ __('home.operations') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $count = 0;
-                                    $totaldiscount = 0;
-                                    $totalPriceDay = 0;
+                                                         <tr ">
+                                        <td data-target="id">-</td>
+                                        <td data-target="id">-</td>
 
-                                    $listId = [];
-                                    $debitblance = 0;
+                                        <td data-target="numberofpice">-</td>
+                                        <td data-target="numberofpice">-
+                                        </td>
+                                      
+                                        <td data-target="numberofpice">-</td>
+                                        <td data-target="numberofpice">-</td>
+                                        <td data-target="numberofpice">-</td>
+                                        <td data-target="numberofpice">
+                                         {{__('home.oping')}}
+                                        </td>
 
-                                    ?>
+                                        <td><span style="color:red;font-size:16px">{{$data[2]}}</span></td>
 
-                                    @foreach ($data[0] as $product)
+                                        <td data-target="numberofpice">-</td>
 
-                                    @if($product->Price!=0)
+                                    </tr>
                                     <?php
-                                    $totaldiscount += $product->discount;
-
-                                    $i = 0;
-
-                                    $count++;
-                                    $avt = App\Models\Avt::find(1);
-                                    $saleavt = $avt->AVT;
-                                    $totalPriceDay += round(($product->Price - $product->discount) + (($product->Price - $product->discount) * $saleavt), 2);
-
+                                    $debitblance=$data[2];
+                                    $i=0;
                                     ?>
+                                    @foreach ($data[3] as $product)
+
+                                   
                                     <?php $i++; ?>
-                                    @foreach($data[1] as $invoice)
-                                    @if( $product->created_at>=$invoice->created_at&&!in_array($invoice->id,$listId))
-                                    <?php
-                                    $listId[] = $invoice->id;
-                                    $debitblance=$invoice->currentblance;
-                                    ?>
+                                    @if( $product['type']==3)
+                                  
                                     <tr>
 
                                         <th style="color:#419BB2">{{ __('home.decoumentNo') }}</th>
@@ -152,14 +196,19 @@ $logo=camplogo;
                                         <th class="border-bottom-0">{{ __('accountes.cashreceived') }}</th>
                                         <th class="border-bottom-0">{{ __('accountes.Remainingamount') }}</th>
                                         <th style="color:#419BB2">__</th>
+                                        <th style="color:#419BB2">__</th>
+                                        <th style="color:#419BB2">__</th>
 
                                     </tr>
 
 
 
                                     <tr>
-                                        <td><span style="color:green;font-size:16px">{{ $invoice->id }}</span></td>
+                                        <td><span style="color:green;font-size:16px">{{ $product['id'] }}</span></td>
+<?php
+$invoice=App\Models\credittransactions::find($product['id']);
 
+?>
                                         <td>{{ $invoice->customer->name }}</td>
                                         <td>{{$invoice->created_at }}</td>
                                         <td>
@@ -172,97 +221,16 @@ $logo=camplogo;
 
                                             <span class="text-warning">{{ __('report.shabka') }}</span>
                                             @endif
-                                        </td>
-                                        <td><span style="color:green;font-size:16px">{{ $invoice->recive_amount  }}</span></td>
-                                        <td><span style="color:red;font-size:16px">{{ $invoice->currentblance }}</span></td>
-                                        <td><span style="color:red;font-size:16px">{{ $invoice->currentblance }}</span></td>
-
-
-                                    </tr>
-
-
-
-                                    @endif
-                                    @endforeach
-
-
-                                    <tr id="<?php echo $product['id']; ?>">
-                                        <td data-target="id">{{ $product->id }}</td>
-                                        <td data-target="id">{{ $product->user->name }}</td>
-
-                                        <td data-target="numberofpice">{{ $product->created_at }}</td>
-                                        <td data-target="numberofpice">{{ $product->branch->name }}
                                         </td>
                                         <?php
-                                        $pays = '';
-                                        if ($product->Pay == 'Cash') {
-                                            $pays = __('report.cash');
-                                        } elseif ($product->Pay == 'Shabka') {
-                                            $pays = __('report.shabka');
-                                        } elseif ($product->Pay == "Credit") {
-                                            $pays = __('report.credit');
-                                        } elseif ($product->Pay == "Bank_transfer") {
-                                            $pays = __('home.Bank_transfer');
-                                        } else {
-                                            $pays = __('home.Partition of the amount');
-                                        }
 
-                                        ?>
-                                        <td data-target="numberofpice">{{ $pays }}</td>
-                                        <td data-target="numberofpice">
-                                            <?php
-                                            $avt = App\Models\Avt::find(1);
-                                            $saleavt = $avt->AVT;
-                                            $debitblance+=round(($product->Price-$product->discount) + (($product->Price-$product->discount)*$saleavt),2);
-                                            ?>
-                                            {{ round(($product->Price-$product->discount) + (($product->Price-$product->discount)*$saleavt),2) }}
-                                        </td>
-
-                                        <td><span style="color:red;font-size:16px">{{ $debitblance }}</span></td>
-
-
-                                    </tr>
-                                    @endif
-                                    @endforeach
-                                    @foreach($data[1] as $invoice)
-                                    @if( !in_array($invoice->id,$listId))
-                                    <?php
-                                    $listId[] = $invoice->id;
-                                    $debitblance=$invoice->currentblance;
-                                    ?>
-                                    <tr>
-
-                                        <th style="color:#419BB2">{{ __('home.decoumentNo') }}</th>
-                                        <th class="border-bottom-0"> {{ __('home.clientname') }}</th>
-                                        <th class="border-bottom-0"> {{ __('home.date') }}</th>
-                                        <th class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                        <th class="border-bottom-0">{{ __('accountes.cashreceived') }}</th>
-                                        <th class="border-bottom-0">{{ __('accountes.Remainingamount') }}</th>
-                                        <th style="color:#419BB2">__</th>
-
-                                    </tr>
-
-
-
-                                    <tr>
-                                        <td><span style="color:green;font-size:16px">{{ $invoice->id }}</span></td>
-
-                                        <td>{{ $invoice->customer->name }}</td>
-                                        <td>{{$invoice->created_at }}</td>
-                                        <td>
-                                            @if ($invoice->pay_method == 'Cash')
-                                            <span class="text-success">{{ __('report.cash') }}</span>
-                                            @elseif($invoice->pay_method =="Bank_transfer")
-                                            <span class="text-success">{{ __('home.Bank_transfer') }}</span>
-
-                                            @else
-
-                                            <span class="text-warning">{{ __('report.shabka') }}</span>
-                                            @endif
-                                        </td>
+$debitblance-=$invoice->recive_amount ;
+?>
                                         <td><span style="color:green;font-size:16px">{{ $invoice->recive_amount  }}</span></td>
-                                        <td><span style="color:red;font-size:16px">{{ $invoice->currentblance }}</span></td>
-                                        <td><span style="color:red;font-size:16px">{{ $invoice->currentblance }}</span></td>
+                                        <td><span style="color:red;font-size:16px">{{round($debitblance,2)}}</span></td>
+                                        <td><span style="color:red;font-size:16px">{{round($debitblance,2) }}</span></td>
+<td>--</td>
+                                        <td><span style="color:red;font-size:16px">{{round( $debitblance,2) }}</span></td>
 
 
                                     </tr>
@@ -270,15 +238,80 @@ $logo=camplogo;
 
 
                                     @endif
+                                    @if( $product['type']==2&&$product['typepayment'])
+
+
+                                    <tr >
+                                        <td data-target="id">{{ $product['id'] }}</td>
+                                        <td data-target="id">{{ $product['user'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['data'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['branch'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['payment'] }}</td>
+                                        <td data-target="numberofpice"><span style="color:red">{{__('home.salesـreturned')}} :
+                                        </span>{{round($product['amoint'],2)  }}</td>
+                                         @if( $product['typepayment'])
+                                    <?php
+
+$debitblance=$debitblance-$product['amoint'];
+?>
+                                         @endif
+                                         @if($product['typepayment'])
+                                         
+                                                                                  <td>{{round($product['amoint'],2)}}</td>
+
+                                         @else
+                                         
+                                     <td>--</td>
+
+                                         @endif
+                                     <td>--</td>
+
+                                        <td><span style="color:red;font-size:16px">{{ round($debitblance,2)=='-0'?0:round($debitblance,2)}}</span></td>
+
+<td id="print_Button"><a style="color: #23395D" class="dropdown-item" href="showInvoiceRecent/{{ $product['id'] }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
+                        {{ __('home.show') }}</a></td>
+                                    </tr>
+   
+                                   @endif
+
+                                   @if( $product['type']==1)
+
+
+                                    <tr >
+                                    <td data-target="id">{{ $product['id'] }}</td>
+                                        <td data-target="id">{{ $product['user'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['data'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['branch'] }}</td>
+                                        <td data-target="numberofpice">{{ $product['payment'] }}</td>
+                                        <td data-target="numberofpice">{{$product['amoint']  }}</td>
+                                        
+                              @if( $product['typepayment'])
+                                    <?php
+
+$debitblance+=$product['amoint'];
+?>
+@endif
+<td>--</td>
+                                        <td data-target="numberofpice">{{$product['amoint']  }}</td>
+
+  <td><span style="color:red;font-size:16px">{{ round($debitblance,2)=='-0'?0:round($debitblance,2)}}</span></td>
+
+<td  id="print_Button"><a style="color: #23395D" class="dropdown-item" href="showInvoiceRecent/{{ $product['id'] }}"><i style="fill:#072c3c !important" class=" fas fa-print"></i>&nbsp;&nbsp;
+                        {{ __('home.show') }}</a></td>
+                                    </tr>
+                                   @endif
                                     @endforeach
+                                    
                                     <tr>
                                     <th>-</th>
                                     <th>-</th>
                                     <th>-</th>
                                     <th>-</th>
-                                            <th>{{ __('home.total') }}</th>
-                                            <th>{{ $totalPriceDay}}</th>
-                                            <td><span style="color:red;font-size:16px">{{ $debitblance }}</span></td>
+                                    <th>{{ __('home.total') }}</th>
+                                    <th>--</th>
+                                    <th>--</th>
+                                    <th>--</th>
+                                    <td><span style="color:red;font-size:16px">{{ round($debitblance,2) }}</span></td>
 
                                         </tr>
                                 </tbody>
@@ -301,27 +334,31 @@ $logo=camplogo;
 
                                         <tr>
                                             <th>{{ __('home.theamountreciet') }}</th>
-                                            <th style="color:red;font-size:16px">{{ $customer->Balance}}</th>
+                                            <th style="color:red;font-size:16px">{{ round($debitblance,2)}}</th>
                                         </tr>
 
                                     </thead>
                                 </table>
                             </div>
                             <br>
+                                     <p>
+                            يعتبر كشف الحساب مطابق في حالة عدم وجود اعتراض عليه خلال اسبوع  (٧ ايام ) من تاريخ طباعته
+                            </p>
+                            <p>The statement of account is considered compliant if there is no objection to it within a week (7 days) from the date of its printing</p>
+                     
                         </div>
                         <hr class="mg-b-40">
 
 
 
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                            </button>
-                        </div>
+                   
 
 
+<br> 
 
+<center><a style="background-color: #419BB2;font-size:15px;width: 120px!important;height:30px" href="{{ url('/' . ($page = 'generate_customer_statment_pdf') . '/' .$customerId . '/' . $start_at . '/' . $end_at) }}"
+                    class="btn btn-success p-1 px-2 fw-bolder"  id="generate_pdf" target="_blank" >{{ __('home.dwonloadpdf') }}&nbsp;<i class="fa-solid fa-download"></i></i></a>
+</center>
                     </div>
                 </div>
             </div>

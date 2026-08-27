@@ -24,7 +24,8 @@
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">&nbsp;&nbsp;{{ __('home.stock') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
+                <h4 class="content-title mb-0 my-auto">&nbsp;&nbsp;{{ __('home.stock') }}</h4><span
+                    class="text-muted mt-1 tx-13 mr-2 mb-0">
                 </span>
             </div>
         </div>
@@ -47,6 +48,7 @@
         </ul>
     </div>
     @endif
+    <input type="hidden" id="token_search" value="{{ csrf_token() }}">
 
     <!-- row -->
     <div class="row">
@@ -67,14 +69,74 @@
                         <div style="border-radius: 10px" class="card mg-b-20">
                             <div class="card-body p-5">
 
+                                <div class="main-parent-filter p-2 mb-3"
+                                    style="border: 1px dashed #23395D; border-radius: 8px; background-color: #f8f9fa;">
+                                    <div class="row align-items-end mx-0">
 
-                                <div class="col-lg-4 mg-t-20 mg-lg-t-0">
-                                    <label for="inputName" style="font-weight: bold" class="control-label parent-label"> {{__('home.searchaboutproduct')}} </label>
-                                    <input dir="ltr" type="text" class="form-control parent-input" placeholder="{{ __('home.Search By Name or Product Number') }}" id="searchaboutproduct" name="searchaboutproduct" onkeyup="searchaboutproductfunction()">
+                                        <div class="col-lg-2 col-md-6 mb-2">
+                                            <label for="searchaboutproduct"
+                                                style="font-weight: bold; font-size: 12px; color: #23395D;"
+                                                class="control-label parent-label mb-1">
+                                                {{__('home.searchaboutproduct')}}
+                                            </label>
+                                            <input dir="ltr" type="text"
+                                                class="form-control form-control-sm parent-input"
+                                                placeholder="{{ __('home.Search By Name or Product Number') }}"
+                                                id="searchaboutproduct" name="searchaboutproduct"
+                                                onkeyup="filterProducts()">
+                                        </div>
+
+                                        <div class="col-lg-2 col-md-6 mb-2">
+                                            <label for="product_group" class="control-label parent-label mb-1"
+                                                style="font-size: 12px;">{{ __('home.groups') }}</label>
+                                            <select name="product_group" id="product_group"
+                                                class="form-control form-control-sm select2">
+                                                <option value="">-</option>
+                                                @foreach (App\Models\products_group::get() as $section)
+                                                <option value="{{ $section->id }}"> {{ $section->group_ar }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-2 mg-t-10 mg-lg-t-0">
+                                            <label for="inputName" class="control-label parent-label">
+                                                {{ __('home.Location') }} </label>
+                                            <input class="form-control parent-input" id="Location" name="Location"
+                                                title="يرجي ادخال الكمية  "
+                                                onkeyup="searchaboutproduct_location_function()">
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-2">
+                                            <label for="branchs_id" class="parent-label mb-1" style="font-size: 12px;">
+                                                {{ __('users.branch') }} </label>
+                                            <select class="form-control form-control-sm select2" name="branchs_id"
+                                                id="branchs_id">
+                                                <option value="-"> - </option>
+                                                @foreach (App\Models\branchs::get() as $section)
+                                                <option value="{{ $section->id }}"> {{ $section->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        @can('System setting')
+                                        <div class="col-lg-3 col-md-6 mb-2">
+                                            <label class="parent-label mb-1"
+                                                style="opacity:0; display: block;">.</label>
+                                            <button id="unified_export_btn"
+                                                class="btn btn-sm btn-success-gradient btn-block shadow-sm"
+                                                style="height: 31px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                                                <i class="fa fa-file-excel ml-2"></i> {{ __('export_excel') }}
+                                            </button>
+                                        </div>
+                                        @endcan
+
+                                    </div>
                                 </div>
+
+
                                 <br>
-                                <div id="ajax_responce_serarchDiv">
-                                    <table class="table text-md-nowrap text-center our-table" id="example2" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
+                                <div id="ajax_responce_serarchDiv"
+                                    class="table our-table border mb-0 table-responsive text-center">
+                                    <table class="table text-md-nowrap text-center our-table" id="example2" width="100%"
+                                        style="border: 2px solid rgba(0,0,0,.3);">
                                         <col style="width:5%">
                                         <col style="width:15%">
                                         <col style="width:20%">
@@ -88,13 +150,26 @@
                                         <thead>
                                             <tr>
                                                 <th style="font-size: 15px" class="border-bottom-0">#</th>
-                                                <th style="font-size: 15px" class="border-bottom-0">{{__('home.productNo')}} </th>
-                                                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.product')}}</th>
-                                                <th style="font-size: 15px" class="border-bottom-0" style="text-align:center">{{__('home.branch')}}</th>
-                                                <th style="font-size: 15px" class="border-bottom-0">{{__('home.productlocation')}}</th>
-                                                <th style="font-size: 15px" class="border-bottom-0">{{__('home.quantity')}}</th>
-                                                <th style="font-size: 13px" class="border-bottom-0">{{__('home.purchaseproductwithouttax')}}</th>
-                                                <th style="font-size: 13px" class="border-bottom-0">{{__('home.sellingproduct without tax')}}</th>
+                                                <th style="font-size: 15px" class="border-bottom-0">
+                                                    {{__('home.productNo')}}
+                                                </th>
+                                                <th style="font-size: 15px" class="border-bottom-0"
+                                                    style="text-align:center">{{__('home.product')}}
+                                                </th>
+                                                <th style="font-size: 15px" class="border-bottom-0"
+                                                    style="text-align:center">{{__('home.branch')}}
+                                                </th>
+                                                <th style="font-size: 15px" class="border-bottom-0">
+                                                    {{__('home.productlocation')}}
+                                                </th>
+                                                <th style="font-size: 15px" class="border-bottom-0">
+                                                    {{__('home.quantity')}}
+                                                </th>
+                                                <th style="font-size: 13px" class="border-bottom-0">
+                                                    {{__('home.purchaseproductwithouttax')}}
+                                                </th>
+                                                <th style="font-size: 13px" class="border-bottom-0">
+                                                    {{__('home.sellingproduct without tax')}}</th>
 
 
 
@@ -107,19 +182,19 @@
                                             <?php $i++ ?>
 
                                             <tr>
-                                                <td id="tableData"  dir=ltr>-</td>
-                                                <td id="tableData"  dir=ltr>-</td>
-                                                <td id="tableData"  data-target="product_name">-</td>
-                                                <td id="tableData"  data-target="product_name">-</td>
-                                                <td id="tableData"  data-target="numberofpice">-</td>
-                                                <td id="tableData"  data-target="numberofpice">-</td>
-                                                <td id="tableData"  data-target="numberofpice">-</td>
-                                                <td id="tableData"  data-target="numberofpice">-</td>
+                                                <td id="tableData" dir=ltr>-</td>
+                                                <td id="tableData" dir=ltr>-</td>
+                                                <td id="tableData" data-target="product_name">-</td>
+                                                <td id="tableData" data-target="product_name">-</td>
+                                                <td id="tableData" data-target="numberofpice">-</td>
+                                                <td id="tableData" data-target="numberofpice">-</td>
+                                                <td id="tableData" data-target="numberofpice">-</td>
+                                                <td id="tableData" data-target="numberofpice">-</td>
                                             </tr>
-                                           
+
                                         </tbody>
                                     </table>
-                                    
+
                                     <div>
 
                                     </div>
@@ -143,358 +218,194 @@
 </div>
 <!-- main-content closed -->
 </div>
+
+<div class="modal p-3" id="delete_quotation">
+    <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
+        <div class="modal-content modal-content-demo p-3">
+            <form>
+                <div class="modal-header">
+                    <h6 class="modal-title"> {{ __('home.alert') }} </h6><button aria-label="Close"
+                        class="close close-special" data-dismiss="modal" type="button"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                {{ csrf_field() }}
+                <div class="row mb-1">
+                    <div class="col-lg-6 col-md-6 col-md-4 mb-2">
+                        <label style="font-size: 12px;" for="inputName" class="control-label parent-label">
+                            {{ __('home.Are_you_sure_delete') }}</label>
+                    </div>
+
+
+                </div>
+
+                <input type="text" hidden class="form-control parent-input" name="delete_id" id="delete_id">
+
+                <br>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal">{{ __('home.cancel') }}</button>
+                    <button id="delete_quotation_function" name="delete_quotation_function" data-dismiss="modal"
+                        class="btn btn-danger">{{ __('home.confirm') }}</button>
+                </div>
+        </div>
+
+    </div>
+</div>
+</div>
+<div class="modal fade product-selection" id="operation_product" name="main_product" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" dir='rtl' aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="table-responsive" id="ajax_responce_operation_product_Div">
+
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                {{-- <button id="added_product" name="added_product" id="added_product" class="btn btn-primary">{{__('home.confirm')}}</button>
+                --}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+</div>
 @endsection
 @section('js')
-<!-- Internal Data tables -->
 
-<script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ URL::asset('assets/plugins/datatable/js/responsive.bootstrap4.min.js') }}"></script>
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
-
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
 <script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
 <!-- Ionicons js -->
 <script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
 <!--Internal  pickerjs js -->
 <script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 <script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
-</script>
+$(document).ready(function() {
 
-
-
-{{-- Update ( 24/4/2023 ) --}}
-
-<script>
-    function searchaboutproductfunction() {
-        searchtext = $('#searchaboutproduct').val();
+    // 1. دالة موحدة لطلبات AJAX لتقليل التكرار
+    function performAjax(url, method, data, successCallback) {
+        data["_token"] = $("#token_search").val();
         $.ajax({
-            url: " {{URL::to('searchAllproductpaginatenew')}}" + "/" + searchtext,
-            type: "GET",
-            dataType: "html",
-            success: function(products) {
-                $("#ajax_responce_serarchDiv").html(products);
-
-
-            },
+            url: url,
+            type: method,
+            data: data,
+            success: successCallback,
+            error: (err) => console.error("AJAX Error:", err)
         });
     }
-   
-    $(document).on('click', '#ajax_pagination_in_search a ', function(e) {
+
+
+
+    // 2. تحميل البيانات الأولي
+    performAjax("{{ URL::to('searchAllproductpaginatenew_by_post') }}", 'post', {
+        "searchtext": '',
+        "locale" : "{{ app()->getLocale() }}", // ✅ صح
+        "branchs_id": "{{ auth()->user()->branchs_id ?? 1 }}"
+    }, (data) => $("#ajax_responce_serarchDiv").html(data));
+
+    // 3. الفلترة الموحدة (الفرع، المجموعة، النص)
+    $('#branchs_id, select[name="product_group"], #searchaboutproduct').on('change keyup', filterProducts);
+
+    // 4. الترقيم (Pagination)
+    $(document).on('click', '#ajax_pagination_in_search a', function(e) {
         e.preventDefault();
-        var search_by_text = $("#search_by_text").val();
-        var url = $(this).attr("href");
-        var token_search = $("#token_search").val();
-
-        jQuery.ajax({
-            url: url,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
-            data: {
-                search_by_text: search_by_text,
-                "_token": token_search
-            },
-            success: function(data) {
-                console.log(data)
-                $("#ajax_responce_serarchDiv").html(data);
-            },
-            error: function() {
-
-            }
-        });
+        performAjax($(this).attr("href"), 'post', {
+            "searchtext": $("#searchaboutproduct").val(),
+            "branchs_id": $("#branchs_id").val()
+        }, (data) => $("#ajax_responce_serarchDiv").html(data));
     });
 
-    $(document).on('click', '#ajax_pagination_in_search a ', function(e) {
+    // 5. زر التصدير (Export)
+    $('#unified_export_btn').on('click', function(e) {
         e.preventDefault();
-        var search_by_text = $("#search_by_text").val();
-        var url = $(this).attr("href");
-        var token_search = $("#token_search").val();
+        let branchId = $('#branchs_id').val();
 
-        jQuery.ajax({
-            url: url,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
-            data: {
-                search_by_text: search_by_text,
-                "_token": token_search
-            },
-            success: function(data) {
-                console.log(data)
-                $("#ajax_responce_serarchDiv").html(data);
-            },
-            error: function() {
-
-            }
-        });
-    });
-</script>
-
-{{-- End Update ( 24/4/2023 ) --}}
-
-
-
-
-
-
-
-<script>
-    $(document).ready(function() {
-
-
-
-        // Update ( 24/4/2023 )
-
-        $.ajax({
-            url: " {{URL::to('Allproductpaginatenew')}}",
-            type: "GET",
-            dataType: "html",
-            success: function(products) {
-                $("#ajax_responce_serarchDiv").html(products);
-
-
-            },
-        });
-
-
-        // $("#nextPage").click(function(e) {
-        //     url = $('#nextPageValue').val().split('page=')[1];
-        //     $.ajax({
-        //         url: " {{URL::to('showAllproductpaginate')}}" + "?page=" + url,
-        //         type: "GET",
-        //         dataType: "json",
-        //         success: function(data) {
-
-
-        //             $('#previousPagevalue').val(data['prev_page_url'])
-        //             $('#nextPageValue').val(data['next_page_url'])
-        //             $('#currentpage').val(data['current_page'])
-        //             let table = document.getElementById("SearchProductTable");
-        //             var tableHeaderRowCount = 1;
-
-        //             var rowCount = table.rows.length;
-
-        //             for (var i = tableHeaderRowCount; i < rowCount; i++) {
-        //                 table.deleteRow(tableHeaderRowCount);
-        //             }
-        //             data['data']['otherdata'].forEach(async (product) => {
-        //                 Product_id = product['id'],
-        //                     Product_Code = product['Product_Code'],
-        //                     id = product['id'],
-        //                     product_name = product['product_name'],
-        //                     purchasingـprice = product['purchasingـprice']
-        //                 sale_price = product['sale_price']
-        //                 numberofpice = product['numberofpice']
-        //                 Product_Location = product['Product_Location']
-
-
-
-
-
-
-
-
-        //                 let row = table.insertRow(-1); // We are adding at the end
-        //                 let c1 = row.insertCell(0);
-        //                 let c2 = row.insertCell(1);
-        //                 let c3 = row.insertCell(2);
-        //                 let c4 = row.insertCell(3);
-        //                 let c5 = row.insertCell(4);
-        //                 let c6 = row.insertCell(5);
-        //                 let c7 = row.insertCell(6);
-        //                 let c8 = row.insertCell(7);
-
-        //                 c1.innerText = Product_id
-
-        //                 c2.innerHTML = '<span dir=ltr>' + Product_Code + '</span>'
-        //                 c3.innerHTML = product_name
-        //                 c4.innerHTML = product['branch']
-        //                 c5.innerText = Product_Location
-        //                 c6.innerText = numberofpice
-        //                 c7.innerHTML = purchasingـprice
-        //                 c8.innerHTML = sale_price
-
-
-
-
-
-
-
-        //             });
-
-        //         },
-        //     });
-        // });
-
-        // $("#previousPage").click(function(e) {
-
-        //     url = $('#previousPagevalue').val().split('page=')[1];
-
-        //     if (url != '') {
-        //         $.ajax({
-        //             url: " {{URL::to('showAllproductpaginate')}}" + "?page=" + url,
-        //             type: "GET",
-        //             dataType: "json",
-        //             success: function(data) {
-
-        //                 $('#previousPagevalue').val(data['prev_page_url'])
-        //                 $('#nextPageValue').val(data['next_page_url'])
-        //                 $('#currentpage').val(data['current_page'])
-        //                 let table = document.getElementById("SearchProductTable");
-        //                 var tableHeaderRowCount = 1;
-
-        //                 var rowCount = table.rows.length;
-
-        //                 for (var i = tableHeaderRowCount; i < rowCount; i++) {
-        //                     table.deleteRow(tableHeaderRowCount);
-        //                 }
-        //                 data['data']['otherdata'].forEach(async (product) => {
-        //                     Product_id = product['id'],
-        //                         Product_Code = product['Product_Code'],
-        //                         id = product['id'],
-        //                         product_name = product['product_name'],
-        //                         purchasingـprice = product['purchasingـprice']
-        //                     sale_price = product['sale_price']
-        //                     numberofpice = product['numberofpice']
-        //                     Product_Location = product['Product_Location']
-
-
-
-
-
-
-
-
-        //                     let row = table.insertRow(-1); // We are adding at the end
-        //                     let c1 = row.insertCell(0);
-        //                     let c2 = row.insertCell(1);
-        //                     let c3 = row.insertCell(2);
-        //                     let c4 = row.insertCell(3);
-        //                     let c5 = row.insertCell(4);
-        //                     let c6 = row.insertCell(5);
-        //                     let c7 = row.insertCell(6);
-        //                     let c8 = row.insertCell(7);
-
-        //                     c1.innerText = Product_id
-
-        //                     c2.innerHTML = '<span dir=ltr>' + Product_Code + '</span>'
-        //                     c3.innerHTML = product_name
-        //                     c4.innerHTML = product['branch']
-        //                     c5.innerText = Product_Location
-        //                     c6.innerText = numberofpice
-        //                     c7.innerHTML = purchasingـprice
-        //                     c8.innerHTML = sale_price
-
-
-
-
-
-
-
-
-
-        //                 });
-
-        //             },
-        //         });
-        //     } else {
-        //         alert('url null not fount pervoius')
-        //     }
-        // });
-
-        // End Update ( 24/4/2023 )
-
-
-
-        $('select[name="clientnamesearch"]').on('change', function() {
-            console.log('AJAX load   work 0000');
-
-            var selectclientid = $(this).val();
-            if (selectclientid) {
-                console.log('AJAX load   work');
-
-                $.ajax({
-                    url: "{{ URL::to('getcustomer') }}/" + selectclientid,
-                    type: "GET",
-                    dataType: "json",
-                    success: function(data) {
-                        console.log("success");
-                        console.log(data['name']);
-                        $('#clientName').val(data['name']);
-                        $('#address').val(data['address']);
-                        $('#phonenumber').val(data['phone']);
-                        $('#notes').val(data['notes']);
-                    },
-                });
-            } else {
-                console.log('AJAX load did not work');
-            }
-        });
+        if (!branchId) return alert('الرجاء اختيار فرع أولاً');
+        window.location.href = "{{ url('Stocktaking') }}/" + branchId;
     });
 
+    // 6. اختيار منتج (جلب الكمية)
     $('select[name="searchproductNo"]').on('change', function() {
-        console.log('AJAX load   work 0000');
-
-        var selectclientid = $(this).val();
-        if (selectclientid) {
-            console.log('AJAX load   work');
-
-            $.ajax({
-                url: "{{ URL::to('getproduct') }}/" + selectclientid,
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    console.log("success");
-                    console.log(data['name']);
-                    $('#quentity').val(data['numberofpice']);
-
-                },
+        let id = $(this).val();
+        if (id) {
+            performAjax("{{ URL::to('getproduct') }}/" + id, 'get', {}, (data) => {
+                $('#quentity').val(data.numberofpice);
             });
-        } else {
-            console.log('AJAX load did not work');
         }
     });
-</script>
 
-
-
-
-<script>
-    $(document).ready(function() {
-
-        $('#invoice_number').hide();
-
-        $('input[type="radio"]').click(function() {
-            if ($(this).attr('id') == 'type_div') {
-                $('#invoice_number').hide();
-                $('#type').show();
-                $('#start_at').show();
-                $('#end_at').show();
-            } else {
-                $('#invoice_number').show();
-                $('#type').hide();
-                $('#start_at').hide();
-                $('#end_at').hide();
-            }
-        });
+    // 7. حذف منتج
+    $("#delete_quotation_function").click(function() {
+        let id = $('#delete_id').val();
+        if (id) {
+            performAjax("{{ URL::to('delete_product') }}/" + id, 'get', {}, (data) => {
+                $("#ajax_responce_serarchDiv").html(data);
+                $('#delete_quotation').modal('hide');
+            });
+        }
     });
-</script>
+});
 
+
+    function replaceproduct(id) {
+    branchs_id = $('#branchs_id').val();
+    console.log(branchs_id)
+    console.log(" {{URL::to('operationproducts')}}/" + branchs_id + "/" + id)
+    jQuery.ajax({
+        url: " {{URL::to('operationproducts')}}/" + branchs_id + "/" + id,
+        type: 'get',
+        dataType: 'html',
+        cache: false,
+
+        success: function(data) {
+            console.log('done')
+            $('#operation_product').modal().show();
+
+            $("#ajax_responce_operation_product_Div").html(data);
+        },
+        error: function() {
+
+        }
+    });
+
+
+}
+// دالة الفلترة في النطاق العام لتعمل مع onkeyup مباشرة
+function filterProducts() {
+    let data = {
+        "searchtext": $('#searchaboutproduct').val(),
+         "locale" : "{{ app()->getLocale() }}", // ✅ صح
+        "branchs_id": $('#branchs_id').val(),
+        "group_id": $('select[name="product_group"]').val(),
+        "_token": $("#token_search").val()
+    };
+
+    $.ajax({
+        url: "{{ URL::to('searchAllproductpaginatenew_by_post') }}",
+        type: 'post',
+        data: data,
+
+        success: function(data) {
+            console.log(data);
+            $("#ajax_responce_serarchDiv").html(data);
+        },
+        error: function(err) {
+            console.error("AJAX Error:", err);
+        }
+    });
+}
+</script>
 
 @endsection

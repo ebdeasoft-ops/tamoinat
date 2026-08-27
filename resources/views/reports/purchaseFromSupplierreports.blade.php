@@ -152,6 +152,7 @@
                                     <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.total') }}</th>
                                     <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
                                     <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.operations') }}</th>
+   <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.operations') }}</th>
 
                                 </tr>
                             </thead>
@@ -212,7 +213,9 @@
                                     <td data-target="numberofpice">{{ $pays  }}</td>
                                     <td> <a class="dropdown-item" href="purchasesShow/{{ $product->orderId }}"><i style="fill:#072c3c !important" class="fas fa-print"></i>&nbsp;&nbsp;
                                             {{ __('home.show') }}
-                                        </a></td>
+                                        </a>
+                                        
+                                        </td>
 
                                 </tr>
                                 @endforeach

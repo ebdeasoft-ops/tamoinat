@@ -30,38 +30,45 @@
         <div class="col-md-12 col-xl-12">
             <div class=" main-content-body-invoice" id="print">
                 <div class="card card-invoice">
+                       <div class="d-flex justify-content-center">
+                            <button class="btn btn-danger print-style float-left mt-3 mr-2" id="print_Button" onclick="printDiv()">
+                                {{ __('home.print') }}
+                                <i class="mdi mdi-printer ml-1"></i>
+                        </div>
+                        <br>
+
                     <div class="card-body">
-                    <div class="invoice-header">
+                   <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-<div class="billed-from">
-    <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-    <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <p dir=ltr> {{Taxen}} </p>
+                        <div class="billed-from" style="width:33%;text-align: center;" >
+                            <br>
+                             <span style="font-size:25px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
 
-</div>
-<div class="row">
-<?php
+                        </div>
+                        <div class="row">
+                        <?php
 $logo=camplogo;
     ?>
     <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
 
-</div>
+                        </div>
 
 
-<div class="billed-from">
-    <br>
+                        <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
 
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-    <br>
-    <p> {{describtionar}}</p>
-    <p>{{STar}}</p>
-    <p>{{Taxar}}</p>
+                           <span style="font-size:25px">{{Namear}}</span>
+                            <br>
+                            <p> {{describtionar}}</p>
+                            <p>{{STar}}</p>
+                            <p>{{Taxar}}</p>
 
-</div><!-- billed-from -->
-</div><!-- invoice-header -->
+                        </div><!-- billed-from -->
+                    </div><!-- invoice-header -->
                         <br>
                         <br>
                         
@@ -130,14 +137,14 @@ $logo=camplogo;
                                     <span class="text-danger">
 
                                         <div class="table hoverable-table">
-                                                <table class="table text-center  table-striped table-bordered">
+                                                <table class="table text-center table-responsive table-striped table-bordered">
                                                     <br>
 
                                                     <thead>
 
 
                                                         <tr>
-                                                            <th>{{__('home.Invoice_no')}} </th>
+                                                            <th>{{__('home.Invoice_no')}}</th>
                                                             <th>{{ $invoice->id }}</th>
                                                         </tr>
 
@@ -172,8 +179,8 @@ $logo=camplogo;
                                                                 <td>{{ $date[0] }}</td>
 
                                                                 <td dir='ltr'>
-                                                                    {{ $product->productData->barcode }}</td>
-                                                                <td>{{ $product->productData->name }}</td>
+                                                                    {{ $product->productData->Product_Code }}</td>
+                                                                <td>{{ $product->productData->product_name }}</td>
                                                                 <td>{{ $product->numberofpice }}</td>
                                                                 <td>{{ $product->purchasingـprice }}</td>
                                                                 <td>{{ $product->Added_Value }}</td>
@@ -232,14 +239,7 @@ $logo=camplogo;
 
 
 
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-danger print-style float-left mt-10 mr-10 p-1" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                            </button>
-                            <br>
-
-                        </div>
+                  
                         <br>
 
 

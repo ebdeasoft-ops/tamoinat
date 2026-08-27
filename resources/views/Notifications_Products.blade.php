@@ -118,7 +118,8 @@
 
                                     <tr id="<?php echo $product['id'];?>">
                                     <td data-target="id">{{ $i}}</td>
-                                           <td dir="ltr" data-target="id">{{ $product->Product_Code }}</td>                                         <td data-target="product_name">{{ $product->product_name }}</td>
+                                           <td dir="ltr" data-target="id">{{ $product->Product_Code }}</td>                                        
+                                           <td data-target="product_name">{{ $product->product_name }}</td>
                                         <td data-target="numberofpice">{{ $product->numberofpice }}</td>
 
                                     </tr>

@@ -67,13 +67,18 @@
                         <div class='row'>
 
 
-                            <div class="col-lg-2 mb-2">
+                            <div class="col-lg-3 mb-2">
                                 <label for="inputName" class="control-label parent-label"> {{ __('home.The amount of the transferred amount') }}
                                 </label>
-                                <input type="number" class="form-control parent-input" id="The_amount_transferred_amount" name="The_amount_transferred_amount" title="يرجي ادخال الكمية  " required onkeyup="moneyconvertToNumber()">
+                                <input type="number" class="form-control parent-input" id="The_amount_transferred_amount" name="The_amount_transferred_amount" title="يرجي ادخال الكمية  "  value=0 required onkeyup="moneyconvertToNumber()">
+                            </div>
+                           
+                            <div class="col-lg-2">
+                                <label for="inputName" class="control-label parent-label">{{ __('home.bank balance amount') }} </label>
+                                <input type="number" class="parent-input form-control" id="bankblance" name="bankblance" title="يرجي ادخال ملاحظات  " >
                             </div>
                             <div class="col-lg-3 parent-label" id="start_at">
-                                <label for="exampleFormControlSelect1"> {{ __('report.date') }}</label>
+                                <label for="exampleFormControlSelect1"> {{ __('home.day_transfer') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">
@@ -82,10 +87,11 @@
                                     </div><input class="form-control parent-input fc-datepicker" value="{{ $start_at ?? '' }}" name="date" id="date" placeholder="YYYY-MM-DD" type="text" required>
                                 </div>
                             </div>
-                            <div class="col-lg-7">
+                            <div class="col-lg-4">
                                 <label for="inputName" class="control-label parent-label">{{ __('home.notesClient') }} </label>
                                 <input type="text" class="parent-input form-control" id="notes" name="notes" title="يرجي ادخال ملاحظات  " value="-">
                             </div>
+                           
                             <br>
 
                         </div>
@@ -126,11 +132,12 @@
                 <table id="example" class="table text-md-nowrap text-center our-table" width="100%" style="border: 2px solid rgba(0,0,0,.3);">
                     <thead>
                         <tr>
-                            <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
-
+                        <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
+                        <th class="border-bottom-0">{{ __('home.day_transfer') }}</th>
                             <th class="border-bottom-0"> {{ __('accountes.user') }}</th>
                             <th class="border-bottom-0"> {{ __('users.branch') }}</th>
                             <th class="border-bottom-0">{{ __('home.The amount of the transferred amount') }}</th>
+                            <th class="border-bottom-0">{{ __('home.bank balance amount') }}</th>
                             <th class="border-bottom-0">{{ __('home.operations') }}</th>
 
                         </tr>
@@ -139,6 +146,8 @@
                     <tbody>
 
 
+                    <td>-</td>
+                    <td>-</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
@@ -184,13 +193,18 @@
 
 
 
-                    <div class="col-lg-4 mb-2">
+                    <div class="col-lg-3 mb-2">
                         <label for="inputName" class="control-label parent-label"> {{ __('home.The amount of the transferred amount') }}
                         </label>
                         <input type="number" class="form-control parent-input" id="The_amount_transferred_amountupdate" name="The_amount_transferred_amountupdate" title="يرجي ادخال الكمية  " required onkeyup="moneyconvertToNumber()">
                     </div>
+                    <div class="col-lg-3 mb-2">
+                        <label for="inputName" class="control-label parent-label"> {{ __('home.bank balance amount') }}
+                        </label>
+                        <input type="number" class="form-control parent-input" id="bankblance_update" name="bankblance_update" title="يرجي ادخال رصيد المرحل  " required >
+                    </div>
 
-                    <div class="col-lg-8">
+                    <div class="col-lg-6">
                         <label for="inputName" class="control-label parent-label">{{ __('home.notesClient') }} </label>
                         <input type="text" class="parent-input form-control" id="notesupdate" name="notesupdate" title="يرجي ادخال ملاحظات  " value="-">
                     </div>
@@ -242,12 +256,14 @@
 
         var id = button.data('id')
         var amount = button.data('amount')
+        var bankblance=button.data('bankblance')
         var modal = $(this)
 
 
 
         modal.find('.modal-body #transactionId').val(id);
         modal.find('.modal-body #The_amount_transferred_amountupdate').val(amount);
+        modal.find('.modal-body #bankblance_update').val(bankblance);
 
     })
     function moneyconvertToNumber() {
@@ -272,7 +288,7 @@
 
         console.log($('#notesupdate').val())
         console.log($('#The_amount_transferred_amountupdate').val())
-        if ($('#The_amount_transferred_amount').val() == 0) {
+        if ($('#The_amount_transferred_amountupdate').val() == 0) {
             alert("{{__('home.should')}}")
 
         } else {
@@ -287,6 +303,7 @@
                     notes: $('#notesupdate').val(),
                     The_amount_transferred_amount: $('#The_amount_transferred_amountupdate').val(),
 
+                    bank_balance_amount: $('#bankblance_update').val()??0,
 
 
                 },
@@ -311,11 +328,15 @@
                     let c3 = row.insertCell(2);
                     let c4 = row.insertCell(3);
                     let c5 = row.insertCell(4);
+                    let c6 = row.insertCell(5);
+                    let c7 = row.insertCell(6);
                     c1.innerText = data['id']
-                    c2.innerText = data['user']
-                    c3.innerHTML = ' <span dir=ltr style="color:red">' + data['branch'] + '</span>'
-                    c4.innerText = data['the_amount']
-                    c5.innerHTML = update
+                    c2.innerText = data['date']
+                    c3.innerText = data['user']
+                    c4.innerHTML = ' <span dir=ltr style="color:red">' + data['branch'] + '</span>'
+                    c5.innerText = data['the_amount']
+                    c6.innerText = data['currentamount']
+                    c7.innerHTML = update
 
                     $('#cashreceived').val(0)
                 },
@@ -344,6 +365,9 @@
         if ($('#The_amount_transferred_amount').val() == 0) {
             alert("{{__('home.should')}}")
 
+        }else if ($('#date').val() == '') {
+            alert("{{__('home.day_transfer')}}")
+
         } else {
             $.ajax({
                 url: url,
@@ -355,14 +379,14 @@
                     notes: $('#notes').val(),
                     date: $('#date').val(),
                     The_amount_transferred_amount: $('#The_amount_transferred_amount').val(),
-
-
+                    bank_balance_amount: $('#bankblance').val()??0,
 
                 },
 
 
                 success: function(data) {
-
+                    $('#bankblance').val(0)
+                    $('#The_amount_transferred_amount').val(0)
                     let table = document.getElementById("example");
                     var tableHeaderRowCount = 1;
 
@@ -372,7 +396,7 @@
                     }
                     let row = table.insertRow(-1); // We are adding at the end
                     update = ' <a style="width:40px;height:20px" class="modal-effect btn btn-sm btn-warning mb-1" data-effect="effect-scale" data-id='
-                    update = update.concat(data['id'], '  ', ' data-amount=', data['the_amount'], '  ',
+                    update = update.concat(data['id'], '  ', ' data-amount=', data['the_amount'], '  ', ' data-bankblance=', data['currentamount'],' ',
                         '  data-toggle="modal"   href="#increaseProduct"   title="تعديل"><i class="las la-align-justify"></i></a>'
                     )
                     let c1 = row.insertCell(0);
@@ -380,11 +404,15 @@
                     let c3 = row.insertCell(2);
                     let c4 = row.insertCell(3);
                     let c5 = row.insertCell(4);
+                    let c6 = row.insertCell(5);
+                    let c7 = row.insertCell(6);
                     c1.innerText = data['id']
-                    c2.innerText = data['user']
-                    c3.innerHTML = ' <span dir=ltr style="color:red">' + data['branch'] + '</span>'
-                    c4.innerText = data['the_amount']
-                    c5.innerHTML = update
+                    c2.innerText = data['date']
+                    c3.innerText = data['user']
+                    c4.innerHTML = ' <span dir=ltr style="color:red">' + data['branch'] + '</span>'
+                    c5.innerText = data['the_amount']
+                    c6.innerText = data['currentamount']
+                    c7.innerHTML = update
 
                     $('#cashreceived').val(0)
                 },

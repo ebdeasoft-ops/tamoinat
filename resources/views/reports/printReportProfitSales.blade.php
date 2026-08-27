@@ -1,310 +1,250 @@
 @extends('layouts.master')
+
 @section('css')
 <style>
     @media print {
-        #print_Button {
-            display: none;
-        }
+        #print_Button { display: none !important; }
+        body { margin: 0; padding: 0; }
+        .card { border: none !important; box-shadow: none !important; }
     }
 
-    body {
-        font: 13pt Georgia, "Times New Roman", Times, serif;
-        line-height: 1.5;
-        border-style: solid;
-
+    .double {
+        border: 3px double #419BB2;
+        padding: 5px 25px;
+        border-radius: 5px;
+        display: inline-block;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        margin-bottom: 20px;
+        line-height: 1.2;
     }
+
+    .table th {
+        background-color: #ecf0fa !important;
+        color: #419BB2 !important;
+        vertical-align: middle !important;
+        font-size: 12px;
+    }
+
+    .table td { font-size: 12px; vertical-align: middle !important; }
+    
+    .header-info p { margin-bottom: 2px; font-size: 13px; }
 </style>
 @endsection
-@section('title')
-{{ __('home.print') }}
-@stop
-@section('page-header')
-<!-- breadcrumb -->
-<div class="breadcrumb-header justify-content-between">
-</div>
-<!-- breadcrumb -->
-@endsection
+
+@section('title', 'تقرير الأرباح | Profit Report')
+
 @section('content')
-<!-- row -->
 <div class="row row-sm">
-    <div class="col-md-12 col-xl-12">
-        <div class=" main-content-body-invoice" id="print">
-            <div class="card card-invoice">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-center mb-3">
+            <button class="btn btn-danger" id="print_Button" onclick="printDiv()">
+                طباعة / Print <i class="mdi mdi-printer ml-1"></i>
+            </button>
+        </div>
+
+        <div class="main-content-body-invoice" id="print">
+            <div class="card card-invoice p-4">
                 <div class="card-body">
-                <div class="invoice-header">
+                    <!-- الهيدر العربي والإنجليزي -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="header-info text-center" style="width:35%;">
+                            <h5 class="font-weight-bold">{{ Namear }}</h5>
+                            <p>{{ describtionar }}</p>
+                            <p>س.ت: {{ STen }}</p>
+                            <p>الرقم الضريبي {{Taxen}}</p>
+                        </div>
 
-<div class="billed-from">
-    <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-    <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <p dir=ltr> {{Taxen}} </p>
+                        <div class="text-center" style="width:30%;">
+                            <img src="{{ asset('assets/img/brand/'.camplogo) }}" alt="logo" style="width: 120px;">
+                        </div>
 
-</div>
-<div class="row">
-<?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
-
-</div>
-
-
-<div class="billed-from">
-    <br>
-
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-    <br>
-    <p> {{describtionar}}</p>
-    <p>{{STar}}</p>
-    <p>{{Taxar}}</p>
-
-</div><!-- billed-from -->
-</div><!-- invoice-header -->
-
-
-                    <div class="card-body">
-                        <div class="">
-                            @if (isset($Invoices))
-                            <div class="col-lg-3" id="start_at">
-                                <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ __('home.exportTime') }} : </label>
-                                <?php
-                                $currentdata = \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i:s");
-
-                                ?>
-                                <label style="font-size: 14px;color:#419BB2 ;font-weight:bold;" for="exampleFormControlSelect1"> {{ $currentdata }}</label>
-
-                            </div>
-                            <div style="border-radius: 10px" class="card pb-0 px-3">
-                                <br>
-
-                                <?php
-                                $count = 0;
-                                $startat = '';
-                                $endat = '';
-                                $totalprofit = 0;
-                                $benfitshabka = 0;
-                                $benfitcradit = 0;
-                                $benfitcash = 0;
-                                $benfitBank_transfer = 0;
-
-                                ?>
-                                @foreach ($Invoices as $invoice)
-                                <?php
-
-                                if ($count == 0) {
-                                    $startat = $invoice->created_at;
-                                }
-                                $endat = $invoice->created_at;
-                                $count++;
-                                ?>
-
-                                <br>
-
-
-
-
-
-                                <table class="table table-responsive table-striped table-bordered text-center">
-                                    <thead>
-
-                                        <tr>
-                                            <th>
-                                                {{ __('report.invoiceNo') }}
-                                            </th>
-
-                                            <th>{{ $invoice->id }}</th>
-
-                                        </tr>
-
-                                        <tr>
-                                            <th class="border-bottom-0">#</th>
-                                            <th class="border-bottom-0">{{ __('report.date') }}</th>
-
-                                            <th class="border-bottom-0"> {{ __('home.productNo') }}</th>
-                                            <th class="border-bottom-0"> {{ __('home.product') }}</th>
-                                            <th class="border-bottom-0"> {{ __('home.quantity') }}</th>
-                                            <th class="border-bottom-0"> {{ __('home.saleprice') }}</th>
-
-                                            <th class="border-bottom-0">{{ __('home.saleperpice') }}</th>
-                                            <th class="border-bottom-0">{{ __('home.discount') }}</th>
-
-                                            <th class="border-bottom-0"> {{ __('report.profit') }}</th>
-                                            <th class="border-bottom-0"> <span class="text-warning  float-left mt-3 mr-2" id="print_Button">{{ __('home.total') }}</span>
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
-                                    <?php
-                                    $i = 0;
-                                    $profit = 0;
-
-                                    ?>
-                                    @foreach (App\Models\sales::where('invoice_id', $invoice->id)->where('quantity', '!=', 0)->get() as $product)
-                                    <?php
-                                    $i++;
-                                    $totalprofit += (($product->quantity * $product->Unit_Price) - $product->Discount_Value) - ($product->quantity * $product->productData->purchasingـprice);
-                                    $profit += (($product->quantity * $product->Unit_Price) - $product->Discount_Value) - ($product->quantity * $product->productData->purchasingـprice);
-                                    $date = explode(' ', $product->created_at);
-                                    ?>
-                                    <tbody>
-                                        <tr>
-                                            <td>{{ $i }}</td>
-                                            <td>{{ $date[0] }}</td>
-
-                                            <td dir='ltr'>{{ $product->productData->Product_Code }}</td>
-                                            <td>{{ $product->productData->product_name }}</td>
-                                            <td>{{ $product->quantity }}</td>
-                                            <td>{{ $product->productData->purchasingـprice }}</td>
-                                            <td>{{ $product->Unit_Price }}</td>
-                                            <td>{{ $product->Discount_Value }}</td>
-                                            <td>{{ (($product->quantity * $product->Unit_Price)-$product->Discount_Value) - ($product->quantity * $product->productData->purchasingـprice) }}
-                                            </td>
-                                            <td>-</td>
-                                        </tr>
-
-                                        @endforeach
-                                        <tr>
-                                            <td>-</td>
-                                            <td>-</td>
-
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-
-                                            <td>-</td>
-                                            <td>{{$invoice->discount}}</td>
-                                            <td>-</td>
-                                            <td>{{ $profit-($invoice->discount-$invoice->discountOnProduct) }}
-
-                                            </td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-
-
-                                <?php
-                                $titalbenfitmix = 0;
-                                $ratecash = 0;
-                                $rateshabka = 0;
-                                $ratecredit = 0;
-                                $rateBank_transfer=0;
-
-                                if ($product->Pay == 'Cash') {
-
-                                    foreach (App\models\sales::where('invoice_id', $invoice->id)->where('save', 1)->get() as $salesbenfit) {
-
-                                        $benfitcash += (($salesbenfit->Unit_Price * $salesbenfit->quantity)) - ($salesbenfit->productData->purchasingـprice * $salesbenfit->quantity);
-                                    }
-                                    $benfitcash -= ($invoice->discount);
-                                } elseif ($product->Pay == 'Credit') {
-                                    foreach (App\models\sales::where('invoice_id', $invoice->id)->where('save', 1)->get() as $salesbenfit) {
-
-                                        $benfitcradit += (($salesbenfit->Unit_Price * $salesbenfit->quantity)) - ($salesbenfit->productData->purchasingـprice * $salesbenfit->quantity);
-                                    }
-                                    $benfitcradit -= $invoice->discount;
-                                } elseif ($product->Pay == 'Bank_transfer') {
-                                    foreach (App\models\sales::where('invoice_id', $product->id)->where('save', 1)->get() as $salesbenfit) {
-
-                                        $Bank_transfer += (($salesbenfit->Unit_Price * $salesbenfit->quantity)) - ($salesbenfit->productData->purchasingـprice * $salesbenfit->quantity);
-                                    }
-                                    $benfitcradit -= $product->discount;
-                                } elseif ($invoice->Pay == 'Shabka') {
-                                    foreach (App\models\sales::where('invoice_id', $invoice->id)->where('save', 1)->get() as $salesbenfit) {
-
-                                        $benfitshabka += (($salesbenfit->Unit_Price * $salesbenfit->quantity)) - ($salesbenfit->productData->purchasingـprice * $salesbenfit->quantity);
-                                    }
-                                    $benfitshabka -= $invoice->discount;
-                                } else {
-                                    foreach (App\models\sales::where('invoice_id', $invoice->id)->where('save', 1)->get() as $salesbenfit) {
-
-                                        $titalbenfitmix += (($salesbenfit->Unit_Price * $salesbenfit->quantity)) - ($salesbenfit->productData->purchasingـprice * $salesbenfit->quantity);
-                                    }
-                                    $titalbenfitmix -= $invoice->discount;
-                                    // return $titalbenfitmix;
-                                    $ratecash = ($invoice->cashamount / ($invoice->cashamount + $invoice->bankamount + $invoice->creaditamount));
-                                    $rateshabka = ($invoice->bankamount / ($invoice->cashamount + $invoice->bankamount + $invoice->creaditamount));
-                                    $ratebank = ($invoice->Bank_transfer / ($invoice->cashamount + $invoice->bankamount + $invoice->creaditamount + $invoice->Bank_transfer));
-                                    $ratecredit = ($invoice->creaditamount / ($invoice->cashamount + $invoice->bankamount + $invoice->creaditamount));
-                                    $benfitBank_transfer +=  $titalbenfitmix * $ratebank;
-                                    $benfitshabka += $titalbenfitmix * $rateshabka;
-                                    $benfitcradit += $titalbenfitmix * $ratecredit;
-                                    $benfitcash += $titalbenfitmix * $ratecash;
-                                }                          ?>
-                                @endforeach
-
-
-                                <br>
-                                <br>
-
-                                <div class="table-padding">
-                                <table style="border: 2px solid rgba(0,0,0,.3)" class="table table-striped table-bordered text-center my-2">
-                                    <thead>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);"> {{ __('home.benfitcash') }}
-                                            </th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ round( $benfitcash,2) }}</th>
-                                        </tr>
-                                        <tr>
-                                            <th>{{ __('home.benfitshabka') }}</th>
-                                            <th>{{ round( $benfitshabka,2) }}</th>
-                                        </tr>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ __('home.benfitcradit') }}</th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ round($benfitcradit,2)   }}</th>
-                                        </tr>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ __('home.Bank_transfer') }}</th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ round($benfitBank_transfer,2)   }}</th>
-                                        </tr>
-                                        <tr>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ __('home.total') }}</th>
-                                            <th style="background-color: rgba(236, 240, 250, 1);">{{ round($benfitcradit+round( $benfitcash ,2) +$benfitshabka +$benfitBank_transfer,2)  }}</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-
-
-
-
-
-
-                                @endif
-
-                            </div>
-                            <hr class="mg-b-40">
-
-
-
-                            <button class="btn btn-danger print-style float-left mt-3 mr-2 p-1" id="print_Button" onclick="printDiv()">
-                                {{ __('home.print') }}
-                                <i class="mdi mdi-printer ml-1"></i>
-                            </button>
-
+                        <div class="header-info text-center" style="width:35%;" dir="ltr">
+                            <h5 class="font-weight-bold">{{ Nameen }}</h5>
+                            <p>{{ describtionen }}</p>
+                            <p>C.R: {{ STen }}</p>
+                            <p>VAT: {{ Taxen }}</p>
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </div><!-- COL-END -->
+                    <hr>
+
+                    <div class="text-center my-3">
+                        <div class='double'>
+                            تقرير أرباح المبيعات والمرتجع <br>
+                            Sales & Returns Profit Report
+                        </div>
+                    </div>
+
+                    <!-- معلومات التقرير -->
+                    <table class="table table-bordered text-center mb-4">
+                        <thead>
+                            <tr>
+                                <th>من تاريخ / From</th>
+                                <td>{{ $start }}</td>
+                                <th>إلى تاريخ / To</th>
+                                <td>{{ $end }}</td>
+                                <th>وقت الاستخراج / Time</th>
+                                <td>{{ \Carbon\Carbon::now()->addHours(3)->format("Y-m-d H:i") }}</td>
+                            </tr>
+                        </thead>
+                    </table>
+
+<!-- جدول المبيعات -->
+<h6 class="font-weight-bold text-primary">المبيعات / Sales</h6>
+<table class="table table-striped table-bordered text-center">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>التاريخ / Date</th>
+            <th>رقم الفاتورة / Invoice No</th>
+            <th>المنتج / Product</th>
+            <th>الكمية / Qty</th>
+            <th> تكلفة القطعة </th>
+            <th>التكلفة / Cost</th>
+            <th>البيع / Price</th>
+            <th>الخصم / Disc.</th>
+            <th>الربح / Profit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php 
+            $tP = 0; $tC = 0; $tS = 0; $tD = 0; $tQ = 0;
+        @endphp
+        @foreach ($data['sales'] as $index => $item)
+            @php
+                $invoice = $item->Invoice;
+                $totalItemsDiscount = \App\Models\sales::where('invoice_id', $item->invoice_id)->sum('Discount_Value');
+                
+                $discount_on_invoice =$invoice->discount==0 ?$invoice->discountOnInvoice: ($invoice->discount?? 0) - $totalItemsDiscount ;
+
+                $totalGrossAmount = \App\Models\sales::where('invoice_id', $item->invoice_id)
+                    ->selectRaw('SUM((quantity + quantityreturn) * Unit_Price) as total')
+                    ->first()
+                    ->total;
+
+                $invTotalBeforeGeneralDiscount = ($totalGrossAmount ?? 0);
+                $qtyTotal = ($item->quantity + $item->quantityreturn);
+                $itemGrossSales = $item->Unit_Price * $qtyTotal;
+
+                $itemWeight = ($invTotalBeforeGeneralDiscount > 0) ? ($itemGrossSales / $invTotalBeforeGeneralDiscount) : 0;
+                $itemShareOfGeneralDiscount = $discount_on_invoice * $itemWeight;
+
+                $cost = ($item->productData->purchasingـprice ?? 0) * $qtyTotal;
+                $sales = $itemGrossSales;
+                $totalItemDiscount = $item->Discount_Value + $itemShareOfGeneralDiscount;
+                $profit = $sales - $cost - $totalItemDiscount;
+
+                // تجميع الإجماليات
+                $tP += $profit; $tC += $cost; $tS += $sales; $tD += $totalItemDiscount; $tQ += $qtyTotal;
+            @endphp
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->created_at->format('Y-m-d h:i:s') }}</td>
+                <td>{{ $item->invoice_id }}</td>
+                <td>{{ $item->productData->product_name ?? '-' }}</td> 
+                <td>{{ number_format($qtyTotal, 2) }}</td>
+                <td>{{ number_format($item->productData->purchasingـpric, 2) }}</td>
+                <td>{{ number_format($cost, 2) }}</td>
+                <td>{{ number_format($sales, 2) }}</td>
+                <td>{{ number_format($totalItemDiscount, 2) }}</td>
+                <td class="text-success font-weight-bold">{{ number_format($profit, 2) }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+    <!-- إجماليات المبيعات -->
+    <tfoot class="bg-light font-weight-bold">
+        <tr>
+            <td colspan="4">الإجمالي / Total</td>
+            <td>{{ number_format($tQ, 2) }}</td>
+            <td>{{ number_format($tC, 2) }}</td>
+            <td>{{ number_format($tS, 2) }}</td>
+            <td>{{ number_format($tD, 2) }}</td>
+            <td class="text-success">{{ number_format($tP, 2) }}</td>
+        </tr>
+    </tfoot>
+</table>
+
+<!-- جدول المرتجعات -->
+<h6 class="font-weight-bold text-danger mt-4">المرتجعات / Returns</h6>
+<table class="table table-striped table-bordered text-center">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>التاريخ / Date</th>  
+            <th>رقم الفاتورة / Invoice No</th>
+            <th>المنتج / Product</th>
+            <th>الكمية / Qty</th>
+            <th>التكلفة / Cost</th>
+            <th>الخصم / Disc.</th>
+            <th>المسترجع / Return</th>
+            <th>الربح المفقود / Loss</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php $tRP = 0; $tRC = 0; $tRS = 0; $tRD = 0; $tRQ = 0; @endphp
+        @foreach ($data['returns'] as $index => $item)
+            @php
+                $totalItemDiscount = ($item->discountoninvoice ?? 0) + ($item->discountvalue ?? 0);
+                $costR = ($item->productData->purchasingـprice ?? 0) * $item->return_quantity;
+                $salesR = ($item->return_Unit_Price * $item->return_quantity);
+                $profitR = $salesR - $costR - $totalItemDiscount;
+
+                // تجميع الإجماليات
+                $tRP += $profitR; $tRC += $costR; $tRS += ($salesR - $totalItemDiscount); $tRD += $totalItemDiscount; $tRQ += $item->return_quantity;
+            @endphp
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->created_at->format('Y-m-d h:i:s') }}</td>
+                <td>{{ $item->invoice_id }}</td>
+                <td>{{ $item->productData->product_name ?? '-' }}</td>
+                <td>{{ number_format($item->return_quantity, 2) }}</td>
+                <td>{{ number_format($costR, 2) }}</td>
+                <td>{{ number_format($totalItemDiscount, 2) }}</td>
+                <td>{{ number_format($salesR - $totalItemDiscount, 2) }}</td>
+                <td class="text-danger font-weight-bold">{{ number_format($profitR, 2) }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+    <!-- إجماليات المرتجعات -->
+    <tfoot class="bg-light font-weight-bold">
+        <tr>
+            <td colspan="4">إجمالي المرتجعات / Total Returns</td>
+            <td>{{ number_format($tRQ, 2) }}</td>
+            <td>{{ number_format($tRC, 2) }}</td>
+            <td>{{ number_format($tRD, 2) }}</td>
+            <td>{{ number_format($tRS, 2) }}</td>
+            <td class="text-danger">{{ number_format($tRP, 2) }}</td>
+        </tr>
+    </tfoot>
+</table>
+<!-- الخلاصة النهائية / Net Summary -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h6 class="font-weight-bold text-dark">ملخص الأرباح / Profit Summary</h6>
+        <table class="table table-bordered shadow-sm">
+            <tr class="bg-primary text-white">
+                <th>إجمالي ربح المبيعات / Total Sales Profit</th>
+                <td class="font-weight-bold">{{ number_format($tP, 2) }}</td>
+            </tr>
+            <tr class="bg-danger text-white">
+                <th>إجمالي خسارة المرتجعات / Total Return Loss</th>
+                <td class="font-weight-bold">{{ number_format($tRP, 2) }}</td>
+            </tr>
+            <tr class="bg-light" style="border-top: 2px solid #000;">
+                <th style="font-size: 1.1rem;">صافي الربح / Net Profit</th>
+                <th class="text-primary" style="font-size: 1.3rem;">
+                    {{ number_format($tP - $tRP, 2) }} 
+                    <small style="font-size: 12px;">SAR</small>
+                </th>
+            </tr>
+        </table>
     </div>
-    <!-- row closed -->
 </div>
-<!-- Container closed -->
-</div>
-<!-- main-content closed -->
 @endsection
+
 @section('js')
-<!--Internal  Chart.bundle js -->
-<script src="{{ URL::asset('assets/plugins/chart.js/Chart.bundle.min.js') }}"></script>
-
-
-<script type="text/javascript">
+<script>
     function printDiv() {
         var printContents = document.getElementById('print').innerHTML;
         var originalContents = document.body.innerHTML;
@@ -314,5 +254,4 @@ $logo=camplogo;
         location.reload();
     }
 </script>
-
 @endsection

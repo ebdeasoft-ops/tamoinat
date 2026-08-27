@@ -106,12 +106,12 @@
                                 </div>
                                 <div class="col" id="type">
                                     <p class="mg-b-10"> {{ __('report.enpenses_reason') }} </p>
-                                    <select class="form-control parent-input" name="enpenses_reason" required>
+                                    <select class="form-control select2" name="enpenses_reason" required>
                                         <option value="-" selected>{{ __('report.all_enpenses_reason') }}
                                         </option>
-                                        @foreach (App\Models\Expenses_reasons::get() as $Expenses_reason)
+                                        @foreach (App\Models\financial_accounts::where('orginal_type',3)->get() as $Expenses_reason)
                                             <option style="font-size: 15px" value="{{ $Expenses_reason->id }}">
-                                                {{ $Expenses_reason->expenses_reason }}
+                                                {{ $Expenses_reason->name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -120,15 +120,15 @@
                                 </div>
                             </div>
                             <br>
-                            <div class="d-flex justify-content-center mb-3">
-                                <button class="btn btn-success print-style p-1">
-                                    {{ __('home.search') }}
-                                    <i style=" height: 100;
-                                                 
-                                                 font-size:15px"
-                                        class="las la-search"></i>
-                                </button>
-                            </div>
+                      <div class="d-flex justify-content-center mb-3">
+        <button type="submit" name="search" class="btn btn-success mx-2">
+            بحث <i class="las la-search"></i>
+        </button>
+
+            <button type="submit" name="export_excel" value="1" class="btn btn-primary mx-2">
+                تصدير إلى Excel <i class="las la-file-excel"></i>
+            </button>
+    </div>
 
 
                         </form>
@@ -137,17 +137,20 @@
                     @if (isset($Invoices))
                         <div style="border-radius: 10px" class="card m-3 p-3">
                             <div class="table-responsive">
-                                <div class="table-responsive hoverable-table px-1">
-                                    <table class="table table-hover table-bordered table-striped text-center">
-                                        <thead>
+                                  <div class="table-responsive  ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+ <thead>
                                             <tr>
                                                 <th class="border-bottom-0">#</th>
+                                                <th class="border-bottom-0">{{ __('home.decoumentNo') }}</th>
                                                 <th class="border-bottom-0">{{ __('report.date') }}</th>
                                                 <th class="border-bottom-0"> {{ __('accountes.user') }}</th>
                                                 <th class="border-bottom-0"> {{ __('accountes.Theamountpaid') }}</th>
                                                 <th class="border-bottom-0">
                                                     {{ __('accountes.Reasonforspendingmoney') }}</th>
-                                                <th class="border-bottom-0"> {{ __('home.paymentmethod') }}</th>
+                                                    <th class="border-bottom-0"> {{ __('home.paymentmethod') }}</th>
+                                                    <th class="border-bottom-0"> {{ __('home.notesClient') }}</th>
+                                                    <th class="border-bottom-0">{{ __('home.attachments') }}</th>
 
                                             </tr>
                                         </thead>
@@ -178,11 +181,12 @@
                                             <tbody>
                                                 <tr>
                                                     <td>{{ $i }}</td>
-                                                    <td>{{ $date[0] }}</td>
+                                                    <td>{{ $invoice->id}}</td>
+                                                    <td>{{ $invoice->created_at}}</td>
 
                                                     <td>{{ $invoice->user->name }}</td>
                                                     <td>{{ $invoice->Theـamountـpaid }}</td>
-                                                    <td>{{ $invoice->Reasonforspendingmoney }}</td>
+                                                    <td> {{App::getLocale()=='ar'? $invoice->Expenses_reasons->expenses_reason:($invoice->Expenses_reasons->expenses_reason_en=='-'?$invoice->Expenses_reasons->expenses_reason:$invoice->Expenses_reasons->expenses_reason_en )}}</td>
 
                                                     <td>
 
@@ -196,6 +200,17 @@
                                                             <span class="text-warning">{{ __('report.shabka') }}</span>
                                                         @endif
                                                     </td>
+                                                    <td>{{ $invoice->notes }}</td>
+                                                     <?php
+                                       $path=$invoice->attachments;
+                                       ?>
+                                        <td><center>@if($path!=null)<a  target="_blank"
+href="{{ url('/' . ($page = 'openfile') .'/'.$path) }}"
+                                    >{{  __('home.show')}}</a>
+                                    @else
+                                    -
+                                    @endif</td>  
+
                                                 </tr>
                                         @endforeach
 

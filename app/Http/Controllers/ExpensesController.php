@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Expenses_reasons;
+use App\Models\financial_accounts;
 
 use App\Models\expenses;
 use Illuminate\Http\Request;
@@ -41,11 +42,42 @@ class ExpensesController extends Controller
      */
     public function updateExpenses(Request $request)
     {
-        //
-      //  return $request;
-      $expense=expenses::find($request->transactionId);
+      
+        $expense=expenses::find($request->transactionId);
         $reason_data=Expenses_reasons::find($request->reasoneupdate);
+        if ($request->payupdate== 'Cash') {
 
+            $financial_accounts= financial_accounts::find(5);
+            financial_accounts::find(5)->update(
+               [
+                   'current_balance'=> $financial_accounts->current_balance-$request->cashreceivedupdate+ $expense->Theـamountـpaid
+               ]
+               ); 
+        
+            }
+            if ($request->payupdate== 'Bank_transfer'||$request->payupdate== 'Shabka') {
+        
+            $financial_accounts= financial_accounts::find(4);
+            financial_accounts::find(4)->update(
+             [
+                 'current_balance'=> $financial_accounts->current_balance-$request->cashreceivedupdate+ $expense->Theـamountـpaid
+             ]
+             ); 
+            }
+        $financial_accounts= financial_accounts::where('orginal_type',3)->where('orginal_id', $expense->reasonId_id )->first();
+        financial_accounts::where('orginal_type',3)->where('orginal_id',$expense->reasonId_id )->update(
+         [
+             'current_balance'=> $financial_accounts->current_balance - $expense->Theـamountـpaid
+         ]
+         ); 
+
+
+         $financial_accounts= financial_accounts::where('orginal_type',3)->where('orginal_id', $request->reasoneupdate )->first();
+         financial_accounts::where('orginal_type',3)->where('orginal_id',$request->reasoneupdate )->update(
+          [
+              'current_balance'=> $financial_accounts->current_balance+$request->cashreceivedupdate
+          ]
+          ); 
      $expense=  expenses::find($request->transactionId)->update([
 
             'Pay_Method_Name'=>$request->payupdate,
@@ -56,10 +88,10 @@ class ExpensesController extends Controller
             'Theـamountـpaid'=>$request->cashreceivedupdate
         ]);
         $expense=expenses::find($request->transactionId);
-
+      
         if ($request->payupdate == 'Cash') {
             $pay = __('report.cash');
-        } if ($request->payupdate == 'Bank_transfer') {
+        }elseif ($request->payupdate == 'Bank_transfer') {
             $pay = __('home.Bank_transfer');
         } else {
             $pay = __('report.shabka');
@@ -69,12 +101,36 @@ class ExpensesController extends Controller
                 'user'=>Auth()->user()->name,
                 'Pay_Method_Name'=>$pay,
                 'Theـamountـpaid'=>$request->cashreceivedupdate,
-                'expense'=>$expense->Reasonforspendingmoney,
+                'expense'=>LaravelLocalization::getCurrentLocale()=='ar'? $reason_data->expenses_reason:($reason_data->expenses_reason_en=='-'?$reason_data->expenses_reason:$reason_data->expenses_reason_en) ,
 
        
         ];
         return $data;
-        return view('acountes.cash expense',compact('data'));
+    }
+
+    public function getAndUpdateExpenses( $request)
+    {
+   
+   
+        $expense=expenses::find($request);
+    if ($expense->Pay_Method_Name == 'Cash') {
+            $pay = __('report.cash');
+        }elseif ($expense->Pay_Method_Name == 'Bank_transfer') {
+            $pay = __('home.Bank_transfer');
+        } else {
+            $pay = __('report.shabka');
+        }
+                $reason_data=Expenses_reasons::find($expense->reasonId_id);
+
+
+        $data=[
+                'id'=>$expense->id,
+                'user'=>Auth()->user()->name,
+                'Pay_Method_Name'=>$pay,
+                'Theـamountـpaid'=>$expense->Theـamountـpaid,
+                'expense'=>LaravelLocalization::getCurrentLocale()=='ar'? $reason_data->expenses_reason:($reason_data->expenses_reason_en=='-'?$reason_data->expenses_reason:$reason_data->expenses_reason_en) ,
+        ];
+        return $data;
     }
 
 
@@ -88,15 +144,60 @@ class ExpensesController extends Controller
             'cashreceived' => 'required|numeric',
            
         ]);
+        
+        
+                        $the_file_path='';
+if ($request->has('attachments')) {
+// $request->validate([
+// 'Item_img' => 'required|mimes:png,jpg,jpeg,pdf|max:2000',
+// ]);
+$folder='assets//attachments';
+$image=$request->attachments;
+$extension = $image->extension();
+$the_file_path  = time() . rand(100, 999) . '.' . $extension;
+$image->getClientOriginalName = $the_file_path
+;
+$image->move($folder, $the_file_path
+);
+}
         $reason_data=Expenses_reasons::find($request->reasone);
+        $financial_accounts= financial_accounts::where('orginal_type',3)->where('orginal_id', $request->reasone )->first();
+        financial_accounts::where('orginal_type',3)->where('orginal_id',$request->reasone )->update(
+         [
+             'current_balance'=> $financial_accounts->current_balance + $request->cashreceived
+         ]
+         ); 
+
+
+         if ($request->pay== 'Cash') {
+
+            $financial_accounts= financial_accounts::find(5);
+            financial_accounts::find(5)->update(
+               [
+                   'current_balance'=> $financial_accounts->current_balance-$request->cashreceived
+               ]
+               ); 
+        
+            }
+            if ($request->pay== 'Bank_transfer'||$request->pay== 'Shabka') {
+        
+            $financial_accounts= financial_accounts::find(4);
+            financial_accounts::find(4)->update(
+             [
+                 'current_balance'=> $financial_accounts->current_balance-$request->cashreceived
+             ]
+             ); 
+            }
 
      $expense=  expenses::create([
+              'attachments'=>$the_file_path,
 
             'user_id'=>Auth()->user()->id,
             'Pay_Method_Name'=>$request->pay,
             'branchs_id'=>Auth()->user()->branchs_id,
             'Reasonforspendingmoney'=>$reason_data->expenses_reason,
             'reasonId_id'=>$request->reasone ,
+            'notes'=>$request->notes??'-' ,
             'expensesAvt'=>$reason_data->expensesAvt ,
             'created_at'  =>  $request->date, 
             'updated_at'  =>  \Carbon\Carbon::now()->addHours(3), 
@@ -104,7 +205,7 @@ class ExpensesController extends Controller
         ]);
         if ($request->pay == 'Cash') {
             $pay = __('report.cash');
-        } if ($request->pay == 'Bank_transfer') {
+        }  elseif ($request->pay == 'Bank_transfer') {
             $pay = __('home.Bank_transfer');
         } else {
             $pay = __('report.shabka');
@@ -114,7 +215,7 @@ class ExpensesController extends Controller
                 'user'=>Auth()->user()->name,
                 'Pay_Method_Name'=>$pay,
                 'Theـamountـpaid'=>$request->cashreceived,
-                'expense'=>$expense->Reasonforspendingmoney,
+                'expense'=>LaravelLocalization::getCurrentLocale()=='ar'? $reason_data->expenses_reason:($reason_data->expenses_reason_en=='-'?$reason_data->expenses_reason:$reason_data->expenses_reason_en) ,
 
        
         ];

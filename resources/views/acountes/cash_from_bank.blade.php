@@ -88,7 +88,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-lg-3 mb-2">
+                            <div class="col-lg-2 mb-2">
                                 <label for="inputName" class="parent-label"> {{ __('home.the amount') }}
                                 </label>
                                 <div class="input-group">
@@ -96,10 +96,13 @@
                                 </div>
                             </div>
 
+                             <div class="col-lg-2">
+                                <label for="inputName" class="control-label parent-label">{{ __('home.notesClient') }} </label>
+                                <input type="text" class="parent-input form-control" id="notesClient" name="notesClient" title="يرجي ادخال ملاحظات  ">
+                            </div>
 
 
-
-                            <div class="col-lg-3 parent-label">
+                            <div class="col-lg-2 parent-label">
                                 <label for="exampleFormControlSelect1"> {{ __('report.date') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -351,6 +354,7 @@
                     $('#cashreceived').val(0)
                 },
                 error: function(response) {
+                    console.log(response)
                     alert("{{ __('home.sorryerror') }}")
 
                 }
@@ -389,7 +393,7 @@
                     cashreceived: $('#cashreceived').val(),
                     pay: $('#pay').val(),
                     branchs_id: $('#branchs_id').val(),
-
+                    notes:$('#notesClient').val()
 
 
                 },
@@ -428,6 +432,8 @@
                     $('#cashreceived').val(0)
                 },
                 error: function(response) {
+                                        console.log(response)
+
                     alert("{{ __('home.sorryerror') }}")
 
                 }

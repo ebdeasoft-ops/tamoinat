@@ -70,7 +70,7 @@
 
 
                     <div class="col-lg-3 mg-t-20 mg-lg-t-0">
-                        <label class="rdiobox"><input name="rdio" value="2" type="radio"><span>بحث برقم الفاتورة
+                        <label class="rdiobox"><input name="rdio" value="2" type="radio"><span>بحث ب{{__('home.Invoice_no')}}
                             </span></label>
                     </div><br><br> -->
 
@@ -142,12 +142,12 @@
                 <div class="table-responsive">
                     @if (isset($details))
                         <table id="example" class="table key-buttons text-md-nowrap" style=" text-align: center">
-                        <div class="table-responsive hoverable-table">
-                    <table class="table table-hover" id="example1" data-page-length='50' style=" text-align: center;">
-                            <thead>
+                         <div class="table-responsive  ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+<thead>
                                 <tr>
                                     <th class="border-bottom-0">#</th>
-                                    <th class="border-bottom-0">رقم الفاتورة</th>
+                                    <th class="border-bottom-0">{{__('home.Invoice_no')}}</th>
                                     <th class="border-bottom-0">تاريخ القاتورة</th>
                                     <th class="border-bottom-0">تاريخ الاستحقاق</th>
                                     <th class="border-bottom-0">المنتج</th>

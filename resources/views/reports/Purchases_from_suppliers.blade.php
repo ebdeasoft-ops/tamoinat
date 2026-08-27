@@ -62,7 +62,7 @@
 
                         <div class="row">
 
-                            <div class="col-lg-3" id="start_at">
+                            <div class="col-lg-2" id="start_at">
                                 <label class="parent-label" for="exampleFormControlSelect1"> {{ __('report.fromdate') }}</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -84,7 +84,7 @@
                                 </div><!-- input-group -->
 
                             </div>
-                            <div class="col" id="type">
+                            <div class="col-lg-2" id="type">
                                 <p class="mg-b-10 parent-label"> {{ __('users.branch') }} </p>
                                 <select class="form-control parent-input" name="branch" required>
                                     <option value="-" selected>{{ __('users.allbranchs') }}
@@ -94,9 +94,9 @@
                                     @endforeach
                                 </select>
 
-                            </div class='row'>
+                            </div >
 
-                            <div class="col-lg-2 mg-t-20 mg-lg-t-0 mb-2" id="type">
+                            <div class="col-lg-3 mg-t-20 mg-lg-t-0 mb-2" id="type">
                                 <p class="mg-b-10 parent-label"> {{ __('home.shearchbysuppliername') }}</p>
                                 <select class="form-control select2" name="clientnamesearch" id="clientnamesearch" required>
 
@@ -190,9 +190,9 @@
                                 <?php
                                 $totalpricetable=0;
                                 $addedvaluetable=0;
-                                foreach (App\Models\orderDetails::where('order_owner', $product->orderId)->where('save', 1)->get() as $productaa) {
+                                foreach (App\Models\orderDetails::where('order_owner', $product->orderId)->get() as $productaa) {
 
-                                    $totalpricetable+=$productaa->numberofpice * $productaa->purchasingـprice;
+                                    $addedvaluetable+=$productaa->numberofpice * $productaa->purchasingـprice;
                                     $addedvaluetable+= $productaa->numberofpice * $productaa->Added_Value;
                                     $i++;
                                     $totalprice += $productaa->numberofpice * $productaa->purchasingـprice;
@@ -213,7 +213,7 @@
                                     </td>
                                     <td data-target="numberofpice">{{ $product->branch->name }}
                                     </td>
-                                    <td data-target="numberofpice">{{ $addedvaluetable+$totalpricetable-$product->discount }}</td>
+                                    <td data-target="numberofpice">{{ $product->In_debt+$product['shipping fee'] }}</td>
 
                                     <?php
                                     $pays = '';
@@ -229,7 +229,10 @@
                                     <td data-target="numberofpice">{{ $pays  }}</td>
                                     <td> <a class="dropdown-item" href="purchasesShow/{{ $product->orderId }}"><i style="fill:#072c3c !important" class="fas fa-print"></i>&nbsp;&nbsp;
                                             {{ __('home.show') }}
-                                        </a></td>
+                                        </a>
+                                        <br>
+                                          <a class="modal-effect btn btn-sm btn-succees"   target="_blank"
+href="{{ url('/' . ($page = 'openfile') .'/'. $product->attachments ) }}"    title="تعديل طريقة الدفع">{{ __('home.dwonloadpdf')}}<i class="fa-solid fa-download"></i></a></td>
 
                                 </tr>
                                 @endforeach
@@ -282,7 +285,7 @@
 
                                 <div class="d-flex justify-content-center">
 
-                                    <a style="background-color: #419BB2;font-size:14px" class="btn btn-success" href="{{ url('/' . ($page = 'print_Purchasesـfromـsuppliers') . '/' . $pay[1] . '/' . $pay[0] .'/' .'-' . '/' . $startat . '/' . $endat) }}">
+                                    <a style="background-color: #419BB2;font-size:14px" class="btn btn-success" href="{{ url('/' . ($page = 'print_Purchasesـfromـsuppliers') . '/' . $pay[1] . '/' . $pay[0] .'/' . $pay[2] . '/' . $startat . '/' . $endat) }}">
                                         {{ __('home.print') }}
                                         <svg style="width: 17px !important" class="svg-icon-buttons" viewBox="0 0 20 20">
                                             <path d="M17.453,12.691V7.723 M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z M17.453,12.691c0,0.458-0.371,0.828-0.828,0.828h-1.449v-2.484c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.186-0.414,0.414v2.484H3.375c-0.458,0-0.828-0.37-0.828-0.828V7.723c0-0.458,0.371-0.828,0.828-0.828h13.25c0.457,0,0.828,0.371,0.828,0.828V12.691z M7.309,13.312h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,13.312,7.309,13.312M7.309,15.383h5.383c0.229,0,0.414-0.187,0.414-0.414s-0.186-0.414-0.414-0.414H7.309c-0.228,0-0.414,0.187-0.414,0.414S7.081,15.383,7.309,15.383 M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484M12.691,14.555H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,14.555,12.691,14.555"></path>

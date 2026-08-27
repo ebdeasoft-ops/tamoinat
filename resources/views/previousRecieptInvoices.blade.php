@@ -72,12 +72,13 @@
                         <div class="col-xl-12">
                                
                                     <div class="d-flex">
+                                    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
                                         <div class="row">
-                                           
+                                            
                                             <div class="col-lg-6" id="start_at">
                                                 <label class="parent-label" for="exampleFormControlSelect1"> {{ __('home.enterinvoicenumber') }}</label>
-                                                <input class="form-control" value="{{ $start_at ?? '' }}" id="invoiceid" placeholder="1****" type="text" onchange="searchaboutinvoiceByIdfunction()" required>
+                                                <input class="form-control" value="{{ $start_at ?? '' }}" id="invoiceid" placeholder="00" type="text" onchange="searchaboutinvoiceByIdfunction()" required>
                                             </div><!-- input-group -->
                                             <div class="col-lg-6" id="start_at">
                                                 <label class="parent-label" for="exampleFormControlSelect1"> {{ __('home.searchbydate') }}</label>

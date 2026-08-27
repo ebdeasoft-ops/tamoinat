@@ -16,7 +16,7 @@ return [
   
     'addproduct' => ' منتج جديد',
     'permissions' => 'الصلاحيات',
-    'product_name_ar'=> '  ادخل اسم منتج  *',
+    'product_name_ar'=> 'ادخل اسم المنتج باللغة العربية',
     'product_name_en'=>' ادخل اسم المنتج باللغة     الانجليزية *'  ,
     'product_branch'=>' اختار الفرع *',
     'product_code'=> '  ادخل رقم القطعة *',

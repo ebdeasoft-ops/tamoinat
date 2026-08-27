@@ -19,16 +19,23 @@
 @endsection
 @section('page-header')
 <div class="main-parent">
-    <!-- breadcrumb -->
     <div class="breadcrumb-header justify-content-between parent-heading">
         <div class="my-auto">
             <div class="d-flex">
-                <h4 class="content-title mb-0 my-auto">{{ __('home.Requestـpricesـofـproducts') }}</h4><span class="text-muted mt-1 tx-13 mr-2 mb-0">
-                </span>
+                <h4 class="content-title mb-0 my-auto">{{ __('home.Requestـpricesـofـproducts') }}</h4>
+                <span class="text-muted mt-1 tx-13 mr-2 mb-0"></span>
             </div>
         </div>
+        <div class="col-lg-3 mg-t-20 mg-lg-t-0 text-left">
+            <button style="background-color: #FF4F1F; font-size: 13px;" class="modal-effect btn btn-sm btn-info p-2 m-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#updateinvoicebyidmodale" title="تحديد">
+                <i class="las la-edit"></i> {{ __('home.update_qutation') }}
+            </button>
+        </div>
     </div>
-    <!-- breadcrumb -->
+
+    </div> 
+
+
     @endsection
     @section('content')
 
@@ -48,7 +55,8 @@
 
     <!-- row -->
     <div class="row">
-
+        
+    
         <div class="col-xl-12">
             <div style="border-end-end-radius: 10px;border-end-start-radius:10px" class="card mg-b-20 pt-3">
 
@@ -67,27 +75,8 @@
                                         {{ csrf_field() }}
 
 
-                                        <div class="row">
-
-                                            <div class="col-lg-2 mg-t-20 mg-lg-t-0" style=" height: 100; width: 300px;padding:0">
-                                                <div class="col-lg-2 mg-t-20 mg-lg-t-0">
-                                                    <a style="background-color: #FBA10F;font-size:15px;width:128px;margin-top:5px" class="modal-effect btn btn-sm btn-info py-2 px-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">{{ __('home.chooose product') }}
-                                                        <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
-                                                            <path d="M21 21l-6 -6"></path>
-                                                        </svg>
-                                                    </a>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-
-                                        <br>
-
-                                        <div class="row">
-                                            <div class="col-lg-4 mg-t-20 mg-lg-t-0" id="type">
+                                      
+                                        <div class="col-lg-4 mg-t-20 mg-lg-t-0" id="type">
                                                 <p class="mg-b-10  parent-label"> {{ __('home.shearchbysuppliername') }}</p>
                                                 <select class="form-control select2" name="suppliernamesearch" id="suppliernamesearch">
                                                     <option value="-" selected>
@@ -101,18 +90,40 @@
                                             </div><!-- col-4 -->
 
 
-                                            <!-- col-4 -->
+                                        <br>
 
-                                            <div class="col-lg-6 col-md-8">
+                                        <div class="row">
+                              
+                                        <div class="col-lg-3 col-md-8">
+                                        <label for="inputName" class="control-label parent-label">
+                                                   . </label>
+                                                    <a style="background-color: #FBA10F;width:100%"class="modal-effect btn btn-sm btn-info py-2 px-1 button-eng" data-effect="effect-scale" data-toggle="modal" href="#SearchProduct" title="تحديد">{{ __('home.chooose product') }}
+                                                        <svg style="width: 16px;height:16px" xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"></path>
+                                                            <path d="M21 21l-6 -6"></path>
+                                                        </svg>
+                                                    </a>
+                                            </div>
+
+
+                                            <!-- col-4 -->
+ <div class="col-lg-3 mg-t-20 mg-lg-t-0">
+                                <label for="inputName" class="control-label parent-label"> {{ __('home.productNo') }} </label>
+                                <input autocomplete="off" type="text" class="form-control parent-input" id="product_code" name="product_code" 
+                                onkeyup="getproduct()" dir=ltr title="  يرجي ادخال رقم المنتج  ">
+                            </div>
+
+                                            <div class="col-lg-3 col-md-8">
                                                 <label for="inputName" class="control-label parent-label">
                                                     {{ __('home.productname') }} </label>
-                                                <input type="text" class="form-control" id="productnameshow" name="productnameshow" readonly>
+                                                <input type="text" class="form-control parent-input" id="productnameshow" name="productnameshow" readonly>
 
                                             </div>
-                                            <div class="col-lg-2 col-md-4 mg-lg-t-0">
+                                            <div class="col-lg-3 col-md-4 mg-lg-t-0">
                                                 <label for="inputName" class="control-label parent-label"> {{ __('home.quantity') }}
                                                 </label>
-                                                <input type="text" class="form-control" id="quentity" name="quentity" onkeyup="convertToNumber()">
+                                                <input type="text" class="form-control parent-input" id="quentity" name="quentity" onkeyup="convertToNumber()">
                                             </div>
                                             <input type="hidden" id="token_search" value="{{ csrf_token() }}">
 
@@ -141,7 +152,11 @@
 
                             <br>
 
-
+    <div class="col-lg-3 col-md-4 mg-lg-t-0">
+                                                <label for="inputName" class="control-label parent-label"> {{ __('home.Invoice_no') }}
+                                                </label>
+                                                <input readonly type="text" class="form-control" id="qoutnumber" name="qoutnumber" onkeyup="convertToNumber()">
+                                            </div>
                             <div class="col-xl-12">
 
                                 <div class="table-responsive mg-t-40">
@@ -309,30 +324,45 @@
 
     <!-- main-content closed -->
 </div>
+
+    <div class="modal p-3" id="updateinvoicebyidmodale">
+        <div style="margin: 0 9% !important;" class="modal-dialog modal-dialog-centered modal-special" role="document">
+            <div class="modal-content modal-content-demo p-3">
+                <form>
+                    <div class="modal-header">
+                        <h6 class="modal-title"> {{ __('home.updateinvoicebyid') }} </h6><button aria-label="Close" class="close close-special" data-dismiss="modal" type="button"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    {{ csrf_field() }}
+                    <div class="row mb-1">
+                        <div class="col-lg-6 col-md-6 col-md-4 mb-2">
+                            <label style="font-size: 12px;" for="inputName" class="control-label parent-label"> {{ __('home.purchase_invoice_no') }}</label>
+                            <input style="height:32px" type="text" class="form-control parent-input" id="updateinvoicebyid" name="name" title="{{ __('supprocesses.name') }}" required>
+                        </div>
+
+
+                    </div>
+
+
+                    <br>
+                    <div class="d-flex justify-content-center">
+                        <button style="background-color: #419BB2" class="btn btn-primary p-1" data-dismiss="modal" id="getinvoiceupdate">
+                            {{ __('home.search') }}
+                            <svg style="width: 20px" class="svg-icon-buttons" viewBox="0 0 20 20">
+                                <path fill="none" d="M7.629,14.566c0.125,0.125,0.291,0.188,0.456,0.188c0.164,0,0.329-0.062,0.456-0.188l8.219-8.221c0.252-0.252,0.252-0.659,0-0.911c-0.252-0.252-0.659-0.252-0.911,0l-7.764,7.763L4.152,9.267c-0.252-0.251-0.66-0.251-0.911,0c-0.252,0.252-0.252,0.66,0,0.911L7.629,14.566z"></path>
+                            </svg>
+                        </button>
+                    </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 @endsection
 @section('js')
 
-<!--Internal  Datatable js -->
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
 
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
 <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 <!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
 
 
 
@@ -413,14 +443,22 @@
 </script>
 <script>
  
+document.addEventListener('keydown', (e) => {
+
+// this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
+if (e.ctrlKey && e.keyCode == '38') {
+    // call your function to do the thing
+
+    $('#SearchProduct').modal().show();
+    
+}
+})
 
     function chooseProduct(code, name, price, sale_price, location, availablequantity) {
         $('#SearchProduct').modal().hide();
         $('#searchaboutproduct').val('');
         var Product_Code = code
-        name = name.replaceAll("<", " ");
-        location = location.replaceAll("<", " ");
-
+       
         var product_sale_pice = sale_price
         var Product_Code = code
         var product_name = name
@@ -428,9 +466,62 @@
         $("#productname").val(code);
         $('#productnameshow').val(name);
         $('#sale_price').val(price);
+        $('#product_code').val(location);
         $('#productNo').val(code);
+        document.getElementById("quentity").focus();
 
     }
+    
+     function getproduct() {
+        searchtext = $('#product_code').val();
+        branchs_id = $('#branchs_id').val();
+
+if(searchtext!=''){
+     
+        jQuery.ajax({
+            url: " {{URL::to('detproductbycode')}}/" + searchtext + "/" + branchs_id,
+            type: 'get',
+            cache: false,
+            dataType: "json",
+
+
+            success: function(data) {
+                if (data != 0) {
+                             console.log(data['product_name'])
+               
+                    name=data['product_name']
+                    id=data['id']
+                     location1=data['Product_Location']
+                    availablequantity=data['numberofpice']
+                    price=data['purchasingـprice']
+                    sale_price=data['sale_price']
+                    code=data['id']
+        $("#productname").val(code);
+        // $("#productcode").val(code);
+        $('#productnameshow').val(name);
+        $('#sale_price').val(sale_price);
+        
+        
+        var Product_Code = code
+        var product_name = name
+        var product_sale_pice = price
+        $("#productname").val(id);
+        $('#productnameshow').val(name);
+        $('#sale_price').val(sale_price);
+        $('#productNo').val(id);
+        document.getElementById("quentity").focus();
+     
+
+                }
+            },
+            error: function() {
+
+            }
+        });
+}
+
+    }
+    
 </script>
 
 {{-- End Update ( 24/4/2023 ) --}}
@@ -450,12 +541,6 @@
         //  strNum = strNum.replace(/[^\d]/g, '');
         return strNum;
     }
-</script>
-
-<script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
 </script>
 
 
@@ -575,6 +660,115 @@
 
 
 <script>
+
+
+
+ $("#getinvoiceupdate").click(function(e) {
+
+            event.preventDefault();
+            var url = " {{ URL::to('update_offer_price_supplier') }}" + "/" + $('#updateinvoicebyid').val();
+            console.log(url)
+            jQuery.ajax({
+                url: url,
+                type: 'get',
+                dataType: 'json',
+                cache: false,
+            success: function(data) {
+                
+
+
+                        // const map =(JSON.parse(response));
+                        console.log('++++++')
+
+                        $('#quentity').val('');
+                        $('#productnameshow').val('');
+
+                        console.log('++++++')
+                        console.log(data)
+                        let table = document.getElementById("example");
+                        console.log('+++AFTER TABLE+++')
+
+
+
+                        var tableHeaderRowCount = 1;
+
+                        var rowCount = table.rows.length;
+                        console.log('+++AFTER 3 TABLE+++')
+
+                        for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                            table.deleteRow(tableHeaderRowCount);
+                        }
+                        console.log('+++AFTER 4 TABLE+++')
+
+
+                        data.forEach(async (product) => {
+                            
+                            if (product['count'] == 1) {
+                                                                $('#qoutnumber').val(product['order_id']);
+
+                                $('#orderNo').val(product['order_id']);
+                                $('#OrderNoprint').val(product['order_id']);
+
+                            }
+
+                            count1 = product['count'],
+                            product_code = product['productCode']
+                            product_name = product['productName']
+                            quentity = product['productQuantity']
+
+                            if (quentity > 0) {
+
+                                console.log('+++AFTER 5 TABLE+++')
+
+                                let row = table.insertRow(-
+                                    1); // We are adding at the end
+                                console.log('+++AFTER 5 TABLE+++')
+
+                                let c1 = row.insertCell(0);
+                                let c2 = row.insertCell(1);
+                                let c3 = row.insertCell(2);
+                                let c4 = row.insertCell(3);
+
+                                console.log('+++AFTER 6 TABLE+++')
+
+                                // Add data to c1 and c2
+
+                                c1.innerText = count1
+                                c2.innerHTML = ' <span dir=ltr>' +
+                                    product_code + '</span>'
+                                c3.innerText = product_name
+                                c4.innerText = quentity
+
+
+
+                            }
+
+
+                        });
+
+
+
+
+
+
+
+
+
+                    
+                
+                
+            },
+error: function(response) {
+alert("{{ __('home.sorryerror') }}")
+
+}
+                })})
+                
+                
+                
+                
+                
+                
     $(document).ready(function() {
         $("#button_1").click(function(e) {
             event.preventDefault();
@@ -668,6 +862,7 @@
                         data.forEach(async (product) => {
                             if (product['count'] == 1) {
                                 $('#orderNo').val(product['order_id']);
+                                $('#qoutnumber').val(product['order_id']);
                                 $('#OrderNoprint').val(product['order_id']);
 
                             }
@@ -718,6 +913,7 @@
 
                     },
                     error: function(response) {
+                        console.log(response)
                         alert("{{ __('home.sorryerror') }}")
 
                     }

@@ -39,36 +39,39 @@
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
                 <div class="card-body">
-                    <div class="invoice-header">
+                                        <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-                        <div class="billed-from">
-                            <br>
-                            &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-                            <br>
-                            <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-                            <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                            <p dir=ltr> {{Taxen}} </p>
-
-                        </div>
-                        <div class="row">
-                        <?php
-$logo=camplogo;
-    ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
-
-                        </div>
-
-
-                        <div class="billed-from">
+                      
+                        
+                        
+                             <div class="billed-from" style="width:33%;text-align: center;">
                             <br>
 
-                            &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
+                           <span style="font-size:16px">{{Namear}}</span>
                             <br>
                             <p> {{describtionar}}</p>
                             <p>{{STar}}</p>
                             <p>{{Taxar}}</p>
 
                         </div><!-- billed-from -->
+                        <div class="row">
+                        <?php
+$logo=camplogo;
+    ?>
+    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
+
+                        </div>
+
+  <div class="billed-from" style="width:33%;text-align: center;" >
+                            <br>
+                             <span style="font-size:19px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
+
+                        </div>
+                   
                     </div><!-- invoice-header -->
                     <div class="row mg-t-12">
 
@@ -80,6 +83,15 @@ $logo=camplogo;
                     </div>
                     <br>
                     <br>
+                                        <center> <p  >  {{ $data['invoiceData']->branch->name}}</p></center>
+
+@if($data['invoiceData']->customer->id==1)
+<center >  <p class="double">     Simplified tax invoice    فاتورة ضريبية مبسطة </p></center>
+            
+            @else
+                        <center >  <p class="double"> Tax Invoice - فاتورة ضريبية</p></center>
+
+             @endif      
                     <br>
                     <br>
                     <span>{{__('home.notesClient')}} : {{$data['invoiceData']->note}}</span>
@@ -138,13 +150,15 @@ $logo=camplogo;
                         <table class="table text-md-nowrap mb-0 invoice-table table-striped text-center">
                             <thead>
                                 <tr>
-                                    <th class="wd-center">#</th>
-                                    <th class="tx-center"> {{__('home.product')}} </th>
-                                    <th class="tx-center"> {{__('home.productprice')}} </th>
-                                    <th class="tx-center"> {{__('home.quantity')}} </th>
-                                    <th class="tx-center"> {{ __('home.price')}}</th>
-                                    <th class="tx-center"> {{__('home.discount')}} </th>
-                                    <th class="tx-center"> {{__('home.total')}}</th>
+                                 
+     <th class="wd-center">NO<br>رقم</th>
+                                    <th class="tx-center">PRODUCT NUM<br> رقم المنتج </th>
+                                    <th class="tx-center">ITEM NAME<br>اسم الصنف </th>
+                                    <th class="tx-center">PRODUCT PRICE<br>سعر القطعة </th>
+                                    <th class="tx-center"> QUANTITY <br>الكمية </th>
+                                    <th class="tx-center">TOTAL AMOUNT<br>الاجمالي</th>
+                                    <th class="tx-center"> DISCOUNT<br>الخصم </th>
+                                    <th class="tx-center"> Total AFTER DISCOUNT<br>الاجمالي بعد الخصم</th>
 
 
 
@@ -153,13 +167,14 @@ $logo=camplogo;
                             <tbody>
                                 <?php $i = 0;
                                 ?>
-
+{{count($data['salesData'])}}
                                 @foreach ($data['salesData'] as $product)
                                 <?php $i++ ?>
 
                                 <tr>
                                     <td class="wd-20p">{{$i}}</td>
-                                    <td class="tx-center">{{ $product->productData->name}}</td>
+                                    <td class="tx-center">{{ $product->productData->Product_Code}}</td>
+                                    <td class="tx-center">{{ $product->productData->product_name}}</td>
                                     <td class="tx-center">{{ $product->Unit_Price}}</td>
                                     <td class="tx-center">{{ $product->quantity}}</td>
                                     <td class="tx-center">{{ $product->Unit_Price*$product->quantity}}</td>
@@ -179,21 +194,26 @@ $logo=camplogo;
                                 <body>
                                     <tr>
 
-                                        <td class="tx-">{{__('home.total')}}</td>
+                                            <td class="tx-16">الاجمالي - SUB TOTAL </td>
                                         <td class="tx-">{{round($data['invoicetotal_price'],1)}}</td>
                                     </tr>
                                     <tr>
-                                        <td class="tx-"> {{__('home.addedValue')}} </td>
-                                        <td class="tx-">{{round($data['invoicetotal_addedvalue'],1)}}</td>
+        <?php
+                                $avt = App\Models\Avt::find(1);?>
+                                            <td class="tx-16">ضريبة القيمة المضافة({{$avt->AVT*100}}%) -VALUE ADDED TAX   ({{$avt->AVT*100}}%) </td>
+                                                                                   <td class="tx-">{{round($data['invoicetotal_addedvalue'],1)}}</td>
                                     </tr>
                                     <tr>
-                                        <td class="tx-">{{ __('home.discount') }} </td>
+                                            <td class="tx-16">الخصم - DISCOUNT </td>
                                         <td class="tx-">{{round($data['invoicetotal_discount'],1)}}</td>
                                     </tr>
 
                                     <tr>
-                                        <td class="tx-">{{__('home.the amount')}}</td>
-                                        <td class="tx-">{{round($data['invoicetotal_addedvalue']+$data['invoicetotal_price'],1)}}</td>
+                                            <td class="tx-16">الاجمالي الكلي -NET TOTAL</td>
+                                        <td class="tx-">{{round($data['invoicetotal_addedvalue']+$data['invoicetotal_price'],2)}}
+                                        <br>
+
+                                        </td>
                                     </tr>
                                 </body>
 
@@ -209,8 +229,8 @@ $logo=camplogo;
                                     return pack("H*", sprintf("%02X", $value));
                                 }
 
-                                $sellerName =  __('home.cam_name_owner');
-                                $varNumber = __('home.TaxNumberpure');
+                                $sellerName = sallerQrCode;
+                                $varNumber =TaxQrCode;
                                 $time = \Carbon\Carbon::now()->addHours(3);
 
                                 $total = (round($data['invoicetotal_addedvalue'] + $data['invoicetotal_price'], 2));
@@ -241,14 +261,44 @@ $logo=camplogo;
                         <br>
                                 <br> <br>
                                 <br>
-                                <span style="font-size:20px">القطع الكهربائية لاترد ولا تستبدل </span>
-                                <span style="font-size:20px">Electrical parts are not returned or exchanged</span>
-                                <br>
-                                <br>
-                                <span>&nbsp;&nbsp;&nbsp;{{addressar}}</span>
-                                <br>
-                                <span>&nbsp;&nbsp;&nbsp;{{addressen}}</span>
+                                        <br>
+                             <div class="card">
+                            &nbsp;&nbsp; &nbsp;&nbsp; <span style="font-size: 17;"> القطع الكهربائية لاترد ولا تستبدل Electrical parts are not returned or exchanged</span>
 
+                            &nbsp;&nbsp; &nbsp;&nbsp; <span> يمكن الارجاع او الاستبدال اذاكان الصنف بنفس حالته الاصلية عند الشراء ومغلفا بالغلاف الاصلي </span>
+
+                            &nbsp;&nbsp; &nbsp;&nbsp; <span>It can be returned or exchanged if the item is in the original condition when purchased and in the original old packaging </span>
+
+                            &nbsp;&nbsp; &nbsp;&nbsp; <span>الاستراجاع خلال 3 ايام الاستبدال خلال 7 ايام من تاريخ الشراء </span>
+
+
+                            &nbsp;&nbsp;&nbsp;&nbsp; <span>Return within seven days, exchange within fourteen (7) days from the date of purchase </span>
+
+                         
+                        </div>
+
+                               <div style="  position: fixed;     
+       text-align: center;    
+       bottom: 0px; 
+       width: 100%;">
+
+@if(Auth()->user()->branchs_id==1)
+<center> <span>
+   -
+</span>
+</center>
+<center> <span>
+    {{addressar}} 
+</span>
+</center>
+
+
+<center> <span>    {{addressen}} 
+   </span>
+</center>
+
+@endif                       
+                </div>
                             </div>
                     </div>
                     <hr class="mg-b-40">
@@ -257,45 +307,44 @@ $logo=camplogo;
 
                         <div class=" table-responsive mg-t-30">
                             <br>
+                               <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-                            <div class="invoice-header">
-
-<div class="billed-from">
-    <br>
-    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-    <br>
-    <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-    <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-    <p dir=ltr> {{Taxen}} </p>
-
-</div>
-<div class="row">
-    <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/Volvo.png') }}" class="logo-1" alt="logo"></a>
-    <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/logoprintpage.png') }}" class="logo-1" alt="logo"></a>
-    &nbsp;
-    &nbsp;
-    &nbsp;
-    &nbsp;
-    &nbsp;
-    &nbsp;
-
-    <a href="https://ebdeasoft.com/"><img src="{{ URL::asset('assets/img/brand/benz.png') }}" class="logo-1" alt="logo"></a>
-
-</div>
-
-
-<div class="billed-from">
-    <br>
-
-    &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-    <br>
-    <p> {{describtionar}}</p>
-    <p>{{STar}}</p>
-    <p>{{Taxar}}</p>
-
-</div><!-- billed-from -->
-</div><!-- invoice-header -->
+                      
+                        
+                        
+                             <div class="billed-from" style="width:33%;text-align: center;">
                             <br>
+
+                           <span style="font-size:16px">{{Namear}}</span>
+                            <br>
+                            <p> {{describtionar}}</p>
+                            <p>{{STar}}</p>
+                            <p>{{Taxar}}</p>
+
+                        </div><!-- billed-from -->
+                        <div class="row">
+                        <?php
+$logo=camplogo;
+    ?>
+    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
+
+                        </div>
+
+  <div class="billed-from" style="width:33%;text-align: center;" >
+                            <br>
+                             <span style="font-size:19px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
+
+                        </div>
+                   
+                    </div><!-- invoice-header -->
+                            <br>
+                            
+                            
+                            <center><p>سند استلام منتج من فرع اخر</p></center>
                             <br>
                             <div class="table-responsive mg-t-40">
                                 <table class="table text-md-nowrap mb-0 invoice-table table-striped text-center">
@@ -353,9 +402,9 @@ $logo=camplogo;
                                     <tr>
                                         <th class="wd-center">#</th>
                                         <th class="wd-center">{{__('home.productNo')}} </th>
+                                        <th class="tx-center"> {{__('home.product')}} </th>
                                         <th class="wd-center">{{__('home.branch')}} </th>
                                         <th class="wd-center">{{__('home.productlocation')}} </th>
-                                        <th class="tx-center"> {{__('home.product')}} </th>
                                         <th class="tx-center"> {{__('home.quantity')}} </th>
 
 
@@ -374,10 +423,11 @@ $logo=camplogo;
                                     <?php $i++ ?>
                                     <tr>
                                         <td class="wd-20p">{{$i}}</td>
-                                        <td class="wd-center" dir="ltr">{{$product->productData->name}}</td>
+                                        <td class="wd-center" dir="ltr">{{$product->productData->Product_Code}}</td>
+                                                                            <td class="tx-center">{{ $product->productData->product_name}}</td>
+
                                         <td class="wd-center">{{$product->productData->branch->name}}</td>
                                         <td class="wd-center">{{$product->productData->Product_Location}}</td>
-                                        <td class="tx-center">{{ $product->productData->product_name}}</td>
                                         <td class="tx-center">{{ $product->quantity}}</td>
 
                                     </tr>
@@ -392,6 +442,28 @@ $logo=camplogo;
 
 
                         </div>
+                          <div style="  position: fixed;     
+       text-align: center;    
+       bottom: 0px; 
+       width: 100%;">
+
+@if(Auth()->user()->branchs_id==1)
+<center> <span>
+   -
+</span>
+</center>
+<center> <span>
+    {{addressar}} 
+</span>
+</center>
+
+
+<center> <span>    {{addressen}} 
+   </span>
+</center>
+
+@endif                       
+                </div>
                     </div>
 
                     <button class="btn btn-danger print-style float-left mt-3 mr-2 p-1" id="print_Button" onclick="printDiv()">
@@ -434,7 +506,7 @@ setTimeout(() => {
 
 setTimeout(() => {
     window.close();
-}, 12000);
+}, 1200);
 
 })
 </script>

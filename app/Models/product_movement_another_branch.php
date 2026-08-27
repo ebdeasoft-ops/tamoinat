@@ -14,7 +14,10 @@ class product_movement_another_branch extends Model
         'user_from' ,
         'reciveInvoiceNumber',
         'user_to' ,
-        'Totalcost' 
+        'Totalcost' ,
+        'send_invoice_number',
+        'cost_withod_tax',
+        'status',
     ];
     public function branchfrom()
     {
@@ -31,5 +34,9 @@ class product_movement_another_branch extends Model
     public function userto()
     {
         return $this->belongsTo(User::class,'user_to');
+    }
+    public function items()
+    {
+        return $this->hasMany(product_movement_another_branch_items::class, 'order_id');
     }
 }

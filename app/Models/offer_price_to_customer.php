@@ -12,6 +12,11 @@ class offer_price_to_customer extends Model
         'customer_id',
         'created_at',
         'updated_at',
+        'notes',
+        'discount',
+        'numbershowstatus',
+        'branchs_id',
+        'numbershowstatus'
     
     ];
   

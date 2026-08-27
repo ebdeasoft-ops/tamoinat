@@ -18,6 +18,16 @@ class customers extends Model
          'notes',
          'Limit_credit',
          'Balance',
+         'opeing_blance',
+         'mantob_account_id',
+                  'street_name',
+         'building_number',
+         'plot_identification',
+         'sub_city',
+         'postcode',
+                'CRN'
+
+
     ];
 
 }

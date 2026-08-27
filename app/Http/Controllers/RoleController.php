@@ -1,153 +1,126 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
-use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
-
-
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * إعدادات الحماية واللغة للـ Controller بالكامل
      */
-    function __construct()
+    public function __construct()
     {
-    
-    $this->middleware('permission:Users permissions', ['only' => ['index']]);
-    $this->middleware('permission:Users permissions', ['only' => ['create','store']]);
-    $this->middleware('permission:Users permissions', ['only' => ['edit','update']]);
-    $this->middleware('permission:Users permissions', ['only' => ['destroy']]);
-    
+        // توحيد اللغة بدلاً من تكرارها في كل دالة
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+        // دمج الصلاحيات في سطر واحد نظيف وسهل القراءة
+        $this->middleware('permission:Users permissions');
     }
+
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * عرض قائمة الأدوار المتاحة بالنظام
      */
     public function index(Request $request)
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $roles = Role::orderBy('id','DESC')->paginate(5);
-        return view('roles.index',compact('roles'))
+        $roles = Role::orderBy('id', 'DESC')->paginate(5);
+        
+        return view('roles.index', compact('roles'))
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
     
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * واجهة إنشاء دور جديد
      */
     public function create()
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
         $permission = Permission::get();
-        return view('roles.create',compact('permission'));
+        return view('roles.create', compact('permission'));
     }
     
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * حفظ الدور الجديد مع ربط صلاحياته
      */
     public function store(Request $request)
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $this->validate($request, [
-            'name' => 'required|unique:roles,name',
-            'permission' => 'required',
+        $request->validate([
+            'name'       => 'required|unique:roles,name',
+            'permission' => 'required|array', // التأكد من أنها مصفوفة
         ]);
     
-        $role = Role::create(['name' => $request->input('name'),'guard_name'=>'web']);
+        // استخدام guard_name الافتراضي مباشرة أو تمريره صراحة
+        $role = Role::create([
+            'name'       => $request->input('name'),
+            'guard_name' => 'web'
+        ]);
+        
         $role->syncPermissions($request->input('permission'));
     
         return redirect()->route('roles.index')
-                        ->with('success','Role created successfully');
+                        ->with('success', __('Role created successfully'));
     }
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $role = Role::find($id);
-        $rolePermissions = Permission::join("role_has_permissions","role_has_permissions.permission_id","=","permissions.id")
-            ->where("role_has_permissions.role_id",$id)
-            ->get();
+    /**
+     * عرض تفاصيل دور معين والصلاحيات المرتبطة به
+     * تم تطبيق الـ Route Model Binding هنا تلقائياً لتقليل استعلامات الـ find
+     */
+    public function show(Role $role)
+    {
+        // الاعتماد على علاقة Eloquent الأساسية بدلاً من الـ Raw Join المكرر
+        $rolePermissions = $role->permissions;
     
-        return view('roles.show',compact('role','rolePermissions'));
+        return view('roles.show', compact('role', 'rolePermissions'));
     }
     
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * واجهة تعديل الدور
      */
-    public function edit($id)
+    public function edit(Role $role)
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $role = Role::find($id);
         $permission = Permission::get();
-        $rolePermissions = DB::table("role_has_permissions")->where("role_has_permissions.role_id",$id)
-            ->pluck('role_has_permissions.permission_id','role_has_permissions.permission_id')
-            ->all();
+        
+        // جلب معرفات الصلاحيات بطريقة Eloquent السريعة والمباشرة
+        $rolePermissions = $role->permissions()->pluck('id', 'id')->all();
     
-        return view('roles.edit',compact('role','permission','rolePermissions'));
+        return view('roles.edit', compact('role', 'permission', 'rolePermissions'));
     }
     
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * تحديث بيانات الدور وصلاحياته
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Role $role)
     {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $this->validate($request, [
-            'name' => 'required',
-            'permission' => 'required',
+        $request->validate([
+            'name'       => 'required|unique:roles,name,' . $role->id, // استثناء الـ ID الحالي لمنع خطأ التكرار عند الحفظ
+            'permission' => 'required|array',
         ]);
     
-        $role = Role::find($id);
-        $role->name = $request->input('name');
-        $role->guard_name='web';
-        $role->save();
+        $role->update([
+            'name'       => $request->input('name'),
+            'guard_name' => 'web'
+        ]);
     
         $role->syncPermissions($request->input('permission'));
     
         return redirect()->route('roles.index')
-                        ->with('success','Role updated successfully');
+                        ->with('success', __('Role updated successfully'));
     }
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        DB::table("roles")->where('id',$id)->delete();
+    /**
+     * حذف الدور بشكل آمن ونظيف تماماً
+     */
+    public function destroy(Role $role)
+    {
+        // الطريقة القديمة عبر الـ DB Query كانت تترك مخلفات في جداول الصلاحيات الوسيطة
+        // الحذف من خلال الـ Model يضمن تفعيل الـ Cascade Deletion لبيانات الـ Relations المرتبطة بالدور
+        $role->delete();
+
         return redirect()->route('roles.index')
-                        ->with('success','Role deleted successfully');
+                        ->with('success', __('Role deleted successfully'));
     }
 }

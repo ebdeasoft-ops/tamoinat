@@ -76,9 +76,9 @@
                     <div class="col-xl-12">
                         <div style="border-radius: 10px" class="card mg-b-20 pt-5">
                             <div class="card-body px-1">
-                                <div class="table-responsive">
-                                    <table id="example" class="table key-buttons text-md-nowrap table-striped table-bordered" name='prodyctsavaliable'>
-                                        <thead>
+                                <div class="table-responsive ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+ <thead>
                                             <tr>
                                                 <th class="border-bottom-0"># </th>
                                                 <th class="border-bottom-0">{{ __('report.fromdate') }} </th>

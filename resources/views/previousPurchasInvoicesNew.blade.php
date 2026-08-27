@@ -1,720 +1,372 @@
 @extends('layouts.master')
+
 @section('css')
-<!-- Internal Data table css -->
-<link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
-<link href="{{ URL::asset('assets/plugins/datatable/css/jquery.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/datatable/css/responsive.dataTables.min.css') }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/datatable/css/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/plugins/datatable/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
 
-<!-- Internal Spectrum-colorpicker css -->
-<link href="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.css') }}" rel="stylesheet">
+    <style>
+        /* إطار مخصص لمنطقة البحث */
+        .search-filter-section {
+            border: 2px solid #e1e6f1;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fcfdfe;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
 
-<!-- Internal Select2 css -->
-<link href="{{ URL::asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet">
+        .parent-label {
+            font-weight: bold;
+            color: #1b2e4b;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* تحسين شكل الجدول ليتناسب مع التصميم */
+        .our-table thead th {
+            background-color: #f1f2f7;
+            color: #FF4F1F;
+            text-transform: uppercase;
+            font-size: 11px;
+            border-bottom-width: 2px;
+        }
+    </style>
+@endsection
 
 @section('title')
-{{ __('home.previousPurchasesInvoices') }}@stop
+    {{ __('home.previousPurchasesInvoices') }}
 @endsection
+
 @section('page-header')
-<div class="main-parent">
-    <!-- breadcrumb -->
-    <div class="breadcrumb-header justify-content-between parent-heading">
+    <div class="breadcrumb-header justify-content-between">
         <div class="my-auto">
             <h4 class="content-title mb-0 my-auto">{{ __('home.previousPurchasesInvoices') }}</h4>
         </div>
     </div>
-    <!-- breadcrumb -->
-    @endsection
-    @section('content')
+@endsection
+
+@section('content')
 
     @if (count($errors) > 0)
-    <div class="alert alert-danger">
-        <button aria-label="Close" class="close" data-dismiss="alert" type="button">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <strong>خطا</strong>
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+        <div class="alert alert-danger">
+            <button aria-label="Close" class="close" data-dismiss="alert" type="button">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <strong>خطأ</strong>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    <!-- row -->
     <div class="row">
-
         <div class="col-xl-12">
-            <div class="card mg-b-20">
+            <div class="card">
+                <div class="card-body">
 
-
-                <div class="card-header pb-0">
-
-                    <form action="{{ url(Mcamara\LaravelLocalization\Facades\LaravelLocalization::getCurrentLocale() . '/' . ($page = 'printavaliableproduct')) }}" method="POST" role="search" autocomplete="off">
-                        {{ csrf_field() }}
-
-
-
-
-
-
-
-                        {{-- 3 --}}
-
-
-                        <br>
-
-
-
-                        <?php $i = 0; ?>
-                        <div class="col-xl-12">
-                            <div class="card mg-b-20">
-                                <div class="card-header pb-0">
-                                    <div class="d-flex">
-
-
-                                        <div class="row">
-
-                                            <div class="col-lg-6" id="start_at">
-                                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('home.enterinvoicenumber') }}</label>
-                                                <input class="form-control" value="{{ $start_at ?? '' }}" id="invoiceid" placeholder="1********" type="text" onchange="searchaboutinvoiceByIdfunction()" required>
-                                            </div><!-- input-group -->
-                                            <div class="col-lg-6" id="start_at">
-                                                <label class="parent-label" for="exampleFormControlSelect1"> {{ __('home.searchbydate') }}</label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <div class="input-group-text">
-                                                            <i class="fas fa-calendar-alt"></i>
-                                                        </div>
-                                                    </div>
-                                                    <input class="form-control parent-input fc-datepicker" value="{{ $start_at ?? '' }}" id="date" placeholder="YYYY-MM-DD" type="text" onchange="searchaboutproductfunction()" required>
-                                                </div><!-- input-group -->
-                                            </div><!-- input-group -->
-                                        </div>
-
-                                    </div>
+                    <div class="search-filter-section">
+                        <form action="" method="POST" role="search" autocomplete="off">
+                            {{ csrf_field() }}
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <label class="parent-label">{{ __('home.enterinvoicenumber') }}</label>
+                                    <input class="form-control" id="invoiceid" placeholder="1********" type="text"
+                                        onkeyup="searchaboutinvoiceByIdfunction()">
                                 </div>
-                                <br>
-                                <br>
-                                <br>
-                                <div class="card-body">
-                                    <div class="table-responsive hoverable-table" id="ajax_responce_allinvoicesDiv">
-                                        <table class="table text-md-nowrap text-center our-table" id="example1" data-page-length='50' style=" text-align: center;">
-                                            <thead>
-                                                <tr>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.Invoice_no') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.buyer name') }} </th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.suppliername') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.date') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.branch') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.total') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.paymentmethod') }}</th>
-                                                    <th style="color: #FF4F1F;font-size:11px" class="border-bottom-0">{{ __('home.operations') }}</th>
+
+                                <div class="col-lg-6">
+                                    <label class="parent-label">{{ __('home.shearchbysuppliername') }}</label>
+                                    <select class="form-control select2" name="clientnamesearch" id="clientnamesearch">
+                                        <option value="">{{ __('home.all_suppliers') }}</option>
+                                        @foreach (App\Models\supllier::get() as $customer)
+                                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive hoverable-table" id="ajax_responce_allinvoicesDiv">
+                        <table class="table text-md-nowrap text-center our-table" id="example1" data-page-length='50'>
+                            <thead>
+                                <tr>
+                                    <th>{{ __('home.Invoice_no') }}</th>
+                                    <th>{{ __('home.buyer name') }}</th>
+                                    <th>{{ __('home.suppliername') }}</th>
+                                    <th>{{ __('home.date') }}</th>
+                                    <th>{{ __('home.branch') }}</th>
+                                    <th>{{ __('home.total') }}</th>
+                                    <th>{{ __('home.paymentmethod') }}</th>
+                                    <th>{{ __('home.operations') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="delete_quotation" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">{{ __('home.alert') }}</h6>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body text-center">
+                    <input type="hidden" id="delete_id">
+                    <h5>{{ __('home.Are_you_sure_delete') }}</h5>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                    <button id="delete_quotation_function" class="btn btn-danger">{{ __('home.confirm') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentmethod" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">{{ __('home.paymentmethod') }}</h6>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center align-items-baseline mb-3">
+                        <label class="parent-label">{{ __('home.total') }} : </label>
+                        <span id="totalvalue" class="h3 mx-2 text-primary">0</span>
+                        <label class="parent-label">{{ __('home.SAR') }}</label>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ __('home.paymentmethod') }}</label>
+                        <select class="form-control" name="paymodal" id="paymodal">
+                            <option value="Cash">{{ __('report.cash') }}</option>
+                            <option value="Shabka">{{ __('report.shabka') }}</option>
+                            <option value="Bank_transfer">{{ __('home.Bank_transfer') }}</option>
+                            <option value="Credit">{{ __('report.credit') }}</option>
+                        </select>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-3"><small>{{ __('report.cash') }}</small><input class="form-control text-center"
+                                id="cashamount" readonly></div>
+                        <div class="col-3"><small>{{ __('report.shabka') }}</small><input class="form-control text-center"
+                                id="bankamount" readonly></div>
+                        <div class="col-3"><small>تحويل</small><input class="form-control text-center" id="Bank_transfer"
+                                readonly></div>
+                        <div class="col-3"><small>{{ __('report.credit') }}</small><input class="form-control text-center"
+                                id="creaditamount" readonly></div>
+                    </div>
+                    <input type="hidden" id="invoiceid_hidden">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
+                    <button id="confirmpayment" class="btn btn-success">{{ __('home.confirm') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="uplaodmodal">
+        <form enctype="multipart/form-data" method="POST" role="search" name="form-name" id='formdata' autocomplete="off">
+            {{ csrf_field() }}
+
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content modal-content-demo">
+                    <div class="modal-header">
+                        <h6 class="modal-title"> {{ __('home.uplaodpdf') }} </h6>
+                    </div>
+
+                    <div class="modal-body">
 
 
 
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                            </tbody>
-                                        </table>
-                                        <div>
 
 
+                        <input type="hidden" name="orderidpurchase" id="orderidpurchase">
 
-                                        </div>
-                                        <br>
 
-                                    </div>
+                        <div class="row">
+                            <div class="col">
+
+
+                                <div class="col-lg-12 parent-label">
+                                    <label> {{__('home.attachments')}}</label>
+                                    <input autocomplete="off" onchange="readURL(this)" type="file" id="attachments"
+                                        name="attachments" class="form-control">
+
                                 </div>
                             </div>
 
-                            <br />
-                    </form>
 
+
+
+
+
+
+
+
+
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
+                            <button type='submit' class="btn btn-danger">{{ __('home.confirm') }}</button>
+
+                        </div>
+
+                    </div>
                 </div>
+        </form>
 
-
-
-            </div>
-        </div>
-        <!-- row closed -->
     </div>
-    <!-- Container closed -->
-</div>
-<!-- main-content closed -->
-</div>
-<!-- enter payments -->
-<div class="modal" id="paymentmethod">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title"> {{ __('home.paymentmethod') }} </h6>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <label style="font-size:16px" class="control-label parent-label">&nbsp;&nbsp;{{ __('home.total') }} :&nbsp; </label>
-                    <label style="font-size:20px" id="totalvalue">0</label>
-                    <label style="font-size:15px" class="control-label parent-label">&nbsp;{{ __('home.SAR') }} &nbsp;&nbsp;&nbsp;&nbsp; </label>
-                    <br>
-
-
-                </div>
-                <div class=" col">
-                    <label> {{ __('home.paymentmethod') }} </label>
-                    <br>
-
-                    <select class="form-control" name="paymodal" id='paymodal' required>
-
-                        <option value="Cash"> {{ __('report.cash') }}</option>
-                        <option value="Shabka"> {{ __('report.shabka') }} </option>
-                        <option value="Bank_transfer"> {{ __('home.Bank_transfer') }} </option>
-                        <option value="Credit"> {{ __('report.credit') }} </option>
-
-                    </select>
-
-
-                </div>
-                <br>
-                <div class="row">
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.cash') }}</label>
-                        <input type="text" class="form-control parent-input" name="cashamount" id="cashamount" readonly value=0>
-                    </div>
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.shabka') }}</label>
-                        <input type="text" class="form-control parent-input" name="bankamount" id="bankamount" readonly value=0>
-                    </div>
-
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('home.Bank_transfer') }}</label>
-                        <input type="text" class="form-control parent-input" name="Bank_transfer" id="Bank_transfer" readonly value=0>
-                    </div>
-                    <div class="col">
-
-                        <label class="control-label parent-label">{{ __('report.credit') }}</label><br>
-                        <input type="text" class="form-control parent-input" name="creaditamount" id="creaditamount" readonly value=0>
-                    </div>
-                    <input hidden type="text" id="invoiceid">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">الغاء</button>
-                <button id="confirmpayment" name="confirmpayment" data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- delete -->
-
-</div>
-<div class="modal" id="updateCustomer">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content modal-content-demo">
-            <div class="modal-header">
-                <h6 class="modal-title"> {{ __('home.updatecustome') }} </h6>
-            </div>
-            {{ csrf_field() }}
-
-
-            <div class="modal-body">
-
-
-
-
-                <input type="hidden" id="token_search" value="{{ csrf_token() }}">
-
-
-                <div class="row">
-                    <div class="col">
-
-
-                        <label for="inputName" class="control-label parent-label">{{ __('home.Invoice_no') }}</label>
-                        <input type="number" class="form-control parent-input" id="id" name="id" title="    رقم الفاتورة  " readonly>
-
-                    </div>
-                    <div class="col">
-
-
-                        <label for="inputName" class="control-label parent-label">{{ __('home.clietName') }}</label>
-                        <input type="text" class="form-control parent-input" id="customername" name="customername" title="   اسم  العميل  " readonly>
-
-                    </div>
-                </div>
-                <br>
-                <div class=" col">
-                    <label> {{ __('home.chooseclient') }}</label>
-                    <br>
-
-                    <select class="form-control select2" style="width:300px" name='customerId' id='customerId' required>
-
-                        @foreach (App\Models\supllier::get() as $customer)
-                        <option value="{{ $customer->id }}"> {{ $customer->name }}
-
-                        </option>
-                        @endforeach
-                    </select>
-
-
-                </div>
-
-
-
-
-
-
-
-                <br>
-
-
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{__('home.cancel')}}</button>
-                <button type="submit" id="updatecustomerbut" data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
-            </div>
-
-        </div>
-    </div>
-</div>
 @endsection
+
 @section('js')
-<!-- Internal Data tables -->
 
-<script src="{{ URL::asset('assets/js/table-data.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/datatable/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 
-<!--Internal  Datepicker js -->
-<script src="{{ URL::asset('assets/plugins/jquery-ui/ui/widgets/datepicker.js') }}"></script>
-<!--Internal  jquery.maskedinput js -->
-<script src="{{ URL::asset('assets/plugins/jquery.maskedinput/jquery.maskedinput.js') }}"></script>
-<!--Internal  spectrum-colorpicker js -->
-<script src="{{ URL::asset('assets/plugins/spectrum-colorpicker/spectrum.js') }}"></script>
-<!-- Internal Select2.min js -->
-<script src="{{ URL::asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-<!--Internal Ion.rangeSlider.min js -->
-<script src="{{ URL::asset('assets/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
-<!--Internal  jquery-simple-datetimepicker js -->
-<script src="{{ URL::asset('assets/plugins/amazeui-datetimepicker/js/amazeui.datetimepicker.min.js') }}"></script>
-<!-- Ionicons js -->
-<script src="{{ URL::asset('assets/plugins/jquery-simple-datetimepicker/jquery.simple-dtpicker.js') }}"></script>
-<!--Internal  pickerjs js -->
-<script src="{{ URL::asset('assets/plugins/pickerjs/picker.min.js') }}"></script>
-<!-- Internal form-elements js -->
-<script src="{{ URL::asset('assets/js/form-elements.js') }}"></script>
-<script>
-    var date = $('.fc-datepicker').datepicker({
-        dateFormat: 'yy-mm-dd'
-    }).val();
-</script>
+    <script>
 
+        $("#formdata").on('submit', function (e) {
+            e.preventDefault();
 
-
-<script>
-    function searchaboutproductfunction() {
-        date = $('#date').val();
-        console.log('jjjjjjjjj')
-
-        console.log(" {{URL::to('searchAllInvoicespaginatenewpurchase')}}" + "/" + date)
-        console.log('jjjjjjjjj')
-        $.ajax({
-            url: " {{URL::to('searchAllInvoicespaginatenewpurchase')}}" + "/" + date,
-            type: "GET",
-            dataType: "html",
-            success: function(products) {
-                console.log(products)
-                $("#ajax_responce_allinvoicesDiv").html(products);
-
-
-            },
-        });
-    }
-
-    function searchaboutinvoiceByIdfunction() {
-        date = $('#invoiceid').val();
-        if (date != '') {
-            console.log(" {{URL::to('searchaboutinvoiceByIdfunctionpurchases')}}" + "/" + date)
+            var url = " {{ URL::to('uploadfilepurchases') }}";
 
             $.ajax({
-                url: " {{URL::to('searchaboutinvoiceByIdfunctionpurchases')}}" + "/" + date,
-                type: "GET",
-                dataType: "html",
-                success: function(products) {
-                    console.log(products)
+                url: url,
+                type: 'post',
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: new FormData(this),
+                success: function (products) {
+                    $('#uplaodmodal').modal('hide');
+
                     $("#ajax_responce_allinvoicesDiv").html(products);
-
-
-                },
-            });
-        } else {
-            $.ajax({
-                url: " {{URL::to('getAllinvicesajax')}}",
-                type: "GET",
-                dataType: "html",
-                success: function(products) {
-                    $("#ajax_responce_allinvoicesDiv").html(products);
-
-
-                },
-            });
-        }
-    }
-
-    $("#updatecustomerbut").click(function(e) {
-        var url = " {{ URL::to('updatecustomerDataInvoicepurchases') }}";
-        token_search = $('#token_search').val();
-        $.ajax({
-            url: url,
-            type: 'post',
-            cache: false,
-            dataType: "html",
-            data: {
-                _token: token_search,
-                id: $('#id').val(),
-                customername: $('#customername').val(),
-                customerId: $('#customerId').val(),
-
-            },
-
-
-            success: function(data) {
-
-                $("#ajax_responce_allinvoicesDiv").html(data);
-
-            },
-            error: function(response) {
-                console.log(response['responseText'])
-            }
-        });
-    })
-
-    $(document).on('click', '#ajax_pagination_in_search a ', function(e) {
-        e.preventDefault();
-        var search_by_text = $("#date").val();
-        var url = $(this).attr("href");
-        var token_search = $("#token_search").val();
-
-        jQuery.ajax({
-            url: url,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
-            data: {
-                search_by_text: search_by_text,
-                "_token": token_search
-            },
-            success: function(data) {
-                console.log(data)
-                $("#ajax_responce_allinvoicesDiv").html(data);
-            },
-            error: function() {
-
-            }
-        });
-    });
-
-    $(document).on('click', '#ajax_pagination_in_search a ', function(e) {
-        e.preventDefault();
-        var search_by_text = $("#date").val();
-        var url = $(this).attr("href");
-        var token_search = $("#token_search").val();
-
-        jQuery.ajax({
-            url: url,
-            type: 'get',
-            dataType: 'html',
-            cache: false,
-            data: {
-                search_by_text: search_by_text,
-                "_token": token_search
-            },
-            success: function(data) {
-                console.log(data)
-                $("#ajax_responce_allinvoicesDiv").html(data);
-            },
-            error: function() {
-
-            }
-        });
-    });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-    $('select[name="paymodal"]').on('change', function() {
-
-        var selectCustomer = $(this).val();
-        if ($('#cashamount').val() != 0) {
-            value = $('#cashamount').val()
-
-        } else if ($('#bankamount').val() != 0) {
-            value = $('#bankamount').val();
-
-        } else if ($('#Bank_transfer').val() != 0) {
-            value = $('#Bank_transfer').val();
-
-        } else {
-            value = $('#creaditamount').val();
-        }
-
-
-        if (selectCustomer == 'Cash') {
-            $('#cashamount').val(value)
-            $('#bankamount').val(0)
-            $('#creaditamount').val(0)
-            $('#Bank_transfer').val(0)
-            document.getElementById("bankamount").readOnly = true;
-            document.getElementById("cashamount").readOnly = true;
-            document.getElementById("Bank_transfer").readOnly = true;
-
-
-        } else if (selectCustomer == 'Shabka') {
-            $('#cashamount').val(0)
-            $('#bankamount').val(value)
-            $('#creaditamount').val(0)
-            $('#Bank_transfer').val(0)
-
-            document.getElementById("bankamount").readOnly = true;
-            document.getElementById("cashamount").readOnly = true;
-            document.getElementById("Bank_transfer").readOnly = true;
-
-        } else if (selectCustomer == 'Credit') {
-            $('#cashamount').val(0)
-            $('#bankamount').val(0)
-            $('#Bank_transfer').val(0)
-            $('#creaditamount').val(value)
-            document.getElementById("bankamount").readOnly = true;
-            document.getElementById("cashamount").readOnly = true;
-            document.getElementById("Bank_transfer").readOnly = true;
-
-        } else if (selectCustomer == 'Bank_transfer') {
-
-
-            $('#cashamount').val(0)
-            $('#bankamount').val(0)
-            $('#creaditamount').val(0)
-            $('#Bank_transfer').val(value)
-            document.getElementById("bankamount").readOnly = true;
-            document.getElementById("cashamount").readOnly = true;
-            document.getElementById("Bank_transfer").readOnly = true;
-
-        } else {
-            $('#cashamount').val(value)
-            $('#bankamount').val(0)
-            $('#creaditamount').val(0)
-            $('#Bank_transfer').val(0)
-            document.getElementById("bankamount").readOnly = false;
-            document.getElementById("cashamount").readOnly = false;
-            document.getElementById("Bank_transfer").readOnly = false;
-
-
-        }
-
-
-
-
-
-    });
-    $('#updateCustomer').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget)
-        var id = button.data('id')
-        $('#cashamount').val(0)
-        $('#Bank_transfer').val(0)
-        $('#creaditamount').val(0)
-        $('#bankamount').val(0)
-
-        var customername = button.data('customername')
-
-
-        var modal = $(this)
-
-        modal.find('.modal-body #customername').val(customername);
-        modal.find('.modal-body #id').val(id);
-
-    })
-</script>
-
-<script>
-    $('#paymentmethod').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget)
-        var id = button.data('id')
-        var invoice = button.data('totalinvoice')
-        $('#invoiceid').val(id)
-        document.getElementById('totalvalue').innerHTML = invoice;
-        $('#cashamount').val(invoice)
-
-    });
-
-    $("#confirmpayment").click(function(e) {
-
-
-        if ($('#cashamount').val() == '') {
-            $('#cashamount').val(0)
-        }
-        if ($('#bankamount').val() == '') {
-            $('#bankamount').val(0)
-        }
-        if ($('#creaditamount').val() == '') {
-            $('#creaditamount').val(0)
-        }
-        if ($('#Bank_transfer').val() == '') {
-            $('#Bank_transfer').val(0)
-        } else {
-
-        }
-
-
-        text = document.getElementById('totalvalue').innerText
-
-        console.log(" {{URL::to('updatepaymentconfirmpaymentpurchases')}}/" + $('#invoiceid').val() + '/' + $('#cashamount').val() + '/' + $('#bankamount').val() + '/' + $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' + $('#paymodal').val())
-        if (Number(text) == (Number($('#cashamount').val()) + Number($('#Bank_transfer').val()) + Number($('#bankamount').val()) + Number($('#creaditamount').val()))) {
-            $.ajax({
-                url: " {{URL::to('updatepaymentconfirmpaymentpurchases')}}/" + $('#invoiceid').val() + '/' + $('#cashamount').val() + '/' + $('#bankamount').val() + '/' + $('#creaditamount').val() + "/" + $('#Bank_transfer').val() + '/' + $('#paymodal').val(),
-                type: "GET",
-                dataType: "html",
-                success: function(data) {
-                    $("#ajax_responce_allinvoicesDiv").html(data);
-
-
-
-                },
-                error: function(response) {
-
-                    alert("{{ __('home.sorryerror') }}")
-
+                }, error: function (response) {
+                    console.log(response['responseText'])
                 }
-
             })
-        } else {
-            $('#saveinvice').val(0);
+        })
+        $('#uplaodmodal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget)
+            var id = button.data('id')
 
-            alert("{{ __('home.entermonycorrect') }}")
-
-        }
-
-
-    })
-    $(document).ready(function() {
+            $('#orderidpurchase').val(id)
 
 
-        $('select[name="clientnamesearch"]').on('change', function() {
-            console.log('AJAX load   work 0000');
-
-            var selectclientid = $(this).val();
-            if (selectclientid) {
-                console.log('AJAX load   work');
-
-                $.ajax({
-                    url: "{{ URL::to('getcustomer') }}/" + selectclientid,
-                    type: "GET",
-                    dataType: "json",
-                    success: function(data) {
-                        console.log("success");
-                        console.log(data['name']);
-                        $('#clientName').val(data['name']);
-                        $('#address').val(data['address']);
-                        $('#phonenumber').val(data['phone']);
-                        $('#notes').val(data['notes']);
-                    },
-                });
-            } else {
-                console.log('AJAX load did not work');
-            }
         });
-    });
 
-    $('select[name="searchproductNo"]').on('change', function() {
-        console.log('AJAX load   work 0000');
 
-        var selectclientid = $(this).val();
-        if (selectclientid) {
-            console.log('AJAX load   work');
 
-            $.ajax({
-                url: "{{ URL::to('getproduct') }}/" + selectclientid,
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    console.log("success");
-                    console.log(data['name']);
-                    $('#quentity').val(data['numberofpice']);
 
-                },
+        $(document).ready(function () {
+            $('.select2').select2({ width: '100%' });
+
+            // تحميل البيانات عند فتح الصفحة
+            loadInvoices();
+
+            // البحث الفوري برقم الفاتورة
+            window.searchaboutinvoiceByIdfunction = function () {
+                let id = $('#invoiceid').val();
+                let url = id ? "{{ URL::to('searchaboutinvoiceByIdfunctionpurchases') }}/" + id : "{{ URL::to('getAllinvicesapurchasesjax') }}";
+                $.get(url, function (data) { $("#ajax_responce_allinvoicesDiv").html(data); });
+            };
+
+            // البحث عند تغيير المورد
+            $('#clientnamesearch').on('change', function () {
+                let supplierId = $(this).val();
+                let url = supplierId ? "{{ URL::to('getinvoicesbyspplluer') }}/" + supplierId : "{{ URL::to('getAllinvicesapurchasesjax') }}";
+                $.get(url, function (data) { $("#ajax_responce_allinvoicesDiv").html(data); });
             });
-        } else {
-            console.log('AJAX load did not work');
-        }
-    });
-</script>
 
+            function loadInvoices() {
+                $.get("{{ URL::to('getAllinvicesapurchasesjax') }}", function (data) {
+                    $("#ajax_responce_allinvoicesDiv").html(data);
+                });
+            }
 
+            // إعداد موديول الحذف
+            $('#delete_quotation').on('show.bs.modal', function (event) {
+                let id = $(event.relatedTarget).data('id');
+                $('#delete_id').val(id);
+            });
 
+            $("#delete_quotation_function").click(function () {
+                let id = $('#delete_id').val();
+                $.get("{{URL::to('delete_purchase_invoice')}}/" + id, function (data) {
+                    $("#ajax_responce_allinvoicesDiv").html(data);
+                    $('#delete_quotation').modal('hide');
+                });
+            });
 
-<script>
-    $(document).ready(function() {
-        console.log(" {{URL::to('getAllinvicesapurchasesjax')}}")
-        $.ajax({
-            url: " {{URL::to('getAllinvicesapurchasesjax')}}",
-            type: "GET",
-            dataType: "html",
-            success: function(products) {
-                $("#ajax_responce_allinvoicesDiv").html(products);
+            // إعداد موديول الدفع
+            $('#paymentmethod').on('show.bs.modal', function (event) {
+                let button = $(event.relatedTarget);
+                let id = button.data('id');
+                let total = button.data('totalinvoice');
+                $('#invoiceid_hidden').val(id);
+                $('#totalvalue').text(total);
+                $('#cashamount').val(total);
+                $('#bankamount, #Bank_transfer, #creaditamount').val(0);
+            });
 
-
-            },
+            $("#confirmpayment").click(function () {
+                let id = $('#invoiceid_hidden').val();
+                let url = `{{URL::to('updatepaymentconfirmpaymentpurchases')}}/${id}/${$('#cashamount').val()}/${$('#bankamount').val()}/${$('#creaditamount').val()}/${$('#Bank_transfer').val()}/${$('#paymodal').val()}`;
+                $.get(url, function (data) {
+                    $("#ajax_responce_allinvoicesDiv").html(data);
+                    $('#paymentmethod').modal('hide');
+                });
+            });
         });
-        $('#invoice_number').hide();
 
-        $('input[type="radio"]').click(function() {
-            if ($(this).attr('id') == 'type_div') {
-                $('#invoice_number').hide();
-                $('#type').show();
-                $('#start_at').show();
-                $('#end_at').show();
+        // مراقبة حقل السيلكت في المودال لتوزيع المبالغ تلقائياً وحماية الحقول (ReadOnly)
+        $('select[name="paymodal"]').on('change', function () {
+            var selectCustomer = $(this).val();
+            var value = 0;
+
+            if ($('#cashamount').val() != 0) {
+                value = $('#cashamount').val();
+            } else if ($('#bankamount').val() != 0) {
+                value = $('#bankamount').val();
+            } else if ($('#Bank_transfer').val() != 0) {
+                value = $('#Bank_transfer').val();
             } else {
-                $('#invoice_number').show();
-                $('#type').hide();
-                $('#start_at').hide();
-                $('#end_at').hide();
+                value = $('#creaditamount').val();
+            }
+
+            if (selectCustomer == 'Cash') {
+                $('#cashamount').val(value);
+                $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+            } else if (selectCustomer == 'Shabka') {
+                $('#cashamount').val(0); $('#bankamount').val(value); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+            } else if (selectCustomer == 'Credit') {
+                $('#cashamount').val(0); $('#bankamount').val(0); $('#Bank_transfer').val(0); $('#creaditamount').val(value);
+                $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+            } else if (selectCustomer == 'Bank_transfer') {
+                $('#cashamount').val(0); $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(value);
+                $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', true);
+            } else {
+                // في حال اختيار دفع متعدد (Partition)
+                $('#cashamount').val(value);
+                $('#bankamount').val(0); $('#creaditamount').val(0); $('#Bank_transfer').val(0);
+                $("#bankamount, #cashamount, #Bank_transfer").prop('readOnly', false);
             }
         });
-    });
-</script>
 
-
+    </script>
 @endsection

@@ -31,31 +31,45 @@
         <div class=" main-content-body-invoice" id="print">
             <div class="card card-invoice">
                 <div class="card-body">
-                    <div class="invoice-header">
+ <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%">
 
-                        <a style="font-size: 10px" class="invoice-title p-2 mb-5">
-                            {{__('home.purchase_return')}}
-                        </a>
+                      
+                        
+                        
+                             <div class="billed-from" style="width:33%;text-align: center;">
+                            <br>
 
-                        <div>
+                           <span style="font-size:16px">{{Namear}}</span>
+                            <br>
+                            <p> {{describtionar}}</p>
+                            <p>{{STar}}</p>
+                            <p>{{Taxar}}</p>
+
+                        </div><!-- billed-from -->
+                        <div class="row">
                         <?php
 $logo=camplogo;
     ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
 
                         </div>
 
-
-                        <div class="billed-from">
+  <div class="billed-from" style="width:33%;text-align: center;" >
                             <br>
-                            <p>{{__('home.cam_name_owner')}}</p>
-                            <p>{{__('home.TaxNumber')}}</p>
-                        </div>
-                    </div><!-- invoice-header -->
+                             <span style="font-size:19px">{{Nameen}}</span>
+                            <br>
+                            <p dir=ltr> {{describtionen}} </p>
+                            <span dir=ltr>{{STen}} </span>
+                            <p dir=ltr> {{Taxen}} </p>
 
+                        </div>
+                   
+                    </div><!-- invoice-header -->
                     <div class="card-body">
 
-
+                    <a style="font-size: 10px" class="invoice-title p-2 mb-5">
+                            {{__('home.purchase_return')}}
+                        </a><br>
                         <div style="padding: 0 0 0 40%" class="table-responsive mg-t-30 mb-3">
                             <table class="table table-invoice border text-md-nowrap mb-0 table-bordered table-striped text-center" id="tableTotalPrice" name="tableTotalPrice" width="50%">
                                 <thead>
@@ -162,10 +176,11 @@ $logo=camplogo;
                                     <thead>
                                         <tr>
                                             <th class="border-bottom-0">{{ __('home.the amount') }}</th>
-                                            <th class="border-bottom-0">{{ __('home.addedValue') }}</th>
-                                            @if(!$count)
+                                             @if(!$count)
                                             <th class="border-bottom-0">{{ __('home.discount') }}</th>
                                             @endif
+                                            <th class="border-bottom-0">{{ __('home.addedValue') }}</th>
+                                           
                                             <th class="border-bottom-0">{{ __('home.total') }} </th>
 
                                         </tr>
@@ -174,17 +189,22 @@ $logo=camplogo;
                                     <body>
                                         <tr>
                                             <td> {{$totalprice }}</td>
-                                            <td>{{$totalAddedvalue}}</td>
-                                            <?php
+                                                <?php
                                             $total = 0;
                                             $total = $totalAddedvalue + $totalprice;
+                                            $avtSaleRate = App\Models\Avt::find(2);
+$avtSaleRate = $avtSaleRate->AVT;
                                             ?>
-                                            @if(!$count)
+                                                 @if(!$count)
                                             <?php
+                                            $totalAddedvalue=($totalprice - $data['resource_purchases']->discount)*$avtSaleRate;
                                             $total = $totalAddedvalue + $totalprice - $data['resource_purchases']->discount;
                                             ?>
                                             <td>{{$data['resource_purchases']->discount}}</td>
                                             @endif
+                                            <td>{{$totalAddedvalue}}</td>
+                                        
+                                       
                                             <td>{{$total}}</td>
                                         </tr>
 

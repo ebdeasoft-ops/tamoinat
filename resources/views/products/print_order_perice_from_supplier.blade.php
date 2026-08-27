@@ -38,39 +38,90 @@
             <div class=" main-content-body-invoice" id="print">
                 <div class="card card-invoice pt-5">
                     <div class="card-body">
+                    <div class="invoice-header" style="display: flex;justify-content:space-between;width:100%" dir=rtl>
 
 
-                        <div class="invoice-header">
 
-                            <div class="billed-from">
-                                <br>
-                                &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Nameen}}</span>
-                                <br>
-                                <p dir=ltr> {{describtionen}} &nbsp;&nbsp;&nbsp;&nbsp;</p>
-                                <span dir=ltr>{{STen}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                <p dir=ltr> {{Taxen}} </p>
 
-                            </div>
-                            <div class="row">
-                            <?php
-$logo=camplogo;
+<div class="billed-from" style="width:33%;text-align: center;">
+    <br>
+
+    <span  class="tx-18 thick">{{Namear}}</span>
+    <br>
+    <p class="tx-16 thick"> {{describtionar}}</p>
+    <p class="tx-16 thick">{{STar}}</p>
+    <p class="tx-16 thick">{{Taxar}}</p>
+
+</div><!-- billed-from -->
+<div class="row">
+    <?php
+    $logo = camplogo;
     ?>
-    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 70px;"></a>
+    <a href="https://ebdeasoft.com/"><img src="{{ asset('assets\img\brand').'/'.$logo }}" class="logo-1" alt="logo" style="width: 110px; height: 100px;"></a>
 
-                            </div>
+</div>
 
+<div class="billed-from" style="width:33%;text-align: center;">
+    <br>
+    <span class="tx-18 thick">{{Nameen}}</span>
+    <br>
+    <p class="tx-16 thick" > {{describtionen}} </p>
+    <span class="tx-16 thick">{{STen}} </span>
+    <p class="tx-16 thick"> {{Taxen}} </p>
 
-                            <div class="billed-from">
-                                <br>
+</div>
 
-                                &nbsp; &nbsp; &nbsp; <span style="font-size:25px">{{Namear}}</span>
-                                <br>
-                                <p> {{describtionar}}</p>
-                                <p>{{STar}}</p>
-                                <p>{{Taxar}}</p>
+</div><!-- invoice-header -->
+<br>
+<br>
+            <center> <p  >  {{__('home.Requestـpricesـofـproducts')}}</p></center>
 
-                            </div><!-- billed-from -->
-                        </div><!-- invoice-header -->
+            <br>
+            <br>
+            
+            
+                                <div class="table-responsive mg-t-30 table-padding">
+                                    <table class="table text-center table-invoice border text-md-nowrap mb-0 table-bordered table-striped" id="tableTotalPrice"
+                                        name="tableTotalPrice"width="50%">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-bottom-0"><span>{{__('home.Invoice_no')}}  </span></th>
+                                                <th class="border-bottom-0"><span>{{$id}}</span></th>
+                                            </tr>
+                                        </thead>
+        
+                                        <body>
+                                      <?php
+                                    $order_price_from_supplier= App\Models\order_price_from_supplier::find($id);
+                                      
+                                      ?>
+
+                                            <tr>
+                                                <td><span> {{ __('home.date') }}</span></td>
+                                                <td><span><?php echo date("Y-m-d h:i") ?></span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><span>{{ __('home.suppliername') }}   </span></td>
+                                                <td><span>{{$order_price_from_supplier->supllier->name}}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><span>{{ __('supprocesses.Location') }}</span></td>
+                                                <td><span>{{$order_price_from_supplier->supllier->location}}</span></td>
+                                            </tr>
+
+                                            <tr>
+                                                <td><span>{{ __('supprocesses.phone') }}  </span></td>
+                                                <td><span>{{$order_price_from_supplier->supllier->phone}}</span></td>
+                                            </tr>
+                                          
+        
+                                        </body>
+        
+                                    </table>
+
+                                </div> 
+                                
+                                
 
                         @if (isset($itemsRequest))
                         <?php $i = 0; ?>
@@ -78,15 +129,15 @@ $logo=camplogo;
                             <div class="mg-b-20 mb-0 pb-0">
 
                                 <div class="card-body pb-0">
-                                    <div >
-                                        <table id="example" class="table key-buttons text-md-nowrap table table-striped table-bordered mt-3 text-center" name='prodyctsavaliable'>
-                                            <thead>
+                                                       <div class="table-responsive mg-t-40">
+                            <table class="table table-bordered table-striped text-center table-invoice border text-md-nowrap mb-0">
+                                  <thead>
                                                 <tr>
                                                     <th class="border-bottom-0"># </th>
-                                                    <th class="border-bottom-0">{{ __('home.productNo') }} </th>
-                                                    <th class="border-bottom-0">{{ __('home.product') }}</th>
+                                                    <th class="border-bottom-0" >{{ __('home.productNo') }} </th>
+                                                    <th class="border-bottom-0" style="width: 60%;">{{ __('home.product') }}</th>
                                                     <th class="border-bottom-0">{{ __('home.quantity') }}</th>
-                                                    <th class="border-bottom-0">{{ __('home.price') }}</th>
+                                                    <th class="border-bottom-0">{{ __('home.saleprice') }}</th>
 
 
 
@@ -98,10 +149,10 @@ $logo=camplogo;
                                                 <?php $i++; ?>
                                                 <tr>
                                                     <td>{{ $i }}</td>
-                                                    <td dir=ltr>{{ $product->productData->barcode }}</td>
-                                                    <td>{{ $product->productData->name }}</td>
+                                                    <td dir=ltr>{{ $product->productData->Product_Code }}</td>
+                                                    <td>{{ $product->productData->product_name }}</td>
                                                     <td>{{ $product->quantity }}</td>
-                                                    <td></td>
+                                                    <td>..........</td>
 
                                                 <tr>
                                                     @endforeach
@@ -109,9 +160,15 @@ $logo=camplogo;
                                         </table>
                                     </div>
 
-
+                                    <br>
+<p>{{__('home.signtyre_purchase_manger')}}</p>
+                        <p>{{__('home.thesignature')}} : </p>
+                        <br>
+                        <br>
                                 </div>
                             </div>
+                            <br>
+                     
                         </div>
 
 
@@ -119,6 +176,7 @@ $logo=camplogo;
 
                         @endif
 
+                      
 
 
 

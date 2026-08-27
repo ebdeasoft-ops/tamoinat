@@ -16,7 +16,8 @@ class offer_price_to_customer_items extends Model
        'PriceWithoudTax',
        'created_at',
        'updated_at',
-   
+      'note'
+
    ];
    
      

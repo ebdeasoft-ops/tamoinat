@@ -130,9 +130,9 @@
                         ?>
 
 
-                        <div class="table-responsive pt-4 pb-2 mt-4">
-                            <table id="example" class="table key-buttons text-md-nowrap table-bordered table-striped text-center">
-                                <thead>
+                       <div class="table-responsive mg-t-20 mt-3 mr-2 d-flex ">
+                        <table style="border:2px solid rgba(0,0,0,.3);" class="table text-md-nowrap mb-0 table-striped invoice-table text-center">
+ <thead>
                                     <tr>
                                         <th class="border-bottom-0"> {{ __('home.date') }}</th>
                                         <th class="border-bottom-0">{{ __('home.employee') }}</th>
