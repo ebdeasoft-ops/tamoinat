@@ -752,7 +752,7 @@ Route::middleware([
         Route::post('/destory_avt', 'destroy');
     });
 
-    // 17. الموارد البشرية وشؤون الموظفين (HR & Employee Management)
+    // 17. الموارد البشرية وشؤون الموظفين(HR & Employee Management)
     Route::controller(EmployeeController::class)->group(function () {
         Route::get('/createNewEmployee', 'index');
         Route::post('/createNewEmployee', 'create');
