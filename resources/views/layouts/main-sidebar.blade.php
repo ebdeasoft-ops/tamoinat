@@ -17,7 +17,7 @@
     --sb-white: #F5F8FC;
     --sb-danger: #EF5A6F;
     --sb-radius: 10px;
-    --sb-width: 260px;
+    --sb-width: 250px;
     --sb-font: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', system-ui, sans-serif;
 }
 

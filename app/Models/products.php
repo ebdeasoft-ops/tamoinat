@@ -35,6 +35,7 @@ class products extends Model
        'products_mix',
        'product_group',
        'CRN',
+       'division_unit_count'
 
 
 

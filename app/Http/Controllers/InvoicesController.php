@@ -2261,21 +2261,33 @@ public function searchInvoicesByDateEmployee(Request $request)
         });
     }
 
+     /*
+     * التعديل الوحيد هنا هو جوه foreach ($request->products as $sale) في جزئية
+     * "if ($isSameBranch) { ... }" -- باقي الدالة كلها زي ما هي بالظبط من غير أي
+     * لمسة، حتى الأسطر اللي فيها الملاحظتين اللي قلتلي متلمسهاش (reamingQuantity
+     * و confirmInvoice) سايبها زي ما هي.
+     *
+     * الفكرة: لو المنتج المباع (مثلاً كيس شيبسي) مربوط بمنتج أصلي (كرتون) عن طريق
+     * main_product، الخصم مش بيحصل من مخزون الكيس نفسه، لكن بيحصل من مخزون
+     * الكرتون الأصلي بنسبة 1 / division_unit_count. لو المنتج مش مرتبط
+     * بحاجة (main_product فاضي أو بيساوي نفس الـ id بتاعه) بيفضل يخصم من
+     * مخزونه هو زي ما كان بالظبط.
+     */
     public function save_invoice_sale(Request $request)
     {
         if ($request->action == 'draft') {
             $draftId = $this->saveAsDraft($request);
             return response()->json(['success' => true, 'id' => $draftId, 'message' => 'تم حفظ الفاتورة كمسودة بنجاح']);
         }
-
+ 
         // بدء عملية المعاملات المالية الآمنة لضمان عدم تضارب القيود المحاسبية
         return DB::transaction(function () use ($request) {
             $customerId = $request->clientnamesearch;
             $customerData = Customers::find($customerId); // تم تقديم جلب بيانات العميل هنا لحل خطأ الـ Fatal Error
-
+ 
             $pData = $this->preparePaymentData($request);
             $confirmInvoice = null;
-
+ 
             if ($request->show_invoice_number_update == 0) {
                 $confirmInvoice = invoices::create([
                     'save' => 1,
@@ -2303,19 +2315,19 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'display_number' => $request->shownumberproduct
                 ]);
             }
-
+ 
             $totalCost = 0;
-
+ 
             foreach ($request->products as $sale) {
                 $productData = Products::find($sale['product_id']);
                 $totalCost += $productData->purchasingـprice * $sale['quentity'];
-
+ 
                 $isSameBranch = Auth::user()->branchs_id == $productData->branchs_id;
-
+ 
                 if (!$isSameBranch && $confirmInvoice) {
                     $confirmInvoice->update(['status' => 1]);
                 }
-
+ 
                 sales::create([
                     'user_id' => Auth::id(),
                     'save' => 1,
@@ -2330,11 +2342,27 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'created_at' => $pData['created_at'],
                     'tax_rate' => ($sale['tax_rate']),
                     'product_name' => ($sale['product_name']),
-
+ 
                 ]);
-
+ 
                 if ($isSameBranch) {
-                    $productData->decrement('numberofpice', $sale['quentity']);
+                    // لو المنتج ده مرتبط بمنتج أصلي (كرتون) عن طريق main_product،
+                    // نخصم الكمية النسبية من مخزون الكرتون الأصلي بدل مخزون المنتج المباع نفسه
+                    $isLinkedSubUnit = $productData->main_product && $productData->main_product != $productData->id;
+ 
+                    if ($isLinkedSubUnit) {
+                        $divisionCount = $productData->division_unit_count > 0 ? $productData->division_unit_count : 1;
+                        $parentProduct = Products::find($productData->main_product);
+ 
+                        if ($parentProduct) {
+                            $parentProduct->decrement('numberofpice', $sale['quentity'] / $divisionCount);
+                        } else {
+                            // احتياطياً لو الكرتون الأصلي محذوف أو مش موجود، يتم خصم المنتج المباع نفسه
+                            $productData->decrement('numberofpice', $sale['quentity']);
+                        }
+                    } else {
+                        $productData->decrement('numberofpice', $sale['quentity']);
+                    }
                 } else {
                     Delivery_product_to_the_customer::create([
                         'branch_from' => Auth::user()->branchs_id,
@@ -2348,7 +2376,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     ]);
                 }
             }
-
+ 
             // القيود المحاسبية لـ Cash
             if ($pData['cashamount']) {
                 $financialAccount = financial_accounts::where('parent_account_number', 5)->where('branchs_id', Auth::user()->branchs_id)->first();
@@ -2365,7 +2393,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'updated_at' => Carbon::now('Asia/Riyadh'),
                     'debtor' => $pData['cashamount'],
                 ]);
-
+ 
                 $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
                 CreditTransactions::create([
                     'user_id' => Auth::id(),
@@ -2380,7 +2408,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'updated_at' => Carbon::now('Asia/Riyadh'),
                 ]);
             }
-
+ 
             // القيود المحاسبية للشبكة والتحويل البنكي
             $totalBank = $pData['Bank_transfer'] + $pData['bankamount'];
             if ($totalBank) {
@@ -2398,7 +2426,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'updated_at' => Carbon::now('Asia/Riyadh'),
                     'debtor' => $totalBank,
                 ]);
-
+ 
                 $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
                 CreditTransactions::create([
                     'user_id' => Auth::id(),
@@ -2413,19 +2441,19 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'updated_at' => Carbon::now('Asia/Riyadh'),
                 ]);
             }
-
+ 
             // تحديث حساب ضريبة القيمة المضافة والإيرادات
             $totalValue = $pData['Bank_transfer'] + $pData['creaditamount'] + $pData['bankamount'] + $pData['cashamount'];
             $vatValue = $request->totalTax;
             $netRevenue = $totalValue - $request->totalTax;
-
+ 
             // حساب الضريبة (102)
             $vatAccount = financial_accounts::where('parent_account_number', 102)->where('branchs_id', Auth::user()->branchs_id)->first();
             $vatAccount->update([
                 'current_balance' => $vatAccount->current_balance + $vatValue,
                 'creditor_current' => $vatAccount->creditor_current + $vatValue,
             ]);
-
+ 
             CreditTransactions::create([
                 'user_id' => Auth::id(),
                 'customer_id' => $vatAccount->id,
@@ -2442,7 +2470,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                 'name' => $customerData->name ?? '',
                 'tax' => $customerData->tax_no ?? '',
             ]);
-
+ 
             // حساب المبيعات والإيرادات (112)
             $revenueAccount = financial_accounts::where('parent_account_number', 112)->where('branchs_id', Auth::user()->branchs_id)->first();
             CreditTransactions::create([
@@ -2458,7 +2486,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                 'updated_at' => Carbon::now('Asia/Riyadh'),
                 'creditor' => $netRevenue,
             ]);
-
+ 
             // حساب تكلفة البضاعة المباعة (183)
             $costAccount = financial_accounts::where('parent_account_number', 183)->where('branchs_id', Auth::user()->branchs_id)->first();
             CreditTransactions::create([
@@ -2474,7 +2502,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                 'updated_at' => Carbon::now('Asia/Riyadh'),
                 'debtor' => $totalCost,
             ]);
-
+ 
             // حساب المخزن (181)
             $inventoryAccount = financial_accounts::where('parent_account_number', 181)->where('branchs_id', Auth::user()->branchs_id)->first();
             CreditTransactions::create([
@@ -2490,17 +2518,17 @@ public function searchInvoicesByDateEmployee(Request $request)
                 'updated_at' => Carbon::now('Asia/Riyadh'),
                 'creditor' => $totalCost,
             ]);
-
+ 
             // في حال وجود مبالغ آجلة يتم تحديث رصيد العميل المحاسبي
             if ($pData['creaditamount'] != 0) {
                 $customerData->increment('Balance', $pData['creaditamount']);
-
+ 
                 $customerFinancialAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
                 $customerFinancialAccount->update([
                     'current_balance' => $customerFinancialAccount->current_balance + $pData['creaditamount'],
                     'debtor_current' => $customerFinancialAccount->debtor_current + $pData['creaditamount'],
                 ]);
-
+ 
                 CreditTransactions::create([
                     'user_id' => Auth::id(),
                     'customer_id' => $customerFinancialAccount->id,
@@ -2515,24 +2543,21 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'debtor' => $pData['creaditamount']
                 ]);
             }
-
+ 
             // تحديث الرصيد النهائي المسجل بالفاتورة
             $customerData->refresh(); // جلب البيانات المحدثة للعميل من قاعدة البيانات
             $confirmInvoice->update([
                 'currentblance' => $customerData->Balance,
             ]);
-
+ 
             return $confirmInvoice->id;
         });
+
+
+
+
+
     }
-
-
-
-
-
-
-
-
 
 
 

@@ -204,6 +204,8 @@ class SupprocessesController extends Controller
                         'refnumber' => $request->refnumber,
                         'minmum_quantity_stock_alart' => $request->minmum_quantity_stock_alart,
                         'photo' => $photo,
+                        // جديد: عدد وحدات (اكياس) الكرتون الواحد -- افتراضي 1 لو المنتج مش مرتبط بكرتون
+                        'division_unit_count' => $request->division_unit_count ?: 1,
                     ]);
 
                     $newProduct->update([
@@ -356,56 +358,76 @@ class SupprocessesController extends Controller
      * تحديث بيانات المنتج ومزامنة الفروع
      */
     public function update_product_movement(Request $request)
-    {
-        $productId = $request->product_no;
-        $request->validate([
-            'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
-        ]);
+    { 
 
-        $photo = $request->hasFile('Item_img')
-            ? $this->uploadImage('assets/admin/uploads', $request->file('Item_img'))
-            : ($request->old_photo ?? 'productunKnown.png');
-
-        $updateData = [
-            'Product_Location' => $request->new_location,
-            'product_name' => $request->productnameshow,
-            'main_product' => $request->MAINproduct == 0 ? $productId : $request->MAINproduct,
-            'Product_Code' => $request->productcode,
-            'refnumber' => $request->refnumber,
-            'notes' => $request->product_notes ?? ' ',
-            'photo' => $photo,
-        ];
-
-        if ($request->filled('product_group')) {
-        $updateData['product_group'] = $request->product_group;
-        }
-
-        if ($request->has('product_price'))
-            $updateData['sale_price'] = $request->product_price;
-        if ($request->has('purachesepice'))
-            $updateData['purchasingـprice'] = $request->purachesepice;
-        if ($request->has('Wholesale_price'))
-            $updateData['Wholesale_price'] = $request->Wholesale_price;
-
-        DB::transaction(function () use ($productId, $updateData, $request) {
-            products::where('id', $productId)->update($updateData);
-
-            if ($request->hasAny(['product_price', 'purachesepice'])) {
-                $sharedUpdate = [];
-                if ($request->has('product_price'))
-                    $sharedUpdate['sale_price'] = $request->product_price;
-                if ($request->has('purachesepice'))
-                    $sharedUpdate['purchasingـprice'] = $request->purachesepice;
-
-                products::where('Product_Code', $request->productcode)->update($sharedUpdate);
-            }
-        });
-
-        $message = app()->getLocale() == 'ar' ? 'تم تعديل بيانات المنتج والمنتجات المرتبطة بنجاح' : 'Product data modified successfully';
-        session()->flash('productupdatedlocation', $message);
-
-        return redirect()->back();
+    $productId = $request->product_no;
+    $request->validate([
+        'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
+    ]);
+ 
+    $photo = $request->hasFile('Item_img')
+        ? $this->uploadImage('assets/admin/uploads', $request->file('Item_img'))
+        : ($request->old_photo ?? 'productunKnown.png');
+ 
+    $mainProductInput = $request->MAINproduct_Input;
+    if (is_numeric($mainProductInput) && (int) $mainProductInput > 0) {
+        $mainProductValue = (int) $mainProductInput;
+    } else {
+        // مفيش قيمة رقمية صالحة (يشمل 0 أو فاضي أو نص) -- يبقى المنتج مستقل بدون أب
+        $mainProductValue = $productId;
     }
+ 
+    $updateData = [
+        'Product_Location' => $request->new_location,
+        'product_name' => $request->productnameshow,
+        'main_product' => $mainProductValue,
+        'Product_Code' => $request->productcode,
+        'refnumber' => $request->refnumber,
+        'notes' => $request->product_notes ?? ' ',
+        'photo' => $photo,
+    ];
+ 
+    if ($request->filled('product_group')) {
+    $updateData['product_group'] = $request->product_group;
+    }
+ 
+    // جديد: تحديث الوحدة وعدد وحدات الكرتون لو اتبعتوا في الفورم
+    if ($request->filled('unit')) {
+        $updateData['unit'] = $request->unit;
+    }
+    if ($request->filled('division_unit_count')) {
+        $updateData['division_unit_count'] = $request->division_unit_count;
+    }
+ 
+    if ($request->has('product_price'))
+        $updateData['sale_price'] = $request->product_price;
+    if ($request->has('purachesepice'))
+        $updateData['purchasingـprice'] = $request->purachesepice;
+    if ($request->has('Wholesale_price'))
+        $updateData['Wholesale_price'] = $request->Wholesale_price;
+ 
+    DB::transaction(function () use ($productId, $updateData, $request) {
+        products::where('id', $productId)->update($updateData);
+ 
+        if ($request->hasAny(['product_price', 'purachesepice'])) {
+            $sharedUpdate = [];
+            if ($request->has('product_price'))
+                $sharedUpdate['sale_price'] = $request->product_price;
+            if ($request->has('purachesepice'))
+                $sharedUpdate['purchasingـprice'] = $request->purachesepice;
+ 
+            products::where('Product_Code', $request->productcode)->update($sharedUpdate);
+        }
+    });
+ 
+    $message = app()->getLocale() == 'ar' ? 'تم تعديل بيانات المنتج والمنتجات المرتبطة بنجاح' : 'Product data modified successfully';
+    session()->flash('productupdatedlocation', $message);
+ 
+    return redirect()->back();
+
+    }
+
+
 
     /**
      * إهلاك المنتجات (التالف) بطريقة محمية محاسبياً

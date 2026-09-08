@@ -50,31 +50,31 @@ class ProductsController extends Controller
 {
 
     public function getAccountBalance($id)
-{
-    $start_at =  '2025-01-01';
-    $end_at   = date('Y-m-d');
-    $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $id)->first();
+    {
+        $start_at = '2025-01-01';
+        $end_at = date('Y-m-d');
+        $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $id)->first();
 
-    $credittransactions = credittransactions::where('customer_id', $customerAccount->id)
-        ->whereDate('created_at', '>=', $start_at)
-        ->whereDate('created_at', '<=', $end_at)
-        ->where('save', 1)
-        ->orderBy('created_at')
-        ->get();
+        $credittransactions = credittransactions::where('customer_id', $customerAccount->id)
+            ->whereDate('created_at', '>=', $start_at)
+            ->whereDate('created_at', '<=', $end_at)
+            ->where('save', 1)
+            ->orderBy('created_at')
+            ->get();
 
-    $credit = 0;
-    $debit  = 0;
+        $credit = 0;
+        $debit = 0;
 
-    foreach ($credittransactions as $item) {
-        $credit += $item->creditor;
-        $debit  += $item->debtor;
+        foreach ($credittransactions as $item) {
+            $credit += $item->creditor;
+            $debit += $item->debtor;
+        }
+
+        return response()->json([
+            'credit' => round($credit, 2),
+            'debit' => round($debit, 2),
+        ]);
     }
-
-    return response()->json([
-        'credit'  => round($credit, 2),
-        'debit'   => round($debit, 2),
-    ]);
-}
 
 
     public function upload_stock()
@@ -82,139 +82,139 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         return view('products.upload_stock');
     }
-public function downloadStockTemplate()
-{
-    // استخدام مكتبة Laravel Excel لتحميل الملف
-    return Excel::download(new \App\Exports\StockTemplateExport, 'stock_template.xlsx');
-}
+    public function downloadStockTemplate()
+    {
+        // استخدام مكتبة Laravel Excel لتحميل الملف
+        return Excel::download(new \App\Exports\StockTemplateExport, 'stock_template.xlsx');
+    }
 
-public function importStockExcel(Request $request)
-{
-    $request->validate([
-        'branch' => 'required',
-        'excel_file' => 'required|mimes:xlsx,xls'
-    ]);
-
-    $selectedBranchId = $request->input('branch');
-
-    try {
-        // قراءة الملف كمصفوفة عادية لمنع مشاكل مفاتيح العناوين
-        $data = Excel::toArray([], $request->file('excel_file'));
-
-        if (empty($data) || empty($data[0])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'ملف الإكسيل فارغ / Excel file is empty'
-            ], 422);
-        }
-
-        $rows = $data[0];
-
-        // استبعاد صف العناوين الأول
-        $header = array_shift($rows);
-
-        $productsCount = 0;
-        $totalCost = 0;
-
-        foreach ($rows as $row) {
-            // تخطي الصفوف الفارغة تماماً
-            if (empty(array_filter($row))) {
-                continue;
-            }
-
-            $productName  = $row[0] ?? 'منتج بدون اسم';
-            $productCode  = $row[1] ?? null;
-            $quantity     = $row[2] ?? 0;
-            $costPrice    = $row[3] ?? 0;
-            $salePrice    = $row[4] ?? 0;
-
-            if (!$productCode) {
-                continue; // تخطي السطر إذا لم يوجد كود منتج
-            }
-
-            // حساب إجمالي التكلفة للمخزون
-            $totalCost += $costPrice * $quantity;
-
-            // التحقق إذا كان المنتج موجوداً مسبقاً في نفس الفرع (تحديث أو إنشاء)
-            $product = products::updateOrCreate(
-                [
-                    'Product_Code' => $productCode,
-                    'branchs_id'   => $selectedBranchId
-                ],
-                [
-                    'product_name'     => $productName,
-                    'user_id'          => Auth()->id(),
-                    'unit'             => 'pices',
-                    'Status'           => 1,
-                    'Product_Location' => '-',
-                    'type'             => '1',
-                    'brand'            => '1',
-                    'product_group'    => 1,
-                    'opening_balance'  => $quantity,
-                    'numberofpice'         => $quantity,
-                    'purchasingـprice' => $costPrice,
-                    'sale_price'      => $salePrice,
-                ]
-            );
-
-            $productsCount++;
-        }
-
-        // جلب حساب المخزون للفرع المحدد
-        $inventoryAccount = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $selectedBranchId)->first();
-
-        // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
-        if ($inventoryAccount) {
-            CreditTransactions::create([
-                'user_id'         => Auth::id(),
-                'customer_id'     => $inventoryAccount->id,
-                'recive_amount'   => $totalCost,
-                'branchs_id'      => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
-                'pay_method'      => "Cash",
-                'note'            => 'قيد المخزون الافتتاحي',
-                'currentblance'   => $totalCost,
-                'Pay_Method_Name' => "Cash",
-                'created_at'      => Carbon::now('Asia/Riyadh'),
-                'updated_at'      => Carbon::now('Asia/Riyadh'),
-                'debtor'        => $totalCost,
-            ]);
-        }
-
-
-                $inventoryAccount = financial_accounts::find( 162);
-
-        // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
-        if ($inventoryAccount) {
-            CreditTransactions::create([
-                'user_id'         => Auth::id(),
-                'customer_id'     => $inventoryAccount->id,
-                'recive_amount'   => $totalCost,
-                'branchs_id'      => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
-                'pay_method'      => "Cash",
-                'note'            => 'قيد المخزون الافتتاحي',
-                'currentblance'   => $totalCost,
-                'Pay_Method_Name' => "Cash",
-                'created_at'      => Carbon::now('Asia/Riyadh'),
-                'updated_at'      => Carbon::now('Asia/Riyadh'),
-                'creditor'        => $totalCost,
-            ]);
-        }
-
-
-
-        return response()->json([
-            'status'         => 'success',
-            'products_count' => $productsCount,
-            'message'        => 'تم رفع وتحديث البيانات بنجاح'
+    public function importStockExcel(Request $request)
+    {
+        $request->validate([
+            'branch' => 'required',
+            'excel_file' => 'required|mimes:xlsx,xls'
         ]);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'status'  => 'error',
-            'message' => 'حدث خطأ أثناء المعالجة: ' . $e->getMessage()
-        ], 500);
+        $selectedBranchId = $request->input('branch');
+
+        try {
+            // قراءة الملف كمصفوفة عادية لمنع مشاكل مفاتيح العناوين
+            $data = Excel::toArray([], $request->file('excel_file'));
+
+            if (empty($data) || empty($data[0])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ملف الإكسيل فارغ / Excel file is empty'
+                ], 422);
+            }
+
+            $rows = $data[0];
+
+            // استبعاد صف العناوين الأول
+            $header = array_shift($rows);
+
+            $productsCount = 0;
+            $totalCost = 0;
+
+            foreach ($rows as $row) {
+                // تخطي الصفوف الفارغة تماماً
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                $productName = $row[0] ?? 'منتج بدون اسم';
+                $productCode = $row[1] ?? null;
+                $quantity = $row[2] ?? 0;
+                $costPrice = $row[3] ?? 0;
+                $salePrice = $row[4] ?? 0;
+
+                if (!$productCode) {
+                    continue; // تخطي السطر إذا لم يوجد كود منتج
+                }
+
+                // حساب إجمالي التكلفة للمخزون
+                $totalCost += $costPrice * $quantity;
+
+                // التحقق إذا كان المنتج موجوداً مسبقاً في نفس الفرع (تحديث أو إنشاء)
+                $product = products::updateOrCreate(
+                    [
+                        'Product_Code' => $productCode,
+                        'branchs_id' => $selectedBranchId
+                    ],
+                    [
+                        'product_name' => $productName,
+                        'user_id' => Auth()->id(),
+                        'unit' => 'pices',
+                        'Status' => 1,
+                        'Product_Location' => '-',
+                        'type' => '1',
+                        'brand' => '1',
+                        'product_group' => 1,
+                        'opening_balance' => $quantity,
+                        'numberofpice' => $quantity,
+                        'purchasingـprice' => $costPrice,
+                        'sale_price' => $salePrice,
+                    ]
+                );
+
+                $productsCount++;
+            }
+
+            // جلب حساب المخزون للفرع المحدد
+            $inventoryAccount = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $selectedBranchId)->first();
+
+            // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
+            if ($inventoryAccount) {
+                CreditTransactions::create([
+                    'user_id' => Auth::id(),
+                    'customer_id' => $inventoryAccount->id,
+                    'recive_amount' => $totalCost,
+                    'branchs_id' => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
+                    'pay_method' => "Cash",
+                    'note' => 'قيد المخزون الافتتاحي',
+                    'currentblance' => $totalCost,
+                    'Pay_Method_Name' => "Cash",
+                    'created_at' => Carbon::now('Asia/Riyadh'),
+                    'updated_at' => Carbon::now('Asia/Riyadh'),
+                    'debtor' => $totalCost,
+                ]);
+            }
+
+
+            $inventoryAccount = financial_accounts::find(162);
+
+            // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
+            if ($inventoryAccount) {
+                CreditTransactions::create([
+                    'user_id' => Auth::id(),
+                    'customer_id' => $inventoryAccount->id,
+                    'recive_amount' => $totalCost,
+                    'branchs_id' => $selectedBranchId, // استخدام فرع الاختيار بدلاً من فرع المستخدم
+                    'pay_method' => "Cash",
+                    'note' => 'قيد المخزون الافتتاحي',
+                    'currentblance' => $totalCost,
+                    'Pay_Method_Name' => "Cash",
+                    'created_at' => Carbon::now('Asia/Riyadh'),
+                    'updated_at' => Carbon::now('Asia/Riyadh'),
+                    'creditor' => $totalCost,
+                ]);
+            }
+
+
+
+            return response()->json([
+                'status' => 'success',
+                'products_count' => $productsCount,
+                'message' => 'تم رفع وتحديث البيانات بنجاح'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء المعالجة: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
     public function save_purchase_order(Request $request)
     {
         // 1. جلب معرف المورد من الريكويست القادم من السيرش
@@ -827,9 +827,13 @@ public function importStockExcel(Request $request)
 
     public function search(Request $request)
     {
-        return products::where('product_name', 'like', '%' . $request->q . '%')
-            ->limit(20)
-            ->get(['id', 'product_name']);
+        $query = products::where('product_name', 'like', '%' . $request->q . '%');
+
+        if ($request->filled('branchs_id')) {
+            $query->where('branchs_id', $request->branchs_id);
+        }
+
+        return $query->limit(20)->get(['id', 'product_name']);
     }
 
     public function clientnamesearch(Request $request)
@@ -997,14 +1001,14 @@ public function importStockExcel(Request $request)
 
         // استخدام الـ Transaction لضمان سلامة البيانات المحاسبية
         return DB::transaction(function () use ($request, $supplier, $payment, $shipping, $invoice_number_supplier, $invoice_order_purshase, $branchs_id, $total_Net, $totalTax, $total_discount, $total, $date, $createdAt, $updatedAt) {
-         $branchMainId= $request->branchs_id;
-        $branchsData=branchs::find($request->branchs_id);
-
-        if ($branchsData->type == 1) {
-            $branchMainId = $branchsData->branch_id;
-        } else {
             $branchMainId = $request->branchs_id;
-        }
+            $branchsData = branchs::find($request->branchs_id);
+
+            if ($branchsData->type == 1) {
+                $branchMainId = $branchsData->branch_id;
+            } else {
+                $branchMainId = $request->branchs_id;
+            }
             // 1. إدارة أمر التوريد (Order to Supplier)
             if ($request->orderNo == 0) {
                 $createorder = orderTosupllier::create([
@@ -1037,7 +1041,7 @@ public function importStockExcel(Request $request)
                 'branchs_id' => $branchs_id,
                 'created_at' => $createdAt,
                 'updated_at' => $updatedAt,
-                'branchMainId'=>$branchMainId==$branchs_id?0:$branchMainId
+                'branchMainId' => $branchMainId == $branchs_id ? 0 : $branchMainId
             ]);
             // 3. معالجة المنتجات وحساب التكاليف (توزيع الشحن وحساب متوسط التكلفة)
             $total_invoice_value = $total;
@@ -1129,7 +1133,7 @@ public function importStockExcel(Request $request)
                     ]);
                 }
             }
-           $branchs_id=$branchMainId;
+            $branchs_id = $branchMainId;
 
             // 5. حساب قيم الضريبة والصافي المحاسبي
             $total_value = $resource_purchases->In_debt;
@@ -1453,39 +1457,39 @@ public function importStockExcel(Request $request)
         return round($accountdata->debtor_current - $accountdata->creditor_current, 2);
     }
 
-public function ChooseProductpaginatenewupdate(Request $request)
-{
-    // 1. تحديد لغة التطبيق من الـ Request القادم عبر AJAX
-    if ($request->has('locale') && !empty($request->locale)) {
-        app()->setLocale($request->locale);
-    } else {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function ChooseProductpaginatenewupdate(Request $request)
+    {
+        // 1. تحديد لغة التطبيق من الـ Request القادم عبر AJAX
+        if ($request->has('locale') && !empty($request->locale)) {
+            app()->setLocale($request->locale);
+        } else {
+            app()->setLocale(LaravelLocalization::getCurrentLocale());
+        }
+
+        $searchtext = $request->searchtext;
+        $branchs_id = $request->branchs_id;
+
+        $query = products::query();
+
+        // تنظيم الشروط البرمجية لضمان عدم تداخل الفروع عند البحث
+        if ($branchs_id && $branchs_id !== '-') {
+            $query->where('branchs_id', $branchs_id);
+        }
+
+        // تطبيق البحث فقط إذا كان المتغير يحتوي على نص
+        if (!empty($searchtext)) {
+            $query->where(function ($q) use ($searchtext) {
+                $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
+                    ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
+                    ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
+                    ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
+            });
+        }
+
+        $data = $query->paginate(20);
+
+        return view('ajax_choose_product', compact('data'));
     }
-
-    $searchtext = $request->searchtext;
-    $branchs_id = $request->branchs_id;
-
-    $query = products::query();
-
-    // تنظيم الشروط البرمجية لضمان عدم تداخل الفروع عند البحث
-    if ($branchs_id && $branchs_id !== '-') {
-        $query->where('branchs_id', $branchs_id);
-    }
-
-    // تطبيق البحث فقط إذا كان المتغير يحتوي على نص
-    if (!empty($searchtext)) {
-        $query->where(function ($q) use ($searchtext) {
-            $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
-              ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%')
-              ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
-              ->orWhere('notes', 'LIKE', '%' . $searchtext . '%');
-        });
-    }
-
-    $data = $query->paginate(20);
-
-    return view('ajax_choose_product', compact('data'));
-}
 
 
 
@@ -1550,17 +1554,17 @@ public function ChooseProductpaginatenewupdate(Request $request)
         }
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-$userBranchId = Auth::user()->branchs_id;
+        $userBranchId = Auth::user()->branchs_id;
 
-$data = resource_purchases::where('save', 1)
-    ->where(function ($query) use ($userBranchId) {
-        $query->where('branchs_id', $userBranchId)
-              ->orWhere('branchMainId', $userBranchId);
-    })
-    ->orderBy('id', 'desc')
-    ->paginate(20);
+        $data = resource_purchases::where('save', 1)
+            ->where(function ($query) use ($userBranchId) {
+                $query->where('branchs_id', $userBranchId)
+                    ->orWhere('branchMainId', $userBranchId);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(20);
 
-    return view('ajax_Recent_Invoices_purchases', compact('data'));
+        return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
     public function openfilefile($path)
@@ -1613,159 +1617,159 @@ $data = resource_purchases::where('save', 1)
         return view('ajax_choose_product_replace2', compact('data'));
     }
 
- public function operationproducts($branchs_id, $productId)
-{
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function operationproducts($branchs_id, $productId)
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    // جلب البيانات مع تحميل العلاقات المرتبطة مسبقاً لتجنب الأخطاء
-    $orderDetails = orderDetails::with(['supllier', 'productData'])
-        ->where('product_id', $productId)
-        ->where('save', 1)
-        ->get();
+        // جلب البيانات مع تحميل العلاقات المرتبطة مسبقاً لتجنب الأخطاء
+        $orderDetails = orderDetails::with(['supllier', 'productData'])
+            ->where('product_id', $productId)
+            ->where('save', 1)
+            ->get();
 
-    $sales = sales::with(['invoice.customer', 'productData'])
-        ->where('product_id', $productId)
-        ->where('save', 1)
-        ->get();
+        $sales = sales::with(['invoice.customer', 'productData'])
+            ->where('product_id', $productId)
+            ->where('save', 1)
+            ->get();
 
-    $return_sales = return_sales::with(['invoice.customer', 'productData'])
-        ->where('product_id', $productId)
-        ->get();
+        $return_sales = return_sales::with(['invoice.customer', 'productData'])
+            ->where('product_id', $productId)
+            ->get();
 
-    $product_movement_another_branch_items = product_movement_another_branch_items::with(['product', 'order'])
-        ->where('product_id', $productId)
-        ->get();
+        $product_movement_another_branch_items = product_movement_another_branch_items::with(['product', 'order'])
+            ->where('product_id', $productId)
+            ->get();
 
-    $sales_withoud_taxes = sales_withoud_taxes::with(['invoice.customer', 'productData'])
-        ->where('product_id', $productId)
-        ->where('save', 1)
-        ->get();
+        $sales_withoud_taxes = sales_withoud_taxes::with(['invoice.customer', 'productData'])
+            ->where('product_id', $productId)
+            ->where('save', 1)
+            ->get();
 
-    $return_sales_deliverys = return_sales_deliverys::with(['invoice.customer', 'productData'])
-        ->where('product_id', $productId)
-        ->get();
+        $return_sales_deliverys = return_sales_deliverys::with(['invoice.customer', 'productData'])
+            ->where('product_id', $productId)
+            ->get();
 
-    $products = [];
+        $products = [];
 
-    foreach ($product_movement_another_branch_items as $item) {
-        $invoice = $item->order; // استخدام العلاقة المتاحة بدلاً من البحث المتكرر find()
+        foreach ($product_movement_another_branch_items as $item) {
+            $invoice = $item->order; // استخدام العلاقة المتاحة بدلاً من البحث المتكرر find()
 
-        $products[] = [
-            'id' => $item->order_id,
-            'Product_Code' => $item->product->Product_Code ?? '-',
-            'product_name' => $item->product->product_name ?? '-',
-            'created_at' => $item->created_at,
-            'quantity' => $item->quantity,
-            'price' => $item->cost_per_each_withoud_tax,
-            'operation' => $item->order_id != 0 ? __('home.send_product_from_brance') : __('home.recive_product_from_other_branch_other'),
-            'type' => 3,
-            'man' => $item->order_id != 0 ? ($invoice->branchto->name ?? '-') : ($invoice->branchfrom->name ?? '-'),
-        ];
-    }
-
-    foreach ($return_sales as $item) {
-        $invoice = $item->invoice;
-
-        $products[] = [
-            'id' => $item->invoice_id,
-            'Product_Code' => $item->productData->Product_Code ?? '-',
-            'product_name' => $item->productData->product_name ?? '-',
-            'created_at' => $item->created_at,
-            'quantity' => $item->return_quantity,
-            'price' => $item->return_Unit_Price,
-            'operation' => __('home.salesـreturned'),
-            'type' => 2,
-            'man' => $invoice->customer->name ?? '-',
-        ];
-    }
-
-    foreach ($sales as $item) {
-        $invoice = $item->invoice;
-
-        $products[] = [
-            'id' => $item->invoice_id,
-            'Product_Code' => $item->productData->Product_Code ?? '-',
-            'product_name' => $item->productData->product_name ?? '-',
-            'created_at' => $item->created_at,
-            'quantity' => $item->quantity + $item->quantityreturn,
-            'price' => $item->Unit_Price,
-            'operation' => __('home.sales'),
-            'type' => 1,
-            'man' => $invoice->customer->name ?? '-',
-        ];
-    }
-
-    foreach ($return_sales_deliverys as $item) {
-        $invoice = $item->invoice;
-
-        $products[] = [
-            'id' => $item->invoice_id,
-            'Product_Code' => $item->productData->Product_Code ?? '-',
-            'product_name' => $item->productData->product_name ?? '-',
-            'created_at' => $item->created_at,
-            'quantity' => $item->return_quantity,
-            'price' => $item->return_Unit_Price,
-            'operation' => __('home.delivery_return'),
-            'type' => 2,
-            'man' => $invoice->customer->name ?? '-',
-        ];
-    }
-
-    foreach ($sales_withoud_taxes as $item) {
-        $invoice = $item->invoice;
-
-        $products[] = [
-            'id' => $item->invoice_id,
-            'Product_Code' => $item->productData->Product_Code ?? '-',
-            'product_name' => $item->productData->product_name ?? '-',
-            'created_at' => $item->created_at,
-            'quantity' => $item->quantity + $item->quantityreturn,
-            'price' => $item->Unit_Price,
-            'operation' => __('home.sel_product_withoud_tax'),
-            'type' => 1,
-            'man' => $invoice->customer->name ?? '-',
-        ];
-    }
-
-    foreach ($orderDetails as $item) {
-        // استخدام العلاقة suplier التي عرفتها مسبقاً في موديل orderDetails
-        $supplierName = $item->supllier->supllier->name ?? '-';
-
-        if ($item->returns_purchase > 0) {
             $products[] = [
-                'id' => $item->invoice_id ?? $item->id,
-                'Product_Code' => $item->productData->Product_Code ?? '-',
-                'product_name' => $item->productData->product_name ?? '-',
-                'created_at' => $item->updated_at,
-                'quantity' => $item->returns_purchase,
-                'price' => $item->purchasingـprice,
-                'operation' => __('home.purchase_return'),
-                'type' => 5,
-                'man' => $supplierName,
+                'id' => $item->order_id,
+                'Product_Code' => $item->product->Product_Code ?? '-',
+                'product_name' => $item->product->product_name ?? '-',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity,
+                'price' => $item->cost_per_each_withoud_tax,
+                'operation' => $item->order_id != 0 ? __('home.send_product_from_brance') : __('home.recive_product_from_other_branch_other'),
+                'type' => 3,
+                'man' => $item->order_id != 0 ? ($invoice->branchto->name ?? '-') : ($invoice->branchfrom->name ?? '-'),
             ];
         }
 
-        $products[] = [
-            'id' => $item->order_owner,
-            'Product_Code' => $item->productData->Product_Code ?? $item->product_id,
-            'product_name' => $item->productData->product_name ?? $item->product_name,
-            'created_at' => $item->created_at,
-            'quantity' => $item->numberofpice,
-            'price' => $item->purchasingـprice,
-            'man' => $supplierName,
-            'operation' => __('home.purchases'),
-            'type' => 4
-        ];
-    }
+        foreach ($return_sales as $item) {
+            $invoice = $item->invoice;
 
-    // ترتيب العمليات حسب التاريخ تصاعدياً
-    if (!empty($products)) {
-        $dates = array_column($products, 'created_at');
-        array_multisort(array_map('strtotime', $dates), SORT_ASC, $products);
-    }
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_Code' => $item->productData->Product_Code ?? '-',
+                'product_name' => $item->productData->product_name ?? '-',
+                'created_at' => $item->created_at,
+                'quantity' => $item->return_quantity,
+                'price' => $item->return_Unit_Price,
+                'operation' => __('home.salesـreturned'),
+                'type' => 2,
+                'man' => $invoice->customer->name ?? '-',
+            ];
+        }
 
-    return view('ajax_choose_product_replace', compact('products'));
-}
+        foreach ($sales as $item) {
+            $invoice = $item->invoice;
+
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_Code' => $item->productData->Product_Code ?? '-',
+                'product_name' => $item->productData->product_name ?? '-',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity + $item->quantityreturn,
+                'price' => $item->Unit_Price,
+                'operation' => __('home.sales'),
+                'type' => 1,
+                'man' => $invoice->customer->name ?? '-',
+            ];
+        }
+
+        foreach ($return_sales_deliverys as $item) {
+            $invoice = $item->invoice;
+
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_Code' => $item->productData->Product_Code ?? '-',
+                'product_name' => $item->productData->product_name ?? '-',
+                'created_at' => $item->created_at,
+                'quantity' => $item->return_quantity,
+                'price' => $item->return_Unit_Price,
+                'operation' => __('home.delivery_return'),
+                'type' => 2,
+                'man' => $invoice->customer->name ?? '-',
+            ];
+        }
+
+        foreach ($sales_withoud_taxes as $item) {
+            $invoice = $item->invoice;
+
+            $products[] = [
+                'id' => $item->invoice_id,
+                'Product_Code' => $item->productData->Product_Code ?? '-',
+                'product_name' => $item->productData->product_name ?? '-',
+                'created_at' => $item->created_at,
+                'quantity' => $item->quantity + $item->quantityreturn,
+                'price' => $item->Unit_Price,
+                'operation' => __('home.sel_product_withoud_tax'),
+                'type' => 1,
+                'man' => $invoice->customer->name ?? '-',
+            ];
+        }
+
+        foreach ($orderDetails as $item) {
+            // استخدام العلاقة suplier التي عرفتها مسبقاً في موديل orderDetails
+            $supplierName = $item->supllier->supllier->name ?? '-';
+
+            if ($item->returns_purchase > 0) {
+                $products[] = [
+                    'id' => $item->invoice_id ?? $item->id,
+                    'Product_Code' => $item->productData->Product_Code ?? '-',
+                    'product_name' => $item->productData->product_name ?? '-',
+                    'created_at' => $item->updated_at,
+                    'quantity' => $item->returns_purchase,
+                    'price' => $item->purchasingـprice,
+                    'operation' => __('home.purchase_return'),
+                    'type' => 5,
+                    'man' => $supplierName,
+                ];
+            }
+
+            $products[] = [
+                'id' => $item->order_owner,
+                'Product_Code' => $item->productData->Product_Code ?? $item->product_id,
+                'product_name' => $item->productData->product_name ?? $item->product_name,
+                'created_at' => $item->created_at,
+                'quantity' => $item->numberofpice,
+                'price' => $item->purchasingـprice,
+                'man' => $supplierName,
+                'operation' => __('home.purchases'),
+                'type' => 4
+            ];
+        }
+
+        // ترتيب العمليات حسب التاريخ تصاعدياً
+        if (!empty($products)) {
+            $dates = array_column($products, 'created_at');
+            array_multisort(array_map('strtotime', $dates), SORT_ASC, $products);
+        }
+
+        return view('ajax_choose_product_replace', compact('products'));
+    }
 
 
     public function index()
@@ -1852,14 +1856,14 @@ $data = resource_purchases::where('save', 1)
 
         return view('showAllProducts');
     }
-     public function showAllProducts_IN_Wherehouse(Request $request)
+    public function showAllProducts_IN_Wherehouse(Request $request)
     {
         //
         $branchId = $request->input('branch_id');
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('showAllProducts_IN_Wherehouse', compact( 'branchId'));
+        return view('showAllProducts_IN_Wherehouse', compact('branchId'));
     }
     public function ShowAllNotifications()
     {
@@ -1872,20 +1876,20 @@ $data = resource_purchases::where('save', 1)
     public function searchaboutinvoiceByIdfunctionpurchases($date)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-$userBranchId = Auth()->user()->branchs_id;
+        $userBranchId = Auth()->user()->branchs_id;
 
-$data = resource_purchases::where('save', 1)
-    ->where(function ($query) use ($userBranchId) {
-        $query->where('branchs_id', $userBranchId)
-              ->orWhere('branchMainId', $userBranchId);
-    })
-    ->where(function ($query) use ($date) {
-        $query->where('orderId', $date)
-              ->orWhere('Purchase_invoice_number', $date);
-    })
-    ->orderBy('id', 'desc')
-    ->paginate(20);
-            return view('ajax_Recent_Invoices_purchases', compact('data'));
+        $data = resource_purchases::where('save', 1)
+            ->where(function ($query) use ($userBranchId) {
+                $query->where('branchs_id', $userBranchId)
+                    ->orWhere('branchMainId', $userBranchId);
+            })
+            ->where(function ($query) use ($date) {
+                $query->where('orderId', $date)
+                    ->orWhere('Purchase_invoice_number', $date);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+        return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1894,17 +1898,17 @@ $data = resource_purchases::where('save', 1)
     public function getinvoicesbyspplluer($date)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-$userBranchId = Auth()->user()->branchs_id;
+        $userBranchId = Auth()->user()->branchs_id;
 
-$data = resource_purchases::where('save', 1)
-    ->where(function ($query) use ($userBranchId) {
-        $query->where('branchs_id', $userBranchId)
-              ->orWhere('branchMainId', $userBranchId);
-    })
-    ->where('suplier_id', $date)
-    ->orderBy('id', 'desc')
-    ->paginate(20);
-            return view('ajax_Recent_Invoices_purchases', compact('data'));
+        $data = resource_purchases::where('save', 1)
+            ->where(function ($query) use ($userBranchId) {
+                $query->where('branchs_id', $userBranchId)
+                    ->orWhere('branchMainId', $userBranchId);
+            })
+            ->where('suplier_id', $date)
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+        return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1925,26 +1929,26 @@ $data = resource_purchases::where('save', 1)
         //return $data;
         return view('profile.show');
     }
-public function getAllinvicesapurchasesjax()
-{
-    app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function getAllinvicesapurchasesjax()
+    {
+        app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-    $query = resource_purchases::where('save', 1);
+        $query = resource_purchases::where('save', 1);
 
-    // التحقق من المستخدمين المستثنين أو تطبيق شرط الفروع
-    if (!in_array(auth()->user()->id, [17, 30, 11])) {
-        $userBranchId = auth()->user()->branchs_id;
+        // التحقق من المستخدمين المستثنين أو تطبيق شرط الفروع
+        if (!in_array(auth()->user()->id, [17, 30, 11])) {
+            $userBranchId = auth()->user()->branchs_id;
 
-        $query->where(function ($q) use ($userBranchId) {
-            $q->where('branchs_id', $userBranchId)
-              ->orWhere('branchMainId', $userBranchId);
-        });
+            $query->where(function ($q) use ($userBranchId) {
+                $q->where('branchs_id', $userBranchId)
+                    ->orWhere('branchMainId', $userBranchId);
+            });
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate(20);
+
+        return view('ajax_Recent_Invoices_purchases', compact('data'));
     }
-
-    $data = $query->orderBy('id', 'desc')->paginate(20);
-
-    return view('ajax_Recent_Invoices_purchases', compact('data'));
-}
 
 
 
@@ -1966,7 +1970,7 @@ public function getAllinvicesapurchasesjax()
 
 
 
-public function previousSalesInvoices()
+    public function previousSalesInvoices()
     {
         $query = Invoices::where('save', 1)
             ->where('status', 0);
@@ -1979,14 +1983,14 @@ public function previousSalesInvoices()
 
         return view('previousSalesInvoices', compact('data'));
     }
-public function getAllinvicesajax()
+    public function getAllinvicesajax()
     {
         // Start building the query using the base method
         $query = $this->getBaseInvoiceQuery(0);
 
         // Apply branch restriction if the user's branch matches 17 or 30
-      if (!in_array(auth()->user()->id, [17, 30])) {
-                $query->where('branchs_id', auth()->user()->branchs_id);
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
         }
 
         // Order, paginate, and fetch the results
@@ -1995,13 +1999,13 @@ public function getAllinvicesajax()
         return view('ajax_Recent_Invoices', compact('data'));
     }
 
-public function searchAllInvoicespaginatenew($date)
+    public function searchAllInvoicespaginatenew($date)
     {
         $query = $this->getBaseInvoiceQuery(0)
             ->where('created_at', 'LIKE', '%' . $date . '%');
 
-       if (!in_array(auth()->user()->id, [17, 30])) {
-                $query->where('branchs_id', auth()->user()->branchs_id);
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
         }
 
         $data = $query->paginate(20);
@@ -2014,34 +2018,34 @@ public function searchAllInvoicespaginatenew($date)
         $query = $this->getBaseInvoiceQuery(0)
             ->where('id', $date);
 
-       if (!in_array(auth()->user()->id, [17, 30])) {
-                $query->where('branchs_id', auth()->user()->branchs_id);
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
         }
 
         $data = $query->paginate(20);
 
         return view('ajax_Recent_Invoices', compact('data'));
     }
-public function getinvoicesbypayment($pay)
-{
-    $query = $this->getBaseInvoiceQuery(0)
-        ->where('Pay', $pay); // استخدام عمود Pay لتخزين طريقة الدفع
+    public function getinvoicesbypayment($pay)
+    {
+        $query = $this->getBaseInvoiceQuery(0)
+            ->where('Pay', $pay); // استخدام عمود Pay لتخزين طريقة الدفع
 
-    if (!in_array(auth()->user()->id, [17, 30])) {
-        $query->where('branchs_id', auth()->user()->branchs_id);
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
+        }
+
+        $data = $query->orderBy('id', 'desc')->paginate(20);
+
+        return view('ajax_Recent_Invoices', compact('data'));
     }
-
-    $data = $query->orderBy('id', 'desc')->paginate(20);
-
-    return view('ajax_Recent_Invoices', compact('data'));
-}
     public function getinvoicesbycustomer($date)
     {
         $query = $this->getBaseInvoiceQuery(0)
             ->where('customer_id', $date);
 
-       if (!in_array(auth()->user()->id, [17, 30])) {
-                $query->where('branchs_id', auth()->user()->branchs_id);
+        if (!in_array(auth()->user()->id, [17, 30])) {
+            $query->where('branchs_id', auth()->user()->branchs_id);
         }
 
         $data = $query->orderBy('id', 'desc')->paginate(20);
@@ -2248,29 +2252,29 @@ public function getinvoicesbypayment($pay)
         return $products;
     }
 
-public function searchChooseProductpaginatenewpurchaseBypost(Request $request)
-{
-    if ($request->has('locale') && !empty($request->locale)) {
-        app()->setLocale($request->locale);
+    public function searchChooseProductpaginatenewpurchaseBypost(Request $request)
+    {
+        if ($request->has('locale') && !empty($request->locale)) {
+            app()->setLocale($request->locale);
+        }
+
+        $searchtext = $request->searchtext;
+        $branchId = $request->branchs_id;
+
+        $query = Products::where('branchs_id', $branchId);
+
+        // التحقق إذا كان هناك نص بحث، لتطبيق شرط البحث
+        if (!empty($searchtext)) {
+            $query->where(function ($q) use ($searchtext) {
+                $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
+                    ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%');
+            });
+        }
+
+        $data = $query->paginate(50);
+
+        return view('ajax_choose_product', compact('data'));
     }
-    
-    $searchtext = $request->searchtext;
-    $branchId = $request->branchs_id;
-
-    $query = Products::where('branchs_id', $branchId);
-
-    // التحقق إذا كان هناك نص بحث، لتطبيق شرط البحث
-    if (!empty($searchtext)) {
-        $query->where(function ($q) use ($searchtext) {
-            $q->where('product_name', 'LIKE', '%' . $searchtext . '%')
-              ->orWhere('Product_Code', 'LIKE', '%' . $searchtext . '%');
-        });
-    }
-
-    $data = $query->paginate(50);
-
-    return view('ajax_choose_product', compact('data'));
-}
 
     public function searchAllproductpaginatepurchase($branchId, $searchtext)
     {
@@ -2689,15 +2693,15 @@ public function searchChooseProductpaginatenewpurchaseBypost(Request $request)
         $reversalData = $this->processInvoiceReversal($id);
 
         if ($reversalData) {
-         $userBranchId = auth()->user()->branchs_id;
+            $userBranchId = auth()->user()->branchs_id;
 
-$data = resource_purchases::where('save', 1)
-    ->where(function ($query) use ($userBranchId) {
-        $query->where('branchs_id', $userBranchId)
-              ->orWhere('branchMainId', $userBranchId);
-    })
-    ->orderBy('id', 'desc')
-    ->paginate(20);
+            $data = resource_purchases::where('save', 1)
+                ->where(function ($query) use ($userBranchId) {
+                    $query->where('branchs_id', $userBranchId)
+                        ->orWhere('branchMainId', $userBranchId);
+                })
+                ->orderBy('id', 'desc')
+                ->paginate(20);
 
 
             return view('ajax_Recent_Invoices_purchases', compact('data'));
@@ -3359,8 +3363,8 @@ $data = resource_purchases::where('save', 1)
     public function goToSale()
     {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(50);
-        $invoiceId=0;
-        return view('products.sales', compact(['products','invoiceId']));
+        $invoiceId = 0;
+        return view('products.sales', compact(['products', 'invoiceId']));
     }
 
     public function goToSaleByPage()
@@ -3544,7 +3548,7 @@ $data = resource_purchases::where('save', 1)
         return view('ajax_search', compact('data'));
     }
 
-  public function searchAllproductpaginatenew_by_post(Request $request)
+    public function searchAllproductpaginatenew_by_post(Request $request)
     {
         $searchTerm = '%' . $request->searchtext . '%';
 
@@ -3561,15 +3565,15 @@ $data = resource_purchases::where('save', 1)
             ->when($request->filled('searchtext'), function ($query) use ($searchTerm) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('product_name', 'LIKE', $searchTerm)
-                    ->orWhere('Product_Code', 'LIKE', $searchTerm)
-                    ->orWhere('notes', 'LIKE', $searchTerm)
-                    ->orWhere('refnumber', 'LIKE', $searchTerm);
+                        ->orWhere('Product_Code', 'LIKE', $searchTerm)
+                        ->orWhere('notes', 'LIKE', $searchTerm)
+                        ->orWhere('refnumber', 'LIKE', $searchTerm);
                 });
             })
             // تدميج كل مدخلات Request داخل روابط الصفحات لضمان عدم ضياع أي فلتر عند الضغط على أرقام الصفحات
             ->paginate(20)
             ->appends($request->all())
-            ;
+        ;
 
         return view('ajax_search', compact('data'));
     }
@@ -3657,9 +3661,9 @@ $data = resource_purchases::where('save', 1)
             })->paginate(20);
 
         // إرجاع الـ view مرة واحدة فقط في النهاية لكلتا الحالتين
- return view('ajax_choose_product_sale', compact('data'))
-    ->with('currentrow', $request->currentrow)
-    ->with('getLocale', $request->input('locale'));
+        return view('ajax_choose_product_sale', compact('data'))
+            ->with('currentrow', $request->currentrow)
+            ->with('getLocale', $request->input('locale'));
     }
 
     public function processOrderPurchase(Request $request, $date, $payment, $supplier, $shipping, $branchs_id, $another_bank)
@@ -4081,487 +4085,487 @@ $data = resource_purchases::where('save', 1)
 
 
 
-   public function returnAllpurchase(Request $request)
-{
-    return DB::transaction(function () use ($request) {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
+    public function returnAllpurchase(Request $request)
+    {
+        return DB::transaction(function () use ($request) {
+            app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $orderNumber = $request->ordernumber;
-        $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
-        $discount = $resource_purchases->discount;
+            $orderNumber = $request->ordernumber;
+            $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
+            $discount = $resource_purchases->discount;
 
-        $payment = 'Cash';
-        $paymentMethod = $payment;
-        $total_cost = 0;
-        $tax_value = 0;
-        $vatrat = 0;
-        $total_pieces = 0;
-        $current_user_branch = auth()->user()->branchs_id;
-        $current_time = now();
+            $payment = 'Cash';
+            $paymentMethod = $payment;
+            $total_cost = 0;
+            $tax_value = 0;
+            $vatrat = 0;
+            $total_pieces = 0;
+            $current_user_branch = auth()->user()->branchs_id;
+            $current_time = now();
 
-        // جلب تفاصيل المنتجات النشطة في الطلب لتجنب تكرار الاستعلامات
-        $activeOrderDetails = orderDetails::where('numberofpice', '!=', 0)
-            ->where('order_owner', $orderNumber)
-            ->get();
-
-        foreach ($activeOrderDetails as $item) {
-            $productData = products::find($item->product_id);
-
-            // تحديث مخزون المنتج الأصلي بالخصم منه
-            products::where('id', $item->product_id)->update([
-                'numberofpice' => $productData->numberofpice - $item->numberofpice,
-            ]);
-
-            $total_pieces += $item->numberofpice;
-
-            // تسجيل المرتجع في الجدول الجديد PurchaseReturnLog
-            PurchaseReturnLog::create([
-                'orderId'              => $orderNumber,
-                'order_details_id'     => $item->id,
-                'product_id'           => $item->product_id,
-                'product_name'         => $productData->name ?? 'Unknown',
-                'purchasing_price'     => $item->purchasingـprice,
-                'Added_Value'          => $item->Added_Value,
-                'return_quentity'      => $item->numberofpice,
-                'total_returned_value' => round(($item->purchasingـprice * $item->numberofpice) + $item->Added_Value, 2),
-                'return_type'          => 'Full Return',
-                'branchs_id'           => $current_user_branch,
-                'returned_by'          => auth()->user()->id,
-                'return_reason'        => 'مرتجع مشتريات فاتورة رقم : ' . $orderNumber,
-            ]);
-
-            // تحديث تفاصيل الطلب لإثبات المرتجع وتصفير الكمية الحالية
-            orderDetails::where('product_id', $item->product_id)
+            // جلب تفاصيل المنتجات النشطة في الطلب لتجنب تكرار الاستعلامات
+            $activeOrderDetails = orderDetails::where('numberofpice', '!=', 0)
                 ->where('order_owner', $orderNumber)
-                ->update([
-                    'returns_purchase' => $item->returns_purchase + $item->numberofpice,
-                    'numberofpice' => 0,
+                ->get();
+
+            foreach ($activeOrderDetails as $item) {
+                $productData = products::find($item->product_id);
+
+                // تحديث مخزون المنتج الأصلي بالخصم منه
+                products::where('id', $item->product_id)->update([
+                    'numberofpice' => $productData->numberofpice - $item->numberofpice,
+                ]);
+
+                $total_pieces += $item->numberofpice;
+
+                // تسجيل المرتجع في الجدول الجديد PurchaseReturnLog
+                PurchaseReturnLog::create([
+                    'orderId' => $orderNumber,
+                    'order_details_id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $productData->name ?? 'Unknown',
+                    'purchasing_price' => $item->purchasingـprice,
+                    'Added_Value' => $item->Added_Value,
+                    'return_quentity' => $item->numberofpice,
+                    'total_returned_value' => round(($item->purchasingـprice * $item->numberofpice) + $item->Added_Value, 2),
+                    'return_type' => 'Full Return',
+                    'branchs_id' => $current_user_branch,
+                    'returned_by' => auth()->user()->id,
+                    'return_reason' => 'مرتجع مشتريات فاتورة رقم : ' . $orderNumber,
+                ]);
+
+                // تحديث تفاصيل الطلب لإثبات المرتجع وتصفير الكمية الحالية
+                orderDetails::where('product_id', $item->product_id)
+                    ->where('order_owner', $orderNumber)
+                    ->update([
+                        'returns_purchase' => $item->returns_purchase + $item->numberofpice,
+                        'numberofpice' => 0,
+                        'updated_at' => $current_time,
+                    ]);
+
+                // التحقق من السعر لمنع خطأ القسمة على صفر
+                $vatrat = $item->purchasingـprice > 0 ? round($item->Added_Value / $item->purchasingـprice, 2) : 0;
+                $total_cost += round(($item->purchasingـprice * $item->numberofpice), 2);
+            }
+
+            $total_cost -= round($discount, 2);
+            $tax_value = round($total_cost * $vatrat, 2);
+            $grand_total = $total_cost + $tax_value;
+
+            // معالجة المرتجع بناءً على طريقة دفع الفاتورة الأصلية
+            if ($resource_purchases->Pay_Method_Name == 'Credit') {
+                resource_purchases::where('orderId', $orderNumber)->update([
+                    'recoveredـpieces' => $total_pieces,
+                    'In_debt' => $resource_purchases->In_debt - $grand_total,
                     'updated_at' => $current_time,
                 ]);
 
-            // التحقق من السعر لمنع خطأ القسمة على صفر
-            $vatrat = $item->purchasingـprice > 0 ? round($item->Added_Value / $item->purchasingـprice, 2) : 0;
-            $total_cost += round(($item->purchasingـprice * $item->numberofpice), 2);
-        }
+                $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
+                $financial_accounts = financial_accounts::where('orginal_type', 2)
+                    ->where('orginal_id', $resource_purchases->suplier_id)
+                    ->first();
 
-        $total_cost -= round($discount, 2);
-        $tax_value = round($total_cost * $vatrat, 2);
-        $grand_total = $total_cost + $tax_value;
-
-        // معالجة المرتجع بناءً على طريقة دفع الفاتورة الأصلية
-        if ($resource_purchases->Pay_Method_Name == 'Credit') {
-            resource_purchases::where('orderId', $orderNumber)->update([
-                'recoveredـpieces' => $total_pieces,
-                'In_debt' => $resource_purchases->In_debt - $grand_total,
-                'updated_at' => $current_time,
-            ]);
-
-            $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
-            $financial_accounts = financial_accounts::where('orginal_type', 2)
-                ->where('orginal_id', $resource_purchases->suplier_id)
-                ->first();
-
-            supllier::where('id', $resource_purchases->suplier_id)->update([
-                'In_debt' => $financial_accounts->current_balance - $grand_total
-            ]);
-
-            financial_accounts::where('orginal_type', 2)
-                ->where('orginal_id', $resource_purchases->suplier_id)
-                ->update([
-                    'current_balance' => $financial_accounts->current_balance - $grand_total,
-                    'debtor_current' => $financial_accounts->debtor_current + $grand_total,
+                supllier::where('id', $resource_purchases->suplier_id)->update([
+                    'In_debt' => $financial_accounts->current_balance - $grand_total
                 ]);
 
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => $grand_total,
-                'branchs_id' => $current_user_branch,
-                'pay_method' => $payment,
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance - $grand_total,
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => $grand_total,
-            ]);
+                financial_accounts::where('orginal_type', 2)
+                    ->where('orginal_id', $resource_purchases->suplier_id)
+                    ->update([
+                        'current_balance' => $financial_accounts->current_balance - $grand_total,
+                        'debtor_current' => $financial_accounts->debtor_current + $grand_total,
+                    ]);
 
-        } else {
-            resource_purchases::where('orderId', $orderNumber)->update([
-                'recoveredـpieces' => $total_pieces,
-                'In_debt' => $resource_purchases->In_debt - $grand_total,
-                'updated_at' => $current_time,
-            ]);
-
-            $financial_accounts = financial_accounts::where('parent_account_number', 5)
-                ->where('branchs_id', $current_user_branch)
-                ->first();
-
-            financial_accounts::where('parent_account_number', 5)
-                ->where('branchs_id', $current_user_branch)
-                ->update([
-                    'current_balance' => $financial_accounts->current_balance + $grand_total,
-                    'debtor_current' => $financial_accounts->debtor_current + $grand_total
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $grand_total,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => $payment,
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance - $grand_total,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => $grand_total,
                 ]);
 
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => $grand_total,
-                'branchs_id' => $current_user_branch,
-                'pay_method' => 'Cash',
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance + $grand_total,
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => $grand_total,
-            ]);
-
-            $financial_accounts = financial_accounts::where('parent_account_number', 181)
-                ->where('branchs_id', $current_user_branch)
-                ->first();
-
-            financial_accounts::where('parent_account_number', 181)
-                ->where('branchs_id', $current_user_branch)
-                ->update([
-                    'creditor_current' => $financial_accounts->creditor_current + $total_cost
+            } else {
+                resource_purchases::where('orderId', $orderNumber)->update([
+                    'recoveredـpieces' => $total_pieces,
+                    'In_debt' => $resource_purchases->In_debt - $grand_total,
+                    'updated_at' => $current_time,
                 ]);
 
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => $total_cost,
-                'branchs_id' => $current_user_branch,
-                'pay_method' => 'Cash',
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance + $total_cost,
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => $total_cost,
-                'debtor' => 0,
-            ]);
-        }
+                $financial_accounts = financial_accounts::where('parent_account_number', 5)
+                    ->where('branchs_id', $current_user_branch)
+                    ->first();
 
-        // تسوية حسابات الضرائب والقيمة المضافة للمرتجعات
-        $customerdata = supllier::find($resource_purchases->suplier_id);
+                financial_accounts::where('parent_account_number', 5)
+                    ->where('branchs_id', $current_user_branch)
+                    ->update([
+                        'current_balance' => $financial_accounts->current_balance + $grand_total,
+                        'debtor_current' => $financial_accounts->debtor_current + $grand_total
+                    ]);
 
-        $financial_accounts = financial_accounts::where('parent_account_number', 102)
-            ->where('branchs_id', $current_user_branch)
-            ->first();
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $grand_total,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => 'Cash',
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance + $grand_total,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => $grand_total,
+                ]);
 
-        financial_accounts::where('parent_account_number', 102)
-            ->where('branchs_id', $current_user_branch)
-            ->update([
-                'current_balance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
-                'creditor_current' => $financial_accounts->creditor_current + $tax_value,
-            ]);
+                $financial_accounts = financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->first();
 
-        credittransactions::create([
-            'user_id' => auth()->user()->id,
-            'customer_id' => $financial_accounts->id,
-            'recive_amount' => $tax_value,
-            'branchs_id' => $current_user_branch,
-            'pay_method' => 'Cash',
-            'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-            'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
-            'Pay_Method_Name' => $paymentMethod,
-            'created_at' => $current_time,
-            'updated_at' => $current_time,
-            'orginal_id' => 0,
-            'creditor' => $tax_value,
-            'debtor' => 0,
-            'vat' => 1,
-            'name' => $customerdata->name,
-            'tax' => $customerdata->TaxـNumber,
-        ]);
+                financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->update([
+                        'creditor_current' => $financial_accounts->creditor_current + $total_cost
+                    ]);
 
-        // تجهيز بيانات العرض للمرتجع
-        $orderOwner = orderTosupllier::find($orderNumber);
-        $orderdetails = orderDetails::where('order_owner', $orderNumber)->get();
-        $user = User::find($orderOwner->user_id);
-        $branch = $user->branch->name;
-        $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
-
-        $data = [
-            'branch' => $branch,
-            'supllier' => $orderOwner,
-            'resource_purchases' => $resource_purchases,
-            'product' => $orderdetails
-        ];
-
-        return view('response_return_purchases', compact('data'));
-    });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-public function update(Request $request)
-{
-    return DB::transaction(function () use ($request) {
-        app()->setLocale(LaravelLocalization::getCurrentLocale());
-
-        $productId = $request->id;
-        $orderNumber = $request->ordernumber;
-        $returnQuantity = $request->return_quentity;
-
-        $orderDetails = orderDetails::where('product_id', $productId)
-            ->where('order_owner', $orderNumber)
-            ->first();
-
-        $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
-
-        $payment = 'Cash';
-        $paymentMethod = $payment;
-        $discount = 0;
-        $current_user_branch = auth()->user()->branchs_id;
-        $current_time = now();
-
-        // تحديث مخزون المنتج الأصلي
-        $productData = products::find($productId);
-        products::where('id', $productId)->update([
-            'numberofpice' => $productData->numberofpice - $returnQuantity,
-        ]);
-
-        // حساب معدل الضريبة للسعر
-        $vatrat = $orderDetails->purchasingـprice > 0 ? round($orderDetails->Added_Value / $orderDetails->purchasingـprice, 2) : 0;
-
-        // تسجيل المرتجع في جدول PurchaseReturnLog الجديد
-        PurchaseReturnLog::create([
-            'orderId'              => $orderNumber,
-            'order_details_id'     => $orderDetails->id,
-            'product_id'           => $productId,
-            'product_name'         => $productData->name ?? 'Unknown',
-            'purchasing_price'     => $orderDetails->purchasingـprice,
-            'Added_Value'          => $orderDetails->Added_Value,
-            'return_quentity'      => $returnQuantity,
-            'total_returned_value' => round(($orderDetails->purchasingـprice * $returnQuantity) + ($orderDetails->Added_Value / ($orderDetails->numberofpice > 0 ? $orderDetails->numberofpice : 1) * $returnQuantity), 2),
-            'return_type'          => 'Partial Return',
-            'branchs_id'           => $current_user_branch,
-            'returned_by'          => auth()->user()->id,
-            'return_reason'        => 'مرتجع جزئي للمنتج فاتورة رقم : ' . $orderNumber,
-        ]);
-
-        // تحديث تفاصيل الطلب بالكميات المرتجعة الجديدة
-        orderDetails::where('product_id', $productId)
-            ->where('order_owner', $orderNumber)
-            ->update([
-                'returns_purchase' => $orderDetails->returns_purchase + $returnQuantity,
-                'numberofpice' => $orderDetails->numberofpice - $returnQuantity,
-                'updated_at' => $current_time,
-            ]);
-
-        $i = 1;
-        foreach (orderDetails::where('order_owner', $orderNumber)->get() as $item) {
-            if ($item->numberofpice >= 1) {
-                $i = 0;
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $total_cost,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => 'Cash',
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance + $total_cost,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => $total_cost,
+                    'debtor' => 0,
+                ]);
             }
-        }
 
-        // تطبيق الخصم بالكامل في حال تم إرجاع الفاتورة بالكامل
-        if ($i == 1) {
-            $discount = $resource_purchases->discount;
-        }
+            // تسوية حسابات الضرائب والقيمة المضافة للمرتجعات
+            $customerdata = supllier::find($resource_purchases->suplier_id);
 
-        $total_cost = round(($orderDetails->purchasingـprice * $returnQuantity) - $discount, 2);
-        $tax_value = round($total_cost * $vatrat, 2);
+            $financial_accounts = financial_accounts::where('parent_account_number', 102)
+                ->where('branchs_id', $current_user_branch)
+                ->first();
 
-        // معالجة الحسابات المالية بناءً على طريقة دفع الفاتورة الأصلية
-        if ($resource_purchases->Pay_Method_Name == 'Credit') {
-            resource_purchases::where('orderId', $orderNumber)->update([
-                'recoveredـpieces' => $resource_purchases->recoveredـpieces + $returnQuantity,
-                'In_debt' => ($resource_purchases->In_debt - ($tax_value + $total_cost)),
+            financial_accounts::where('parent_account_number', 102)
+                ->where('branchs_id', $current_user_branch)
+                ->update([
+                    'current_balance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
+                    'creditor_current' => $financial_accounts->creditor_current + $tax_value,
+                ]);
+
+            credittransactions::create([
+                'user_id' => auth()->user()->id,
+                'customer_id' => $financial_accounts->id,
+                'recive_amount' => $tax_value,
+                'branchs_id' => $current_user_branch,
+                'pay_method' => 'Cash',
+                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
+                'Pay_Method_Name' => $paymentMethod,
+                'created_at' => $current_time,
                 'updated_at' => $current_time,
+                'orginal_id' => 0,
+                'creditor' => $tax_value,
+                'debtor' => 0,
+                'vat' => 1,
+                'name' => $customerdata->name,
+                'tax' => $customerdata->TaxـNumber,
             ]);
+
+            // تجهيز بيانات العرض للمرتجع
+            $orderOwner = orderTosupllier::find($orderNumber);
+            $orderdetails = orderDetails::where('order_owner', $orderNumber)->get();
+            $user = User::find($orderOwner->user_id);
+            $branch = $user->branch->name;
+            $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
+
+            $data = [
+                'branch' => $branch,
+                'supllier' => $orderOwner,
+                'resource_purchases' => $resource_purchases,
+                'product' => $orderdetails
+            ];
+
+            return view('response_return_purchases', compact('data'));
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function update(Request $request)
+    {
+        return DB::transaction(function () use ($request) {
+            app()->setLocale(LaravelLocalization::getCurrentLocale());
+
+            $productId = $request->id;
+            $orderNumber = $request->ordernumber;
+            $returnQuantity = $request->return_quentity;
+
+            $orderDetails = orderDetails::where('product_id', $productId)
+                ->where('order_owner', $orderNumber)
+                ->first();
 
             $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
 
-            $financial_accounts = financial_accounts::where('orginal_type', 2)
-                ->where('orginal_id', $resource_purchases->suplier_id)
-                ->first();
+            $payment = 'Cash';
+            $paymentMethod = $payment;
+            $discount = 0;
+            $current_user_branch = auth()->user()->branchs_id;
+            $current_time = now();
 
-            supllier::where('id', $resource_purchases->suplier_id)->update([
-                'In_debt' => $financial_accounts->current_balance - ($total_cost + $tax_value)
+            // تحديث مخزون المنتج الأصلي
+            $productData = products::find($productId);
+            products::where('id', $productId)->update([
+                'numberofpice' => $productData->numberofpice - $returnQuantity,
             ]);
 
-            financial_accounts::where('orginal_type', 2)
-                ->where('orginal_id', $resource_purchases->suplier_id)
-                ->update([
-                    'current_balance' => $financial_accounts->current_balance - ($total_cost + $tax_value),
-                    'debtor_current' => $financial_accounts->debtor_current + ($total_cost + $tax_value),
-                ]);
+            // حساب معدل الضريبة للسعر
+            $vatrat = $orderDetails->purchasingـprice > 0 ? round($orderDetails->Added_Value / $orderDetails->purchasingـprice, 2) : 0;
 
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => ($total_cost + $tax_value),
+            // تسجيل المرتجع في جدول PurchaseReturnLog الجديد
+            PurchaseReturnLog::create([
+                'orderId' => $orderNumber,
+                'order_details_id' => $orderDetails->id,
+                'product_id' => $productId,
+                'product_name' => $productData->name ?? 'Unknown',
+                'purchasing_price' => $orderDetails->purchasingـprice,
+                'Added_Value' => $orderDetails->Added_Value,
+                'return_quentity' => $returnQuantity,
+                'total_returned_value' => round(($orderDetails->purchasingـprice * $returnQuantity) + ($orderDetails->Added_Value / ($orderDetails->numberofpice > 0 ? $orderDetails->numberofpice : 1) * $returnQuantity), 2),
+                'return_type' => 'Partial Return',
                 'branchs_id' => $current_user_branch,
-                'pay_method' => $payment,
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance - ($total_cost + $tax_value),
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => ($total_cost + $tax_value),
+                'returned_by' => auth()->user()->id,
+                'return_reason' => 'مرتجع جزئي للمنتج فاتورة رقم : ' . $orderNumber,
             ]);
 
-            $financial_accounts = financial_accounts::where('parent_account_number', 181)
+            // تحديث تفاصيل الطلب بالكميات المرتجعة الجديدة
+            orderDetails::where('product_id', $productId)
+                ->where('order_owner', $orderNumber)
+                ->update([
+                    'returns_purchase' => $orderDetails->returns_purchase + $returnQuantity,
+                    'numberofpice' => $orderDetails->numberofpice - $returnQuantity,
+                    'updated_at' => $current_time,
+                ]);
+
+            $i = 1;
+            foreach (orderDetails::where('order_owner', $orderNumber)->get() as $item) {
+                if ($item->numberofpice >= 1) {
+                    $i = 0;
+                }
+            }
+
+            // تطبيق الخصم بالكامل في حال تم إرجاع الفاتورة بالكامل
+            if ($i == 1) {
+                $discount = $resource_purchases->discount;
+            }
+
+            $total_cost = round(($orderDetails->purchasingـprice * $returnQuantity) - $discount, 2);
+            $tax_value = round($total_cost * $vatrat, 2);
+
+            // معالجة الحسابات المالية بناءً على طريقة دفع الفاتورة الأصلية
+            if ($resource_purchases->Pay_Method_Name == 'Credit') {
+                resource_purchases::where('orderId', $orderNumber)->update([
+                    'recoveredـpieces' => $resource_purchases->recoveredـpieces + $returnQuantity,
+                    'In_debt' => ($resource_purchases->In_debt - ($tax_value + $total_cost)),
+                    'updated_at' => $current_time,
+                ]);
+
+                $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
+
+                $financial_accounts = financial_accounts::where('orginal_type', 2)
+                    ->where('orginal_id', $resource_purchases->suplier_id)
+                    ->first();
+
+                supllier::where('id', $resource_purchases->suplier_id)->update([
+                    'In_debt' => $financial_accounts->current_balance - ($total_cost + $tax_value)
+                ]);
+
+                financial_accounts::where('orginal_type', 2)
+                    ->where('orginal_id', $resource_purchases->suplier_id)
+                    ->update([
+                        'current_balance' => $financial_accounts->current_balance - ($total_cost + $tax_value),
+                        'debtor_current' => $financial_accounts->debtor_current + ($total_cost + $tax_value),
+                    ]);
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => ($total_cost + $tax_value),
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => $payment,
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance - ($total_cost + $tax_value),
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => ($total_cost + $tax_value),
+                ]);
+
+                $financial_accounts = financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->first();
+
+                financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->update([
+                        'creditor_current' => $financial_accounts->creditor_current + $total_cost
+                    ]);
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $total_cost,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => 'Cash',
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance + $total_cost,
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => $total_cost,
+                    'debtor' => 0,
+                ]);
+            } else {
+                resource_purchases::where('orderId', $orderNumber)->update([
+                    'recoveredـpieces' => $resource_purchases->recoveredـpieces + $returnQuantity,
+                    'In_debt' => $resource_purchases->In_debt - ($total_cost + $tax_value),
+                    'updated_at' => $current_time,
+                ]);
+
+                $financial_accounts = financial_accounts::where('parent_account_number', 5)
+                    ->where('branchs_id', $current_user_branch)
+                    ->first();
+
+                financial_accounts::where('parent_account_number', 5)
+                    ->where('branchs_id', $current_user_branch)
+                    ->update([
+                        'current_balance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
+                        'debtor_current' => $financial_accounts->debtor_current + ($total_cost + $tax_value)
+                    ]);
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => ($total_cost + $tax_value),
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => 'Cash',
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => 0,
+                    'debtor' => ($total_cost + $tax_value),
+                ]);
+
+                $financial_accounts = financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->first();
+
+                financial_accounts::where('parent_account_number', 181)
+                    ->where('branchs_id', $current_user_branch)
+                    ->update([
+                        'creditor_current' => $financial_accounts->creditor_current + $total_cost
+                    ]);
+
+                credittransactions::create([
+                    'user_id' => auth()->user()->id,
+                    'customer_id' => $financial_accounts->id,
+                    'recive_amount' => $total_cost,
+                    'branchs_id' => $current_user_branch,
+                    'pay_method' => 'Cash',
+                    'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
+                    'currentblance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
+                    'Pay_Method_Name' => $paymentMethod,
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time,
+                    'orginal_id' => 0,
+                    'creditor' => $total_cost,
+                    'debtor' => 0,
+                ]);
+            }
+
+            // تسوية ضرائب القيمة المضافة لعملية المرتجع الحالي
+            $customerdata = supllier::find($resource_purchases->suplier_id);
+
+            $financial_accounts = financial_accounts::where('parent_account_number', 102)
                 ->where('branchs_id', $current_user_branch)
                 ->first();
 
-            financial_accounts::where('parent_account_number', 181)
+            financial_accounts::where('parent_account_number', 102)
                 ->where('branchs_id', $current_user_branch)
                 ->update([
-                    'creditor_current' => $financial_accounts->creditor_current + $total_cost
+                    'current_balance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
+                    'creditor_current' => $financial_accounts->creditor_current + $tax_value,
                 ]);
 
             credittransactions::create([
                 'user_id' => auth()->user()->id,
                 'customer_id' => $financial_accounts->id,
-                'recive_amount' => $total_cost,
+                'recive_amount' => $tax_value,
                 'branchs_id' => $current_user_branch,
                 'pay_method' => 'Cash',
                 'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance + $total_cost,
+                'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
                 'Pay_Method_Name' => $paymentMethod,
                 'created_at' => $current_time,
                 'updated_at' => $current_time,
                 'orginal_id' => 0,
-                'creditor' => $total_cost,
+                'creditor' => $tax_value,
                 'debtor' => 0,
-            ]);
-        } else {
-            resource_purchases::where('orderId', $orderNumber)->update([
-                'recoveredـpieces' => $resource_purchases->recoveredـpieces + $returnQuantity,
-                'In_debt' => $resource_purchases->In_debt - ($total_cost + $tax_value),
-                'updated_at' => $current_time,
+                'vat' => 1,
+                'name' => $customerdata->name,
+                'tax' => $customerdata->TaxـNumber,
             ]);
 
-            $financial_accounts = financial_accounts::where('parent_account_number', 5)
-                ->where('branchs_id', $current_user_branch)
-                ->first();
+            // تجهيز مصفوفة البيانات لإرسالها لعرض المرتجع (الـ View)
+            $orderOwner = orderTosupllier::find($orderNumber);
+            $orderdetails = orderDetails::where('order_owner', $orderNumber)->get();
 
-            financial_accounts::where('parent_account_number', 5)
-                ->where('branchs_id', $current_user_branch)
-                ->update([
-                    'current_balance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
-                    'debtor_current' => $financial_accounts->debtor_current + ($total_cost + $tax_value)
-                ]);
+            $user = User::find($orderOwner->user_id);
+            $branch = $user->branch->name;
+            $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
 
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => ($total_cost + $tax_value),
-                'branchs_id' => $current_user_branch,
-                'pay_method' => 'Cash',
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => 0,
-                'debtor' => ($total_cost + $tax_value),
-            ]);
+            $data = [
+                'branch' => $branch,
+                'supllier' => $orderOwner,
+                'resource_purchases' => $resource_purchases,
+                'product' => $orderdetails
+            ];
 
-            $financial_accounts = financial_accounts::where('parent_account_number', 181)
-                ->where('branchs_id', $current_user_branch)
-                ->first();
-
-            financial_accounts::where('parent_account_number', 181)
-                ->where('branchs_id', $current_user_branch)
-                ->update([
-                    'creditor_current' => $financial_accounts->creditor_current + $total_cost
-                ]);
-
-            credittransactions::create([
-                'user_id' => auth()->user()->id,
-                'customer_id' => $financial_accounts->id,
-                'recive_amount' => $total_cost,
-                'branchs_id' => $current_user_branch,
-                'pay_method' => 'Cash',
-                'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-                'currentblance' => $financial_accounts->current_balance + ($total_cost + $tax_value),
-                'Pay_Method_Name' => $paymentMethod,
-                'created_at' => $current_time,
-                'updated_at' => $current_time,
-                'orginal_id' => 0,
-                'creditor' => $total_cost,
-                'debtor' => 0,
-            ]);
-        }
-
-        // تسوية ضرائب القيمة المضافة لعملية المرتجع الحالي
-        $customerdata = supllier::find($resource_purchases->suplier_id);
-
-        $financial_accounts = financial_accounts::where('parent_account_number', 102)
-            ->where('branchs_id', $current_user_branch)
-            ->first();
-
-        financial_accounts::where('parent_account_number', 102)
-            ->where('branchs_id', $current_user_branch)
-            ->update([
-                'current_balance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
-                'creditor_current' => $financial_accounts->creditor_current + $tax_value,
-            ]);
-
-        credittransactions::create([
-            'user_id' => auth()->user()->id,
-            'customer_id' => $financial_accounts->id,
-            'recive_amount' => $tax_value,
-            'branchs_id' => $current_user_branch,
-            'pay_method' => 'Cash',
-            'note' => ' مرتجع مشتريات فاتورة رقم :' . (string) $orderNumber,
-            'currentblance' => $financial_accounts->debtor_current - ($financial_accounts->creditor_current + $tax_value),
-            'Pay_Method_Name' => $paymentMethod,
-            'created_at' => $current_time,
-            'updated_at' => $current_time,
-            'orginal_id' => 0,
-            'creditor' => $tax_value,
-            'debtor' => 0,
-            'vat' => 1,
-            'name' => $customerdata->name,
-            'tax' => $customerdata->TaxـNumber,
-        ]);
-
-        // تجهيز مصفوفة البيانات لإرسالها لعرض المرتجع (الـ View)
-        $orderOwner = orderTosupllier::find($orderNumber);
-        $orderdetails = orderDetails::where('order_owner', $orderNumber)->get();
-
-        $user = User::find($orderOwner->user_id);
-        $branch = $user->branch->name;
-        $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
-
-        $data = [
-            'branch' => $branch,
-            'supllier' => $orderOwner,
-            'resource_purchases' => $resource_purchases,
-            'product' => $orderdetails
-        ];
-
-        return view('response_return_purchases', compact('data'));
-    });
-}
+            return view('response_return_purchases', compact('data'));
+        });
+    }
 
 
 
