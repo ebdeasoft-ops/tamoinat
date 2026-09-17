@@ -1,19 +1,19 @@
 <style>
 /* =====================================================================
    EBDEA SOFT — Sidebar Design Tokens (Corporate / Trust identity)
-   Navy + Steel Blue + Slate, built for a Real Estate ERP
+   Near-Black Navy + Vivid Orange + Slate, built for a Real Estate ERP
    ===================================================================== */
 :root {
-    --sb-navy-950: #0B1B33;
-    --sb-navy-900: #102A4C;
-    --sb-navy-800: #16375F;
-    --sb-blue-600: #2F6FED;
-    --sb-blue-500: #4C8DFF;
-    --sb-slate-300: #B9C4D6;
-    --sb-slate-400: #8CA0BD;
-    --sb-slate-500: #6B7FA0;
+    --sb-navy-950: #05070c;
+    --sb-navy-900: #0a0e18;
+    --sb-navy-800: #131a2c;
+    --sb-blue-600: #f97316;
+    --sb-blue-500: #fb923c;
+    --sb-slate-300: #cbd5e1;
+    --sb-slate-400: #94a3b8;
+    --sb-slate-500: #94a3b8;
     --sb-line: rgba(255, 255, 255, .08);
-    --sb-line-soft: rgba(255, 255, 255, .05);
+    --sb-line-soft: rgba(249, 115, 22, .12);
     --sb-white: #F5F8FC;
     --sb-danger: #EF5A6F;
     --sb-radius: 10px;
@@ -38,7 +38,7 @@ html body .app-sidebar {
     background: linear-gradient(180deg, var(--sb-navy-950) 0%, var(--sb-navy-900) 100%) !important;
     border-inline-start: 1px solid var(--sb-line);
     font-family: var(--sb-font);
-    box-shadow: 0 0 40px rgba(0, 0, 0, .25);
+    box-shadow: 0 0 40px rgba(0, 0, 0, .35);
 }
 
 /* the base theme wraps everything in .main-sidemenu — force it transparent
@@ -191,8 +191,13 @@ html body .app-sidebar {
 
 .app-sidebar .app-sidebar__user .sb-lang-switch a.active,
 .app-sidebar .sb-lang-switch.sb-lang-switch a.active {
-    background: var(--sb-blue-600) !important;
-    color: #ffffff !important;
+    /* بدون إطار/حدود/ظل — التمييز بلون النص فقط */
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: var(--sb-blue-500) !important;
+    font-weight: 800 !important;
 }
 
 /* ---- menu ------------------------------------------------------------ */
@@ -273,15 +278,40 @@ html body .app-sidebar {
     padding: 16px 14px 6px !important;
     margin: 0 !important;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .app-sidebar li.pw-cat-label span {
     font-size: 10.5px;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: .06em;
     text-transform: uppercase;
-    color: var(--sb-slate-500);
+    color: #f8fafc;
     background: transparent !important;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    text-shadow: 0 1px 4px rgba(249, 115, 22, .25);
+}
+
+.app-sidebar li.pw-cat-label span::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f97316;
+    box-shadow: 0 0 8px rgba(249, 115, 22, .9);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.app-sidebar li.pw-cat-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(249, 115, 22, .45) 0%, rgba(249, 115, 22, .1) 60%, transparent 100%);
 }
 
 .app-sidebar li.pw-cat-label:first-child {
@@ -293,7 +323,7 @@ html body .app-sidebar {
     list-style: none;
     margin: 2px 0 6px;
     padding-inline-start: 14px;
-    border-inline-start: 1px solid var(--sb-line);
+    border-inline-start: 1px solid rgba(249, 115, 22, .3);
     margin-inline-start: 24px;
 }
 
@@ -394,7 +424,6 @@ html body .app-sidebar {
     </div>
     <div class="main-sidemenu">
 
-
         <div class="app-sidebar__user clearfix">
             <div class="dropdown user-pro-body">
                 <div class="">
@@ -423,7 +452,6 @@ html body .app-sidebar {
                     class="{{ app()->getLocale() === 'en' ? 'active' : '' }}">English</a>
             </div>
         </div>
-
 
         <ul class="side-menu">
 
