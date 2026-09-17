@@ -70,4 +70,17 @@ class User extends Authenticatable
     {
         return $this->belongsTo(branchs::class,'branchs_id');
     }
+
+    /**
+     * صورة افتراضية بأول حروف الاسم بألوان هوية الموقع (برتقالي/كحلي)
+     * تُستخدم تلقائيًا من Jetstream عند عدم وجود صورة شخصية مرفوعة.
+     */
+    protected function defaultProfilePhotoUrl()
+    {
+        $name = trim(collect(explode(' ', $this->name))->map(function ($segment) {
+            return mb_substr($segment, 0, 1);
+        })->join(' '));
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&color=FFFFFF&background=F97316&bold=true';
+    }
 }

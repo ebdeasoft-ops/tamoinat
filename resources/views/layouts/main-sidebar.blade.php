@@ -191,13 +191,101 @@ html body .app-sidebar {
 
 .app-sidebar .app-sidebar__user .sb-lang-switch a.active,
 .app-sidebar .sb-lang-switch.sb-lang-switch a.active {
-    /* بدون إطار/حدود/ظل — التمييز بلون النص فقط */
+    /* خلفية برتقالية معبأة تطابق لون هوية الموقع، بدون إطار أو ظل خارجي */
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    background: transparent !important;
-    color: var(--sb-blue-500) !important;
-    font-weight: 800 !important;
+    background: var(--sb-blue-600) !important;
+    color: var(--sb-white) !important;
+    font-weight: 700 !important;
+}
+
+/* ---- user meta: role + location badges ------------------------------- */
+.app-sidebar .app-sidebar__user .sb-user-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.app-sidebar .app-sidebar__user .sb-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(249, 115, 22, .15);
+    color: var(--sb-blue-500);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    white-space: nowrap;
+}
+
+.app-sidebar .app-sidebar__user .sb-location-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--sb-navy-800);
+    color: var(--sb-slate-400);
+    font-size: 10.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.app-sidebar .app-sidebar__user .sb-location-badge i {
+    font-size: 10px;
+}
+
+/* ---- sidebar quick search --------------------------------------------- */
+.app-sidebar .app-sidebar__user .sb-search {
+    position: relative;
+    margin-top: 12px;
+}
+
+.app-sidebar .app-sidebar__user .sb-search__icon {
+    position: absolute;
+    inset-inline-start: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sb-slate-500);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.app-sidebar .app-sidebar__user .sb-search__input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--sb-navy-800);
+    border: 1px solid var(--sb-line);
+    border-radius: 999px;
+    padding: 8px 14px 8px 34px;
+    color: var(--sb-white);
+    font-size: 12.5px;
+    font-family: var(--sb-font);
+    outline: none;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+[dir="rtl"] .app-sidebar .app-sidebar__user .sb-search__icon {
+    inset-inline-start: auto;
+    inset-inline-end: 12px;
+}
+
+[dir="rtl"] .app-sidebar .app-sidebar__user .sb-search__input {
+    padding: 8px 34px 8px 14px;
+}
+
+.app-sidebar .app-sidebar__user .sb-search__input::placeholder {
+    color: var(--sb-slate-500);
+}
+
+.app-sidebar .app-sidebar__user .sb-search__input:focus {
+    border-color: var(--sb-blue-600);
+    background: var(--sb-navy-950);
 }
 
 /* ---- menu ------------------------------------------------------------ */
@@ -427,13 +515,30 @@ html body .app-sidebar {
         <div class="app-sidebar__user clearfix">
             <div class="dropdown user-pro-body">
                 <div class="">
+                    {{-- profile_photo_url من Laravel Jetstream: يعرض صورة المستخدم لو موجودة،
+                         وإلا يولّد صورة افتراضية بأول حروف الاسم تلقائيًا --}}
                     <img alt="user-img" class="avatar avatar-xl brround"
-                        src="{{ Auth::user()->profile_photo_path ? URL::asset('storage/' . Auth::user()->profile_photo_path) : URL::asset('assets/img/faces/6.jpg') }}"><span
+                        src="{{ Auth::user()->profile_photo_url }}"><span
                         class="avatar-status profile-status bg-green"></span>
                 </div>
                 <div class="user-info">
                     <h4 class="font-weight-semibold mt-3 mb-0">{{ Auth::user()->name }}</h4>
                     <span class="mb-0 text-muted">{{ Auth::user()->email }}</span>
+
+                    @php
+                    $sbRoleName = method_exists(Auth::user(), 'getRoleNames') ? Auth::user()->getRoleNames()->first() : null;
+                    $sbBranchName = optional(Auth::user()->branch)->name;
+                    @endphp
+                    @if($sbRoleName || $sbBranchName)
+                    <div class="sb-user-meta">
+                        @if($sbRoleName)
+                        <span class="sb-role-badge">{{ $sbRoleName }}</span>
+                        @endif
+                        @if($sbBranchName)
+                        <span class="sb-location-badge"><i class="fe fe-map-pin"></i>{{ $sbBranchName }}</span>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -450,6 +555,13 @@ html body .app-sidebar {
                     class="{{ app()->getLocale() === 'ar' ? 'active' : '' }}">العربية</a>
                 <a href="{{ url('en/' . $sbRest) }}"
                     class="{{ app()->getLocale() === 'en' ? 'active' : '' }}">English</a>
+            </div>
+
+            {{-- مربع بحث سريع لفلترة عناصر القائمة الجانبية بدون إعادة تحميل الصفحة --}}
+            <div class="sb-search">
+                <i class="fe fe-search sb-search__icon"></i>
+                <input type="text" id="sbSidebarSearch" class="sb-search__input" autocomplete="off"
+                    placeholder="{{ app()->getLocale() === 'ar' ? 'بحث سريع في القائمة' : 'Quick search in menu' }}">
             </div>
         </div>
 
@@ -1650,3 +1762,44 @@ html body .app-sidebar {
     </div>
 </aside>
 <!-- main-sidebar -->
+
+<script>
+    // فلترة عناصر القائمة الجانبية حسب النص المكتوب في مربع البحث السريع
+    (function () {
+        var sbInput = document.getElementById('sbSidebarSearch');
+        if (!sbInput) return;
+
+        var sbMenu = document.querySelector('.app-sidebar .side-menu');
+        if (!sbMenu) return;
+
+        sbInput.addEventListener('input', function () {
+            var q = this.value.trim().toLowerCase();
+            var topItems = sbMenu.querySelectorAll(':scope > li');
+
+            topItems.forEach(function (li) {
+                if (li.classList.contains('pw-cat-label')) return;
+                var text = li.textContent.toLowerCase();
+                var match = q === '' || text.indexOf(q) !== -1;
+                li.style.display = match ? '' : 'none';
+            });
+
+            var catLabels = sbMenu.querySelectorAll(':scope > li.pw-cat-label');
+            catLabels.forEach(function (label) {
+                if (q === '') {
+                    label.style.display = '';
+                    return;
+                }
+                var el = label.nextElementSibling;
+                var hasVisible = false;
+                while (el && !el.classList.contains('pw-cat-label')) {
+                    if (el.style.display !== 'none') {
+                        hasVisible = true;
+                        break;
+                    }
+                    el = el.nextElementSibling;
+                }
+                label.style.display = hasVisible ? '' : 'none';
+            });
+        });
+    })();
+</script>
