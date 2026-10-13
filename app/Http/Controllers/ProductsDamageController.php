@@ -51,7 +51,7 @@ class ProductsDamageController extends Controller
         $products = $query->orderBy('created_at', 'desc')->get();
 
         // 7. إرجاع البيانات لنفس الصفحة النظيفة
-        return view('reports.product_damage', compact('products'));
+        return view('reports.inventory.product_damage', compact('products'));
     }
 
     // تفريغ الدوال غير المستخدمة أو الإبقاء عليها قياسية حسب معايير الـ Resource
@@ -97,7 +97,7 @@ if ($request->filled('start_at') && $request->filled('end_at')) {
         $products = $query->orderBy('created_at', 'desc')->get();
 
         // 7. إرجاع البيانات لنفس الصفحة النظيفة
-        return view('reports.product_damage_report', compact('products'));
+        return view('reports.inventory.product_damage_report', compact('products'));
 
     }
     public function edit(ProductsDamage $productsDamage)

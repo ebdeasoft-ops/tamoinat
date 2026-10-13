@@ -19,7 +19,7 @@ class AcountsTypeController extends Controller
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         
-        return view('acountes.acount_type');  
+        return view('accounting.chart.acount_type');  
     
     }
 

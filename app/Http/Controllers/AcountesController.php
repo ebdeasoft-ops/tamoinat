@@ -35,7 +35,7 @@ class AcountesController extends Controller
 
 
 
-        return view('reports.Statement_of_Changes_in_Equity_Report');
+        return view('reports.financial.Statement_of_Changes_in_Equity_Report');
     }
     public function cashFlowStatement()
     {
@@ -43,7 +43,7 @@ class AcountesController extends Controller
 
 
 
-        return view('reports.cashFlowStatement');
+        return view('reports.financial.cashFlowStatement');
     }
 
 public function cashFlowStatementSearch(Request $request){
@@ -133,7 +133,7 @@ public function cashFlowStatementSearch(Request $request){
     $netCashChange = $operatingCashFlow + $investingCashFlow + $financingCashFlow;
     $endingCash = $beginningCash + $netCashChange;
 
-    return view('reports.cash_flows', compact(
+    return view('reports.financial.cash_flows', compact(
         'fromDate',
         'toDate',
         'beginningCash',
@@ -264,7 +264,7 @@ public function changesInEquity(Request $request)
     $endingCapital = $beginningCapital + $capitalAdditions - $drawings + $netIncome;
 
     // إرسال البيانات لواجهة الـ Blade
-    return view('reports.changes_in_equity', compact(
+    return view('reports.financial.changes_in_equity', compact(
         'beginningCapital',
         'capitalAdditions',
         'drawings',
@@ -354,7 +354,7 @@ public function changesInEquity(Request $request)
         // جلب مراكز التكلفة
         $cost_centers = Cost_centers::all();
 
-        return view('acountes.voncher', compact('accounts', 'main_accounts', 'cost_centers'));
+        return view('accounting.vouchers.voncher', compact('accounts', 'main_accounts', 'cost_centers'));
     }
 
     public function convertcashboxToBank()
@@ -362,7 +362,7 @@ public function changesInEquity(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
 
-        return view('acountes.convertcashboxToBank', compact('data'));
+        return view('accounting.cash_bank.convertcashboxToBank', compact('data'));
     }
 
     public function Cash_withdrawal_from_the_bank()
@@ -370,7 +370,7 @@ public function changesInEquity(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
 
-        return view('acountes.Cash_withdrawal_from_the_bank', compact('data'));
+        return view('accounting.cash_bank.Cash_withdrawal_from_the_bank', compact('data'));
     }
 
     public function Transfer_cash_to_next_day()
@@ -378,28 +378,28 @@ public function changesInEquity(Request $request)
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
 
-        return view('acountes.Transfer_cash_to_next_day', compact('data'));
+        return view('accounting.cash_bank.Transfer_cash_to_next_day', compact('data'));
     }
 
     public function transferMainBranch()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
-        return view('acountes.Transfertomainbranch', compact('data'));
+        return view('accounting.branch_transfers.Transfertomainbranch', compact('data'));
     }
 
     public function go_to_bank()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
-        return view('acountes.cash_from_bank', compact('data'));
+        return view('accounting.cash_bank.cash_from_bank', compact('data'));
     }
 
     public function confirmTransfertomainbranch()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
-        return view('acountes.confirm_transferTomainBranch', compact('data'));
+        return view('accounting.branch_transfers.confirm_transferTomainBranch', compact('data'));
     }
 
     public function Transfercashto_the_next_day(Request $request)
@@ -507,7 +507,15 @@ public function changesInEquity(Request $request)
         return $data;
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function SearchconvertcashboxToBank(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->SearchconvertcashboxToBankBody($request));
+    }
+
+    protected function SearchconvertcashboxToBankBody(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
@@ -519,6 +527,9 @@ public function changesInEquity(Request $request)
             'note' => $request->notes ?? "-",
             'created_at' => $request->start_at,
         ]);
+
+        // كل سطور التحويل = قيد واحد برقم واحد
+        \App\Services\JournalEntry::begin('cash_to_bank', $convertLog->id);
 
         // 2. تحديث الحساب الرئيسي رقم 5
         $account5 = financial_accounts::find(5);
@@ -669,11 +680,11 @@ public function changesInEquity(Request $request)
         if ($request == null || !$request->has('id')) {
             $data = [];
             session()->flash('nodataprint', '');
-            return view('acountes.convertcashboxToBank', compact('data'));
+            return view('accounting.cash_bank.convertcashboxToBank', compact('data'));
         }
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = convertcashboxToBank::find($request->id);
-        return view('acountes.printconvertcashboxToBank', compact('data'));
+        return view('accounting.cash_bank.printconvertcashboxToBank', compact('data'));
     }
 
     public function cashEcprnse()
@@ -684,7 +695,7 @@ public function changesInEquity(Request $request)
             'transaction' => [],
             "allusers" =>  $allcustomers,
         ];
-        return view('acountes.cash expense', compact('data'));
+        return view('accounting.expenses.cash_expense', compact('data'));
     }
 
     public function income()
@@ -693,13 +704,13 @@ public function changesInEquity(Request $request)
         $data = [
             "transaction" =>  [],
         ];
-        return view('acountes.Expensesowner', compact('data'));
+        return view('accounting.expenses.Expensesowner', compact('data'));
     }
 
     public function reciept_decoument()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('acountes.reciept_decoment');
+        return view('accounting.vouchers.reciept_decoment');
     }
 
     public function opining_balnce_ajax()
@@ -713,7 +724,7 @@ public function changesInEquity(Request $request)
             ->where('Opening_entry','>=', 1)
             ->orderby('id', 'desc')->paginate(3);
 
-        return view('opining_balnce_ajax', compact('data'));
+        return view('accounting.ajax.opining_balnce_ajax', compact('data'));
     }
 
     public function get_all_send_kabd_jax()
@@ -724,7 +735,7 @@ public function changesInEquity(Request $request)
             ->where('decument_id', 0)
             ->orderby('id', 'desc')->where('save', 1)->paginate(3);
 
-        return view('sant_abd_ajax', compact('data'));
+        return view('accounting.ajax.sant_abd_ajax', compact('data'));
     }
 
     public function get_all_kid_yaomy_jax()
@@ -739,7 +750,7 @@ public function changesInEquity(Request $request)
             ->where('save',1)
             ->orderby('id', 'desc')->paginate(4);
 
-        return view('ajax_dely_record', compact('data'));
+        return view('accounting.ajax.ajax_dely_record', compact('data'));
     }
 
     public function search_by_decoumentNo_kid_yomy($id)
@@ -751,7 +762,7 @@ public function changesInEquity(Request $request)
             ->where('save',1)
             ->orderby('id', 'desc')->paginate(4);
 
-        return view('ajax_dely_record', compact('data'));
+        return view('accounting.ajax.ajax_dely_record', compact('data'));
     }
 
     public function get_all_send_serf_jax()
@@ -764,7 +775,7 @@ public function changesInEquity(Request $request)
 
             ->orderby('id', 'desc')->paginate(3);
 
-        return view('sant_serf_ajax', compact('data'));
+        return view('accounting.ajax.sant_serf_ajax', compact('data'));
     }
 
     public function createTransfertomainbranch($id)
@@ -788,7 +799,7 @@ public function changesInEquity(Request $request)
                 'paid_amount' => $transactiontosupllier->paidـamount
             ],
         ];
-        return view('acountes.print_voucher_to_supplier', compact('data'));
+        return view('accounting.vouchers.print_voucher_to_supplier', compact('data'));
     }
 
     public function print_voucher(Request $request)
@@ -821,7 +832,7 @@ public function changesInEquity(Request $request)
             "transaction"  => $transaction,
             "total_amount" => $total_spent,
         ];
-        return view('acountes.print_voucher_to_supplier', compact('data'));
+        return view('accounting.vouchers.print_voucher_to_supplier', compact('data'));
     }
 
     public function print_expansedecoument(Request $request)
@@ -845,7 +856,7 @@ public function changesInEquity(Request $request)
             'Reasonforspendingmoney' => LaravelLocalization::getCurrentLocale()=='ar' ? $expense->Expenses_reasons->expenses_reason : ($expense->Expenses_reasons->expenses_reason_en=='-' ? $expense->Expenses_reasons->expenses_reason : $expense->Expenses_reasons->expenses_reason_en),
             'notes' => $expense->notes,
         ];
-        return view('acountes.print_cashexpenswe', compact('data'));
+        return view('accounting.expenses.print_cashexpenswe', compact('data'));
     }
 
 public function print_reciept_ducoument(Request $request)
@@ -896,7 +907,7 @@ public function print_reciept_ducoument(Request $request)
             'totatext_en_halala'  => $english_halala,
         ];
 
-        return view('acountes.print_reciept_decoment_to_customer', compact('data'));
+        return view('accounting.vouchers.print_reciept_decoment_to_customer', compact('data'));
     }
 
 

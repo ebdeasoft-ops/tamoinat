@@ -30,7 +30,7 @@ class RoleController extends Controller
     {
         $roles = Role::orderBy('id', 'DESC')->paginate(5);
         
-        return view('roles.index', compact('roles'))
+        return view('admin.roles.index', compact('roles'))
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
     
@@ -40,7 +40,7 @@ class RoleController extends Controller
     public function create()
     {
         $permission = Permission::get();
-        return view('roles.create', compact('permission'));
+        return view('admin.roles.create', compact('permission'));
     }
     
     /**
@@ -74,7 +74,7 @@ class RoleController extends Controller
         // الاعتماد على علاقة Eloquent الأساسية بدلاً من الـ Raw Join المكرر
         $rolePermissions = $role->permissions;
     
-        return view('roles.show', compact('role', 'rolePermissions'));
+        return view('admin.roles.show', compact('role', 'rolePermissions'));
     }
     
     /**
@@ -87,7 +87,7 @@ class RoleController extends Controller
         // جلب معرفات الصلاحيات بطريقة Eloquent السريعة والمباشرة
         $rolePermissions = $role->permissions()->pluck('id', 'id')->all();
     
-        return view('roles.edit', compact('role', 'permission', 'rolePermissions'));
+        return view('admin.roles.edit', compact('role', 'permission', 'rolePermissions'));
     }
     
     /**

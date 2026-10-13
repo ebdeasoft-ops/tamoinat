@@ -28,6 +28,8 @@ return new class extends Migration
             $table->index(['product_id'], 'temp_sales_product_id_foreign');
             $table->index(['invoices_id_delete'], 'temp_sales_invoice_id_foreign');
             $table->index(['branch_id'], 'temp_sales_branch_id_foreign');
+            $table->string('unit')->nullable();
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

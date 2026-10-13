@@ -27,7 +27,7 @@ class Export_Account_staatment implements FromCollection, WithStyles
         $exportData[] = []; // سطر فارغ للفصل
 
         // 2. عناوين الجدول الأساسي
-        $exportData[] = ["#", "رقم المستند", "التاريخ", "الفرع", "الموظف", "المبلغ المدفوع", "مدين", "دائن", "الرصيد الحالي", "ملاحظات"];
+        $exportData[] = ["#", "رقم القيد", "التاريخ", "الفرع", "الموظف", "المبلغ المدفوع", "مدين", "دائن", "الرصيد الحالي", "ملاحظات"];
 
         // 3. رصيد أول المدة
         $running_total_debit = $this->opening_debit;
@@ -41,7 +41,7 @@ class Export_Account_staatment implements FromCollection, WithStyles
 
             $exportData[] = [
                 $index + 1,
-                $row['dely_record'] ?? '-',
+                !empty($row['dely_record']) ? $row['dely_record'] : '-',
                 $row['date'],
                 $row['branch'],
                 $row['user'],

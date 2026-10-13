@@ -23,7 +23,7 @@ class DeliveryProductToTheCustomerController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = [];
-        return view('products.confirm_delivery_another_branch', compact('data'));
+        return view('delivery.notes.confirm_delivery_another_branch', compact('data'));
     }
 
     /**
@@ -45,7 +45,7 @@ class DeliveryProductToTheCustomerController extends Controller
 
             session()->flash('notfountreturnproduct', $message);
             $data = [];
-            return view('products.confirm_delivery_another_branch', compact('data'));
+            return view('delivery.notes.confirm_delivery_another_branch', compact('data'));
         }
 
         session()->flash('foundinvoice', 'تم العثور علي فاتورة');
@@ -62,7 +62,7 @@ class DeliveryProductToTheCustomerController extends Controller
             'datamain' => $datamain
         ];
 
-        return view('products.confirm_delivery_another_branch', compact('data'));
+        return view('delivery.notes.confirm_delivery_another_branch', compact('data'));
     }
 
     /**
@@ -87,7 +87,7 @@ class DeliveryProductToTheCustomerController extends Controller
 
             session()->flash('notfountreturnproduct', $message);
             $data = [];
-            return view('products.confirm_delivery_another_branch', compact('data'));
+            return view('delivery.notes.confirm_delivery_another_branch', compact('data'));
         }
 
         try {
@@ -166,6 +166,6 @@ class DeliveryProductToTheCustomerController extends Controller
         }
 
         $data = [];
-        return view('products.confirm_delivery_another_branch', compact('data'));
+        return view('delivery.notes.confirm_delivery_another_branch', compact('data'));
     }
 }

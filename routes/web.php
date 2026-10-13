@@ -589,6 +589,10 @@ Route::middleware([
         Route::get('/printInvoicesReportdetails/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printReportsaleswithoud_deatails');
         Route::post('/search_Requestـoffersـfromـsuppliers', 'search_Request_offers_from_suppliers');
         Route::post('/employeeSalesSearch', 'employeeSalesSearch');
+        // تقارير المبيعات حسب طريقة الدفع
+        Route::get('/Cashsales', 'viewCashsales');
+        Route::get('/networksales', 'viewnetworksales');
+        Route::get('/Creditsales', 'viewCreditsales');
         Route::get('/printInvoicesReport/{branch}/{paymethod}/{startat}/{endat}/{customer_id}', 'printInvoicesReport');
         Route::get('/Invoices_export/{branch}/{paymethod}/{startat}/{endat}', 'printInvoicesReport_export');
         Route::get('/Invoices_purchases_export/{branch}/{paymethod}/{SUPPLIER}/{startat}/{endat}', 'Invoices_purchases_export');
@@ -875,7 +879,7 @@ Route::middleware([
     // ملفات الشخصية التابعة للنظام المتعدد اللغات
     Route::get('/profile', function () {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('index');
+        return view('dashboard.index');
     })->name('profile');
 });
 

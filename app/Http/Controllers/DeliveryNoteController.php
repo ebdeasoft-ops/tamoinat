@@ -19,7 +19,7 @@ class DeliveryNoteController extends Controller
         $customers = customers::all(); // جلب العملاء للقائمة المنسدلة
         $nextCode = (DeliveryNote::max('code') ?? 1000) + 1;
 
-        return view('delivery_notes.index', compact('notes', 'customers','nextCode'));
+        return view('delivery.delivery_notes.index', compact('notes', 'customers','nextCode'));
     }
 
   public function store(Request $request)
@@ -143,7 +143,7 @@ class DeliveryNoteController extends Controller
         $note = DeliveryNote::with('product')->findOrFail($id);
 
         // عرض صفحة الطباعة (هنعملها في الخطوة الجاية)
-        return view('delivery_notes.print', compact('note'));
+        return view('delivery.delivery_notes.print', compact('note'));
     }
     public function getItems($id)
     {

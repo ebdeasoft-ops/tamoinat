@@ -18,7 +18,7 @@ class TransferMoneyToMainbranchController extends Controller
     {
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-return view('acountes.pendingtransfers');
+return view('accounting.branch_transfers.pendingtransfers');
 
     }
 
@@ -43,7 +43,7 @@ return view('acountes.pendingtransfers');
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $data=transferMoney_to_mainbranch::find($request->id);
-       return view('acountes.print_Transfertomainbranch', compact('data'));
+       return view('accounting.branch_transfers.print_Transfertomainbranch', compact('data'));
 
 
 
@@ -67,8 +67,8 @@ return view('acountes.pendingtransfers');
             'created_at'=>$data->created_at->format('d/m/Y'),
             'id'=> $data->id
         ];
-        return view('acountes.pendingtransfers');
-        //  return view('acountes.print_Transfertomainbranch', compact('data'));
+        return view('accounting.branch_transfers.pendingtransfers');
+        //  return view('accounting.branch_transfers.print_Transfertomainbranch', compact('data'));
        
     }
     public function updateTransfertomainbranch(Request $request)
@@ -90,7 +90,7 @@ return view('acountes.pendingtransfers');
             'id'=> $data->id
         ];
         return $data;
-      //  return view('acountes.print_Transfertomainbranch', compact('data'));
+      //  return view('accounting.branch_transfers.print_Transfertomainbranch', compact('data'));
        
     }
     public function store(Request $request)
@@ -113,7 +113,7 @@ return view('acountes.pendingtransfers');
             'id'=> $data->id
         ];
         return $data;
-      //  return view('acountes.print_Transfertomainbranch', compact('data'));
+      //  return view('accounting.branch_transfers.print_Transfertomainbranch', compact('data'));
        
     }
 
@@ -139,7 +139,7 @@ return view('acountes.pendingtransfers');
         
        }
        $data=[];       
-       return view('acountes.confirm_transferTomainBranch',compact('data'));
+       return view('accounting.branch_transfers.confirm_transferTomainBranch',compact('data'));
     }
 
 
@@ -159,7 +159,7 @@ return view('acountes.pendingtransfers');
         
        }
        $data=[];       
-       return view('acountes.confirm_transferTomainBranch',compact('data'));
+       return view('accounting.branch_transfers.confirm_transferTomainBranch',compact('data'));
     }
     /**
      * Show the form for editing the specified resource.

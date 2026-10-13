@@ -52,7 +52,7 @@ class ApiController extends Controller
                 })->paginate(20);
         }
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     // جلب المنتجات حسب المجموعة مع البحث بالاسم أو الكود
@@ -74,6 +74,6 @@ class ApiController extends Controller
                 })->paginate(20);
         }
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 }

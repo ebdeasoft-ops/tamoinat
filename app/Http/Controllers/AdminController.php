@@ -20,7 +20,7 @@ class AdminController extends Controller
         }
         else
         {
-            return view('404');
+            return view('shared.errors.404');
         }
 
      //   return view($id);
@@ -59,7 +59,7 @@ class AdminController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
        $data = User::orderBy('id','DESC')->get();
-      return view('users.show_users',compact('data'));
+      return view('admin.users.show_users',compact('data'));
     }
 
     /**

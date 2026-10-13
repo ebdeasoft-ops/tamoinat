@@ -13,7 +13,7 @@ class ContractController extends Controller
 {
     $contract = Contract::findOrFail($id);
     $employees = employee::all();
-    return view('contracts.edit', compact('contract', 'employees'));
+    return view('hr.contracts.edit', compact('contract', 'employees'));
 }
 
 public function update(Request $request, $id)
@@ -36,13 +36,13 @@ public function update(Request $request, $id)
     public function index()
     {
         $contracts = Contract::with('employee')->latest()->paginate(10);
-        return view('contracts.index', compact('contracts'));
+        return view('hr.contracts.index', compact('contracts'));
     }
 
     public function create()
     {
         $employees = employee::all();
-        return view('contracts.create', compact('employees'));
+        return view('hr.contracts.create', compact('employees'));
     }
 
     public function store(Request $request)
@@ -97,7 +97,7 @@ public function update(Request $request, $id)
         ->where('end_date', '<', $today)
         ->get();
 
-    return view('contracts.alerts', compact(
+    return view('hr.contracts.alerts', compact(
         'expiringIqamas', 'expiringWorkPermits', 'expiringContracts',
         'expiredIqamas', 'expiredWorkPermits', 'expiredContracts'
     ));

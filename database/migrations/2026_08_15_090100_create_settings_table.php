@@ -49,6 +49,10 @@ return new class extends Migration
             $table->text('previous_hash_invoice')->nullable();
             $table->integer('branchs_id')->default(0);
             $table->index(['company_id'], 'settings_company_id_foreign');
+            $table->string('token_id')->nullable();
+            $table->string('logo')->nullable();
+            $table->string('scander_number')->nullable();
+            $table->string('stage')->nullable();
             $table->timestamps();
         });
     }

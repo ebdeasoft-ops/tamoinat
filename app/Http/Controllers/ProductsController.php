@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 // 1. المكتبات الخارجية وحزم المطورين (Packages & Packages Facades)
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\JournalEntry;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Illuminate\Support\Facades\DB;
 use Auth;
@@ -80,7 +81,7 @@ class ProductsController extends Controller
     public function upload_stock()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.upload_stock');
+        return view('inventory.products.upload_stock');
     }
     public function downloadStockTemplate()
     {
@@ -88,7 +89,15 @@ class ProductsController extends Controller
         return Excel::download(new \App\Exports\StockTemplateExport, 'stock_template.xlsx');
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function importStockExcel(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->importStockExcelBody($request));
+    }
+
+    protected function importStockExcelBody(Request $request)
     {
         $request->validate([
             'branch' => 'required',
@@ -162,6 +171,7 @@ class ProductsController extends Controller
 
             // جلب حساب المخزون للفرع المحدد
             $inventoryAccount = financial_accounts::where('parent_account_number', 181)->where('branchs_id', $selectedBranchId)->first();
+            JournalEntry::begin('opening_stock', null, false);
 
             // تسجيل المعاملة المالية للمخزون الافتتاحي إذا وجد الحساب
             if ($inventoryAccount) {
@@ -293,13 +303,24 @@ class ProductsController extends Controller
             $allProdctsD = [];
 
             foreach ($rows as $row) {
-                $product = products::firstOrCreate(
-                    [
+                $fullName = trim(($row['product_name_ar'] ?? '') . '  ' . ($row['product_name_en'] ?? ''));
+
+                // البحث عن المنتج بالكود أو بالاسم (لنفس الفرع) قبل إنشاء منتج جديد،
+                // عشان مايتكررش المنتج لو الكود مختلف بس الاسم نفسه (أو العكس)
+                $product = products::where('branchs_id', $selectedBranchId)
+                    ->where(function ($q) use ($row, $fullName) {
+                        $q->where('Product_Code', $row['product_code']);
+                        if ($fullName !== '') {
+                            $q->orWhere('product_name', $fullName);
+                        }
+                    })
+                    ->first();
+
+                if (!$product) {
+                    $product = products::create([
                         'Product_Code' => $row['product_code'],
-                        'branchs_id' => $selectedBranchId // تمت إضافتها هنا لتصبح جزءاً من معيار البحث
-                    ],
-                    [
-                        'product_name' => ($row['product_name_ar'] ?? '') . "  " . ($row['product_name_en'] ?? ''),
+                        'branchs_id' => $selectedBranchId,
+                        'product_name' => $fullName,
                         'name_en' => $row['name_en'] ?? '',
                         'user_id' => Auth()->id(),
                         'unit' => 'pices',
@@ -308,9 +329,8 @@ class ProductsController extends Controller
                         'type' => '1',
                         'brand' => '1',
                         'product_group' => 1,
-                    ]
-                );
-
+                    ]);
+                }
 
                 $allProdctsD[] = [
                     'product_id' => $product->id,
@@ -368,7 +388,15 @@ class ProductsController extends Controller
         return Excel::download(new PurchaseTemplateExport, 'purchase_template.xlsx');
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function save_invoice_purchase_roken(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->save_invoice_purchase_rokenBody($request));
+    }
+
+    protected function save_invoice_purchase_rokenBody(Request $request)
     {
         $supplier = $request->clientnamesearch;
         $payment = "Credit";
@@ -476,6 +504,7 @@ class ProductsController extends Controller
 
         $resource_purchases = resource_purchases::where('orderId', $resource_purchases->orderId)->first();
         $paymentMethod = $payment;
+        JournalEntry::begin('purchase_invoice', $resource_purchases->orderId);
 
         // حسابات مصاريف الشحن
         if ($shipping > 0) {
@@ -742,13 +771,13 @@ class ProductsController extends Controller
     public function showAllProducts_roken()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('showAllProducts_roken');
+        return view('inventory.products.showAllProducts_roken');
     }
 
     public function purchases_roken()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.purchases_roken');
+        return view('purchases.invoices.purchases_roken');
     }
 
     public function searchaboutproduct_location_function(Request $request)
@@ -756,7 +785,7 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = products::where('Product_Location', 'LIKE', '%' . $request->searchtext . '%')->paginate(20);
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function exportAllBranchs($branch_id)
@@ -775,7 +804,7 @@ class ProductsController extends Controller
             ->where('status', 0)
             ->paginate(20);
 
-        return view('previous_deliver_Invoices', compact('data'));
+        return view('delivery.history.previous_deliver_Invoices', compact('data'));
     }
 
     public function getAllinvices_deliveryajax()
@@ -787,7 +816,7 @@ class ProductsController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(20);
 
-        return view('ajax_delivery_Invoices', compact('data'));
+        return view('delivery.ajax.ajax_delivery_Invoices', compact('data'));
     }
 
     public function searchaboutinvoiceByIdfunction_delivery($date)
@@ -799,7 +828,7 @@ class ProductsController extends Controller
             ->where('id', $date)
             ->paginate(20);
 
-        return view('ajax_delivery_Invoices', compact('data'));
+        return view('delivery.ajax.ajax_delivery_Invoices', compact('data'));
     }
 
     public function getinvoicesbycustomerdelivery($date)
@@ -811,7 +840,7 @@ class ProductsController extends Controller
             ->where('customer_id', $date)
             ->paginate(20);
 
-        return view('ajax_delivery_Invoices', compact('data'));
+        return view('delivery.ajax.ajax_delivery_Invoices', compact('data'));
     }
 
     public function searchfinancial_accounts(Request $request)
@@ -878,7 +907,7 @@ class ProductsController extends Controller
             return redirect()->route('admin.itemcard.index')->with(['error' => 'عفواً، غير قادر على الوصول إلى البيانات المطلوبة !!']);
         }
 
-        return view("generate_barcode", ['data' => $data]);
+        return view("inventory.products.generate_barcode", ['data' => $data]);
     }
 
     public function updateofficebyidforupdate($invoiceNumber)
@@ -1105,6 +1134,7 @@ class ProductsController extends Controller
 
             $paymentMethod = $payment;
             $invoice_note = ' فاتورة مشتريات رقم :' . (string) $resource_purchases->orderId;
+            JournalEntry::begin('purchase_invoice', $resource_purchases->orderId);
 
             // 4. معالجة حساب الشحن محاسبياً (إذا وجد شحن)
             if ($shipping > 0) {
@@ -1399,7 +1429,7 @@ class ProductsController extends Controller
             ->where('id', $date)
             ->paginate(20);
 
-        return view('ajax_Recent_Invoices_pending', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_pending', compact('data'));
     }
 
     public function getinvoices_bending_bycustomer($date)
@@ -1411,7 +1441,7 @@ class ProductsController extends Controller
             ->where('customer_id', $date)
             ->paginate(20);
 
-        return view('ajax_Recent_Invoices_pending', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_pending', compact('data'));
     }
 
     public function getinvoices_bending_bydate($date)
@@ -1423,14 +1453,14 @@ class ProductsController extends Controller
             ->where('created_at', $date)
             ->paginate(20);
 
-        return view('ajax_Recent_Invoices_pending', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_pending', compact('data'));
     }
 
     public function OfferPricesTocustomer_for_update($id)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = $id;
-        return view('products.OfferPricesTocustomer_for_update', compact('data'));
+        return view('quotations.customers.OfferPricesTocustomer_for_update', compact('data'));
     }
 
     public function delete_offer_price($id)
@@ -1440,7 +1470,7 @@ class ProductsController extends Controller
         }
 
         $data = offer_price_to_customer::orderby('id', 'desc')->paginate(30);
-        return view('searchPreviousQuotes', compact('data'));
+        return view('quotations.customers.searchPreviousQuotes', compact('data'));
     }
 
     public function make_Note($id, $note)
@@ -1488,7 +1518,7 @@ class ProductsController extends Controller
 
         $data = $query->paginate(20);
 
-        return view('ajax_choose_product', compact('data'));
+        return view('inventory.ajax.ajax_choose_product', compact('data'));
     }
 
 
@@ -1564,7 +1594,7 @@ class ProductsController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(20);
 
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+        return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
     }
 
     public function openfilefile($path)
@@ -1614,7 +1644,7 @@ class ProductsController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = products::where('branchs_id', $branchs_id)->where('main_product', $productId)->paginate();
-        return view('ajax_choose_product_replace2', compact('data'));
+        return view('sales.ajax.ajax_choose_product_replace2', compact('data'));
     }
 
     public function operationproducts($branchs_id, $productId)
@@ -1768,7 +1798,7 @@ class ProductsController extends Controller
             array_multisort(array_map('strtotime', $dates), SORT_ASC, $products);
         }
 
-        return view('ajax_choose_product_replace', compact('products'));
+        return view('sales.ajax.ajax_choose_product_replace', compact('products'));
     }
 
 
@@ -1781,7 +1811,7 @@ class ProductsController extends Controller
             "allproduct" => products::where('branchs_id', Auth::user()->branchs_id)->get()
         ];
 
-        return view('products.transactions', compact('data'));
+        return view('inventory.products.transactions', compact('data'));
     }
 
     public function updateproductallDataofferprice(Request $request)
@@ -1854,7 +1884,7 @@ class ProductsController extends Controller
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('showAllProducts');
+        return view('inventory.products.showAllProducts');
     }
     public function showAllProducts_IN_Wherehouse(Request $request)
     {
@@ -1863,7 +1893,7 @@ class ProductsController extends Controller
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('showAllProducts_IN_Wherehouse', compact('branchId'));
+        return view('inventory.products.showAllProducts_IN_Wherehouse', compact('branchId'));
     }
     public function ShowAllNotifications()
     {
@@ -1871,7 +1901,7 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         //return $data;
-        return view('Notifications_Products');
+        return view('inventory.products.Notifications_Products');
     }
     public function searchaboutinvoiceByIdfunctionpurchases($date)
     {
@@ -1889,7 +1919,7 @@ class ProductsController extends Controller
             })
             ->orderBy('id', 'desc')
             ->paginate(20);
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+        return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1908,7 +1938,7 @@ class ProductsController extends Controller
             ->where('suplier_id', $date)
             ->orderBy('id', 'desc')
             ->paginate(20);
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+        return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1918,7 +1948,7 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         $products = products::where('branchs_id', Auth()->User()->branchs_id)->paginate(20);
-        return view('supProcesses.product_mix', compact('products'));
+        return view('inventory.products.product_mix', compact('products'));
     }
 
     public function profile()
@@ -1947,7 +1977,7 @@ class ProductsController extends Controller
 
         $data = $query->orderBy('id', 'desc')->paginate(20);
 
-        return view('ajax_Recent_Invoices_purchases', compact('data'));
+        return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
     }
 
 
@@ -1960,7 +1990,7 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
         //return $data;
-        return view('previousPurchasInvoicesNew');
+        return view('purchases.history.previousPurchasInvoicesNew');
     }
 
 
@@ -1981,7 +2011,7 @@ class ProductsController extends Controller
 
         $data = $query->paginate(20);
 
-        return view('previousSalesInvoices', compact('data'));
+        return view('sales.history.previousSalesInvoices', compact('data'));
     }
     public function getAllinvicesajax()
     {
@@ -1996,7 +2026,7 @@ class ProductsController extends Controller
         // Order, paginate, and fetch the results
         $data = $query->orderBy('id', 'desc')->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
 
     public function searchAllInvoicespaginatenew($date)
@@ -2010,7 +2040,7 @@ class ProductsController extends Controller
 
         $data = $query->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
 
     public function searchaboutinvoiceByIdfunction($date)
@@ -2024,7 +2054,7 @@ class ProductsController extends Controller
 
         $data = $query->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
     public function getinvoicesbypayment($pay)
     {
@@ -2037,7 +2067,7 @@ class ProductsController extends Controller
 
         $data = $query->orderBy('id', 'desc')->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
     public function getinvoicesbycustomer($date)
     {
@@ -2050,7 +2080,7 @@ class ProductsController extends Controller
 
         $data = $query->orderBy('id', 'desc')->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
 
 
@@ -2069,19 +2099,19 @@ class ProductsController extends Controller
 
     public function previousRecieptInvoices()
     {
-        return view('previousRecieptInvoices');
+        return view('inventory.receipts.previousRecieptInvoices');
     }
 
     public function getAllRecieptsjax()
     {
         $data = $this->getBaseInvoiceQuery(1)->orderBy('id', 'desc')->paginate(20);
-        return view('ajax_Recent_Reciepts', compact('data'));
+        return view('inventory.receipts.ajax.ajax_Recent_Reciepts', compact('data'));
     }
 
     public function searchaboutReciptByIdfunction($date)
     {
         $data = $this->getBaseInvoiceQuery(1)->where('id', $date)->paginate(20);
-        return view('ajax_Recent_Reciepts', compact('data'));
+        return view('inventory.receipts.ajax.ajax_Recent_Reciepts', compact('data'));
     }
 
     public function searchAllRecieptspaginatenew($date)
@@ -2091,7 +2121,7 @@ class ProductsController extends Controller
             ->paginate(20);
 
         // Note: Corrected layout view reference here if it was supposed to point to Receipts
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
 
     /**
@@ -2273,7 +2303,7 @@ class ProductsController extends Controller
 
         $data = $query->paginate(50);
 
-        return view('ajax_choose_product', compact('data'));
+        return view('inventory.ajax.ajax_choose_product', compact('data'));
     }
 
     public function searchAllproductpaginatepurchase($branchId, $searchtext)
@@ -2356,7 +2386,7 @@ class ProductsController extends Controller
     {
         $itemsRequest = offer_price_to_customer_items::where('order_id', $order_id)->get();
 
-        return view('products.print_preinvoice_to_customer', compact('itemsRequest'))
+        return view('sales.prints.print_preinvoice_to_customer', compact('itemsRequest'))
             ->with('id', $order_id);
     }
 
@@ -2364,14 +2394,14 @@ class ProductsController extends Controller
     {
         $itemsRequest = offer_price_to_customer_items::where('order_id', $order_id)->get();
 
-        return view('products.print_order_perice_to_customer', compact('itemsRequest'));
+        return view('quotations.customers.print_order_perice_to_customer', compact('itemsRequest'));
     }
 
     public function printOrderPriceFromSupplier($order_id)
     {
         $itemsRequest = order_price_from_supplier_items::where('order_id', $order_id)->get();
 
-        return view('products.print_order_perice_from_supplier', compact('itemsRequest'))
+        return view('quotations.suppliers.print_order_perice_from_supplier', compact('itemsRequest'))
             ->with('id', $order_id);
     }
 
@@ -2380,7 +2410,7 @@ class ProductsController extends Controller
         $orderId = $request->OrderNoprint;
         $itemsRequest = offer_price_to_customer_items::where('order_id', $orderId)->get();
 
-        return view('products.print_order_perice_to_customer', compact('itemsRequest'))
+        return view('quotations.customers.print_order_perice_to_customer', compact('itemsRequest'))
             ->with('id', $orderId);
     }
 
@@ -2389,7 +2419,7 @@ class ProductsController extends Controller
         $orderId = $request->OrderNoprint;
         $itemsRequest = order_price_from_supplier_items::where('order_id', $orderId)->get();
 
-        return view('products.print_order_perice_from_supplier', compact('itemsRequest'))
+        return view('quotations.suppliers.print_order_perice_from_supplier', compact('itemsRequest'))
             ->with('id', $orderId);
     }
 
@@ -2399,13 +2429,13 @@ class ProductsController extends Controller
     {
         $products = Products::where('branchs_id', auth()->user()->branchs_id)->paginate(50);
 
-        return view('products.purchases', compact('products'));
+        return view('purchases.invoices.purchases', compact('products'));
     }
 
     public function Purchase_returns()
     {
         $data = [];
-        return view('products.purchase_return', compact('data'));
+        return view('purchases.returns.purchase_return', compact('data'));
         // Cleaned up dead database calls that were placed after the return statement
     }
 
@@ -2428,7 +2458,7 @@ class ProductsController extends Controller
             session()->flash('notfountreturnpuracheseproduct', $message);
 
             $data = [];
-            return view('products.purchase_return', compact('data'));
+            return view('purchases.returns.purchase_return', compact('data'));
         }
 
         $orderdetails = OrderDetails::where('order_owner', $orderId)->get();
@@ -2441,7 +2471,7 @@ class ProductsController extends Controller
             'product' => $orderdetails
         ];
 
-        return view('products.purchase_return', compact('data'));
+        return view('purchases.returns.purchase_return', compact('data'));
     }
 
 
@@ -2468,7 +2498,7 @@ class ProductsController extends Controller
 
             session()->flash('notfountreturnpuracheseproduct', $message);
             $data = [];
-            return view('products.purchase_return', compact('data'));
+            return view('purchases.returns.purchase_return', compact('data'));
         }
 
         $user = User::find($orderOwner->user_id);
@@ -2481,7 +2511,7 @@ class ProductsController extends Controller
             'resource_purchases' => $resource_purchases
         ];
 
-        return view('products.print_purchase_return', compact('data'));
+        return view('purchases.prints.print_purchase_return', compact('data'));
     }
 
     public function create(Request $request)
@@ -2498,19 +2528,19 @@ class ProductsController extends Controller
             'print' => 'print quentity'
         ];
 
-        return view('products.print_products', compact('data'));
+        return view('inventory.products.print_products', compact('data'));
     }
 
     public function getProductsPriceFromSupplier()
     {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
-        return view('products.Requestpricesofproductsfromsupplier', compact('products'))->with('order_id', "-");
+        return view('quotations.suppliers.Requestpricesofproductsfromsupplier', compact('products'))->with('order_id', "-");
     }
 
     public function showProductsPrice(Request $request)
     {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
-        return view('products.OfferPricesTocustomer', compact('products'))->with('order_id', '-');
+        return view('quotations.customers.OfferPricesTocustomer', compact('products'))->with('order_id', '-');
     }
 
     public function print_all_products_price(Request $request)
@@ -2520,7 +2550,7 @@ class ProductsController extends Controller
             "date" => date("Y-m-d", time()),
             'product' => $product,
         ];
-        return view('products.print_all_products_price', compact('data'));
+        return view('inventory.products.print_all_products_price', compact('data'));
     }
 
     public function printProductPriceToCustomer($request)
@@ -2535,7 +2565,7 @@ class ProductsController extends Controller
             'clientaddress' => $request["address"],
             'print' => 'printprice'
         ];
-        return view('products.print_products', compact('data'));
+        return view('inventory.products.print_products', compact('data'));
     }
 
     public function printProductPrice(Request $request)
@@ -2550,7 +2580,7 @@ class ProductsController extends Controller
             'clientaddress' => $request["address"],
             'print' => 'printprice'
         ];
-        return view('products.print_products', compact('data'));
+        return view('inventory.products.print_products', compact('data'));
     }
 
     public function store(Request $request)
@@ -2704,7 +2734,7 @@ class ProductsController extends Controller
                 ->paginate(20);
 
 
-            return view('ajax_Recent_Invoices_purchases', compact('data'));
+            return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
         }
 
         return 0;
@@ -2926,12 +2956,12 @@ class ProductsController extends Controller
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         if ($branchs_id == '-') {
             $data = products::paginate(20);
-            return view('ajax_choose_product_sale', compact('data'))->with('getLocale', LaravelLocalization::getCurrentLocale());
+            return view('sales.ajax.ajax_choose_product_sale', compact('data'))->with('getLocale', LaravelLocalization::getCurrentLocale());
         }
         $data = products::where('branchs_id', $branchs_id)->paginate(20);
         // return $data;
 
-        return view('ajax_choose_product_sale', compact('data'))->with('currentrow', 1)->with('getLocale', value: LaravelLocalization::getCurrentLocale());
+        return view('sales.ajax.ajax_choose_product_sale', compact('data'))->with('currentrow', 1)->with('getLocale', value: LaravelLocalization::getCurrentLocale());
     }
 
 
@@ -2952,7 +2982,7 @@ class ProductsController extends Controller
         //
         $products = products::paginate(50);
         // return $products;
-        return view('products.Receipt', compact('products'));
+        return view('inventory.receipts.Receipt', compact('products'));
     }
 
 
@@ -2962,11 +2992,20 @@ class ProductsController extends Controller
 
 
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function savepurchase($request, $payment, $supplier, $shipping, $date, $another_bank)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->savepurchaseBody($request, $payment, $supplier, $shipping, $date, $another_bank));
+    }
+
+    protected function savepurchaseBody($request, $payment, $supplier, $shipping, $date, $another_bank)
     {
         $resource_purchases = resource_purchases::where('orderId', $request)->first();
         $branchs_id = $resource_purchases->branchs_id;
         $currentTime = now();
+        JournalEntry::begin('purchase_invoice', $request);
 
         // صياغة تاريخ ووقت إنشاء الفاتورة بدقة
         $createdAt = $date != '0' ? $date . ' ' . substr($currentTime, 12) : $currentTime;
@@ -3364,7 +3403,7 @@ class ProductsController extends Controller
     {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(50);
         $invoiceId = 0;
-        return view('products.sales', compact(['products', 'invoiceId']));
+        return view('sales.invoices.sales', compact(['products', 'invoiceId']));
     }
 
     public function goToSaleByPage()
@@ -3436,7 +3475,7 @@ class ProductsController extends Controller
     public function Allproductpaginatenew()
     {
         $data = products::paginate(20);
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function product_group_ajax(Request $request)
@@ -3453,27 +3492,27 @@ class ProductsController extends Controller
                 })->paginate(20);
         }
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function product_branchs_id_ajax(Request $request)
     {
         if ($request->branchs_id == '-') {
             $data = products::paginate(30);
-            return view('ajax_search', compact('data'));
+            return view('inventory.ajax.ajax_search', compact('data'));
         }
 
         $data = products::where('branchs_id', $request->branchs_id)
             ->orderBy('numberofpice', 'desc')
             ->paginate(20);
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function product_sale_group_ajax(Request $request)
     {
         $data = products::where('product_group', $request->group_id)->paginate(20);
-        return view('ajax_choose_product_sale', compact('data'))
+        return view('sales.ajax.ajax_choose_product_sale', compact('data'))
             ->with('currentrow', $request->currentrow)
             ->with('getLocale', LaravelLocalization::getCurrentLocale());
     }
@@ -3545,7 +3584,7 @@ class ProductsController extends Controller
             ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%')
             ->paginate(20);
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function searchAllproductpaginatenew_by_post(Request $request)
@@ -3575,7 +3614,7 @@ class ProductsController extends Controller
             ->appends($request->all())
         ;
 
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function searchChooseProductpaginatenew($searchtext, $branchs_id)
@@ -3587,13 +3626,13 @@ class ProductsController extends Controller
                     ->orWhere('refnumber', 'LIKE', '%' . $searchtext . '%');
             })->paginate(20);
 
-        return view('ajax_choose_product', compact('data'));
+        return view('inventory.ajax.ajax_choose_product', compact('data'));
     }
 
     public function ChooseProductpaginatenew($branchs_id)
     {
         $data = products::where('branchs_id', $branchs_id)->paginate(20);
-        return view('ajax_choose_product', compact('data'));
+        return view('inventory.ajax.ajax_choose_product', compact('data'));
     }
 
     public function searchChooseProductpaginatenewSale($searchtext, $branchs_id)
@@ -3614,7 +3653,7 @@ class ProductsController extends Controller
                 })->paginate(20);
         }
 
-        return view('ajax_choose_product_sale', compact('data'))
+        return view('sales.ajax.ajax_choose_product_sale', compact('data'))
             ->with('currentrow', 1)
             ->with('getLocale', LaravelLocalization::getCurrentLocale());
     }
@@ -3648,7 +3687,7 @@ class ProductsController extends Controller
                     ->orWhere('notes', 'LIKE', $searchTerm);
             })->paginate(20);
 
-            return view('ajax_choose_product_sale', compact('data'))
+            return view('sales.ajax.ajax_choose_product_sale', compact('data'))
                 ->with('currentrow', $request->currentrow);
         }
 
@@ -3661,7 +3700,7 @@ class ProductsController extends Controller
             })->paginate(20);
 
         // إرجاع الـ view مرة واحدة فقط في النهاية لكلتا الحالتين
-        return view('ajax_choose_product_sale', compact('data'))
+        return view('sales.ajax.ajax_choose_product_sale', compact('data'))
             ->with('currentrow', $request->currentrow)
             ->with('getLocale', $request->input('locale'));
     }
@@ -4093,6 +4132,7 @@ class ProductsController extends Controller
             $orderNumber = $request->ordernumber;
             $resource_purchases = resource_purchases::where('orderId', $orderNumber)->first();
             $discount = $resource_purchases->discount;
+            JournalEntry::begin('purchase_return', $orderNumber, false);
 
             $payment = 'Cash';
             $paymentMethod = $payment;
@@ -4300,7 +4340,7 @@ class ProductsController extends Controller
                 'product' => $orderdetails
             ];
 
-            return view('response_return_purchases', compact('data'));
+            return view('purchases.ajax.response_return_purchases', compact('data'));
         });
     }
 
@@ -4326,6 +4366,7 @@ class ProductsController extends Controller
             $productId = $request->id;
             $orderNumber = $request->ordernumber;
             $returnQuantity = $request->return_quentity;
+            JournalEntry::begin('purchase_return', $orderNumber, false);
 
             $orderDetails = orderDetails::where('product_id', $productId)
                 ->where('order_owner', $orderNumber)
@@ -4563,7 +4604,7 @@ class ProductsController extends Controller
                 'product' => $orderdetails
             ];
 
-            return view('response_return_purchases', compact('data'));
+            return view('purchases.ajax.response_return_purchases', compact('data'));
         });
     }
 
@@ -4915,7 +4956,7 @@ class ProductsController extends Controller
             'product' => $orderdetails
         ];
 
-        return view('products.purchase_return', compact('data'));
+        return view('purchases.returns.purchase_return', compact('data'));
     }
 
     public function getProductdJsonDecode($id)

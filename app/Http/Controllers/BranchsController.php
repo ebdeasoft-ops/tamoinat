@@ -22,7 +22,7 @@ class BranchsController extends Controller
     public function index()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('users.Add_branch');
+        return view('admin.branches.Add_branch');
     }
 
     /**
@@ -186,7 +186,7 @@ session()->flash('create', $message);
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $branches = branchs::get();
-        return view('Branches', compact('branches'));
+        return view('admin.branches.Branches', compact('branches'));
     }
 
     /**

@@ -26,7 +26,7 @@ class SupllierController extends Controller
     {
         $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
 
-        return view('products.Purchase_order_of_resources', compact('products'));
+        return view('purchases.invoices.Purchase_order_of_resources', compact('products'));
     }
 
     /**
@@ -101,7 +101,7 @@ class SupllierController extends Controller
             'productsdata'       => $orderDetails
         ];
 
-        return view('supplier.print_order_purchases_to_supplier', compact('data'))->with('order', 1);
+        return view('suppliers.prints.print_order_purchases_to_supplier', compact('data'))->with('order', 1);
     }
 
     /**
@@ -112,7 +112,7 @@ class SupllierController extends Controller
         if (blank($request->orderId)) {
             session()->flash('nodataprint', '');
             $products = products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
-            return view('products.purchases', compact('products'));
+            return view('purchases.invoices.purchases', compact('products'));
         }
 
         $orderDetails = orderDetails::where('order_owner', $request->orderId)->get();
@@ -134,7 +134,7 @@ class SupllierController extends Controller
             'productsdata'       => $orderDetails
         ];
 
-        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
+        return view('suppliers.prints.print_products_to_supplier', compact('data'))->with('order', 0);
     }
 
     /**
@@ -144,7 +144,7 @@ class SupllierController extends Controller
     {
         if (blank($id)) {
             $data = [];
-            return view('products.purchases', compact('data'));
+            return view('purchases.invoices.purchases', compact('data'));
         }
 
         $orderDetails = orderDetails::where('order_owner', $id)->get();
@@ -165,7 +165,7 @@ class SupllierController extends Controller
             'productsdata'       => $orderDetails
         ];
 
-        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
+        return view('suppliers.prints.print_products_to_supplier', compact('data'))->with('order', 0);
     }
 
     /**
@@ -189,7 +189,7 @@ class SupllierController extends Controller
             'resource_purchases' => $resourcePurchases
         ];
 
-        return view('supplier.print_products_to_supplier', compact('data'))->with('order', 0);
+        return view('suppliers.prints.print_products_to_supplier', compact('data'))->with('order', 0);
     }
 
     public function update(Request $request, supllier $supllier) {}

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->bigInteger('branchs_id')->default(1);
             $table->double('the_amount', 8, 2)->default(0.00);
             $table->string('payment_method', 255)->default('-');
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }

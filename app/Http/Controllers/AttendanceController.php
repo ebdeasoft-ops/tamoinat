@@ -131,7 +131,7 @@ class AttendanceController extends Controller
         }
 
         $employees = Employee::all();
-        return view('attendances.index', compact('employees'));
+        return view('hr.attendances.index', compact('employees'));
     }
 
     public function create()
@@ -139,7 +139,7 @@ class AttendanceController extends Controller
         $employees = Employee::all();
         // جلب الإعدادات (افترض أن لديك موديل اسمه HrSetting)
         $settings = HrSetting::first();
-        return view('attendances.create', compact('employees', 'settings'));
+        return view('hr.attendances.create', compact('employees', 'settings'));
     }
 
 
@@ -224,7 +224,7 @@ public function store(Request $request)
         $employees = employee::all();
         $settings = HrSetting::first();
 
-        return view('attendances.edit', compact('attendance', 'employees', 'settings'));
+        return view('hr.attendances.edit', compact('attendance', 'employees', 'settings'));
     }
 
     public function import(Request $request)

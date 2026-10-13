@@ -10,7 +10,7 @@ class WarehouseController extends Controller
     public function index()
     {
         $warehouses = Warehouse::latest()->get();
-        return view('warehouses.index', compact('warehouses'));
+        return view('inventory.warehouses.index', compact('warehouses'));
     }
 
     public function store(Request $request)

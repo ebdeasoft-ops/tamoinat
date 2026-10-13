@@ -27,13 +27,13 @@ public function index(Request $request)
 
     $leaves = $query->get();
 
-    return view('leaves.index', compact('leaves', 'employees'));
+    return view('hr.leaves.index', compact('leaves', 'employees'));
 }
     // عرض صفحة إضافة إجازة جديدة مع قائمة الموظفين
     public function create()
     {
         $employees = employee::all();
-        return view('leaves.create', compact('employees'));
+        return view('hr.leaves.create', compact('employees'));
     }
 
     // حفظ طلب الإجازة الجديد في قاعدة البيانات
@@ -89,7 +89,7 @@ public function index(Request $request)
 {
     $leave = \App\Models\Leave::findOrFail($id);
     $employees = \App\Models\employee::all(); // لتعبئة قائمة الموظفين في التعديل
-    return view('leaves.edit', compact('leave', 'employees'));
+    return view('hr.leaves.edit', compact('leave', 'employees'));
 }
 
 public function update(Request $request, $id)
@@ -115,6 +115,6 @@ public function leaveBalanceReport()
         $query->where('status', 'approved'); // نحسب فقط الإجازات المقبولة
     }])->get();
 
-    return view('reports.leave_balance', compact('employees'));
+    return view('reports.hr.leave_balance', compact('employees'));
 }
 }

@@ -23,7 +23,7 @@ class ManufacturingReportController extends Controller
 
         $orders = $query->latest()->paginate(15);
 
-        return view('manufacturing_reports.index', compact('orders'));
+        return view('manufacturing.reports.index', compact('orders'));
     }
 
     // تقرير تكلفة أمر إنتاج تفصيلي
@@ -60,7 +60,7 @@ class ManufacturingReportController extends Controller
         $producedQty = $order->produced_quantity > 0 ? $order->produced_quantity : 1;
         $costPerUnit = $grandTotalCost / $producedQty;
 
-        return view('manufacturing_reports.order_cost', compact(
+        return view('manufacturing.reports.order_cost', compact(
             'order',
             'materialExpenses',
             'overheadExpenses',

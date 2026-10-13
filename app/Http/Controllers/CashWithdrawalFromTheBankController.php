@@ -51,7 +51,7 @@ class CashWithdrawalFromTheBankController extends Controller
             'id' => $data->id
         ];
         return $data;
-        return view('acountes.convertcashboxToBank', compact('data'));
+        return view('accounting.cash_bank.convertcashboxToBank', compact('data'));
     }
     /**
      * Store a newly created resource in storage.
@@ -79,14 +79,14 @@ class CashWithdrawalFromTheBankController extends Controller
         if ($request == null) {
             $data = [];
             session()->flash('nodataprint', '');
-            return view('acountes.convertcashboxToBank', compact('data'));
+            return view('accounting.cash_bank.convertcashboxToBank', compact('data'));
         }
 
         //eturn $request;
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = Cash_withdrawal_from_the_bank::find($request->id);
       //    return $data;
-      return view('acountes.printCash_withdrawal_from_the_bank', compact('data'));
+      return view('accounting.cash_bank.printCash_withdrawal_from_the_bank', compact('data'));
     }
     /**
      * Show the form for editing the specified resource.

@@ -26,27 +26,27 @@ class DliveryController extends Controller
     public function previousdelivers()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('previousdelivers');
+        return view('delivery.history.previousdelivers');
     }
     
     public function getAlldeliversajax()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = dlivery::where('blance', '!=', 0)->orderBy('blance', 'desc')->paginate();
-        return view('ajax_Recent_delivers', compact('data'));
+        return view('delivery.ajax.ajax_Recent_delivers', compact('data'));
     }
     
     public function getAlldeliversajaxbycustomer($id)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = dlivery::where('to_dlivery_id', $id)->orderBy('blance', 'desc')->paginate();
-        return view('ajax_Recent_delivers', compact('data'));
+        return view('delivery.ajax.ajax_Recent_delivers', compact('data'));
     }
 
     public function index()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.deliver_to_anoter_supplier');
+        return view('delivery.notes.deliver_to_anoter_supplier');
     }
 
     /**
@@ -132,6 +132,9 @@ class DliveryController extends Controller
             $cashamount, $Bank_transfer, $creaditamount, $paymentMethod, $branchId, $userId, $currentTime, $customerdata, $InvoiceData
         ) {
             
+            // قيد فاتورة المبيعات (نفس رقم القيد لو الفاتورة لها قيد بالفعل)
+            \App\Services\JournalEntry::begin('sales_invoice', $invoiceNo);
+
             $total_delivery_balance_deduction = 0;
             $total_delivery_items_deduction   = 0;
             $total_actual_cost                = 0; 
@@ -275,7 +278,7 @@ class DliveryController extends Controller
             'totatextlrihalala'       => '',
         ];
 
-        return view('products.printInvoicesReturnToClientRecentSales', compact('data'));
+        return view('sales.prints.printInvoicesReturnToClientRecentSales', compact('data'));
     }
 
 
@@ -312,7 +315,7 @@ class DliveryController extends Controller
     public function confirmdelivery()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.confirmdelivery');
+        return view('delivery.notes.confirmdelivery');
     }
 
     /**
@@ -495,7 +498,7 @@ class DliveryController extends Controller
             'items' => dlivery_items::where('supplier_id', $request->OrderNoprint)->where('states', 0)->get(),
             'supplier' => dlivery::where('to_dlivery_id', $request->OrderNoprint)->firstOrFail()
         ];
-        return view('products.print_order_perice_to_dlivery', compact('data'));
+        return view('delivery.prints.print_order_perice_to_dlivery', compact('data'));
     }
 
     /**

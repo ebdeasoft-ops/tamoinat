@@ -35,6 +35,7 @@ return new class extends Migration
             $table->integer('pending_invoice')->default(1);
             $table->index(['user_id'], 'temp_invoices_user_id_foreign');
             $table->index(['branchs_id'], 'temp_invoices_branch_id_foreign');
+            $table->string('p_o')->nullable();
             $table->timestamps();
         });
     }

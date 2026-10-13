@@ -18,7 +18,7 @@ class ManufacturingOrderController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('manufacturing_orders.index', compact('orders'));
+        return view('manufacturing.orders.index', compact('orders'));
     }
 
     public function create()
@@ -28,7 +28,7 @@ class ManufacturingOrderController extends Controller
         // جلب المخازن (استبدل باسم الموديل والمخازن المتاحة لديك)
         $warehouses = Warehouse::all();
 
-        return view('manufacturing_orders.create', compact('boms', 'warehouses'));
+        return view('manufacturing.orders.create', compact('boms', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -82,7 +82,7 @@ class ManufacturingOrderController extends Controller
         $order = ManufacturingOrder::with(['bom', 'finishedProduct', 'materialIssues.rawMaterial', 'rawMaterialWarehouse', 'wipWarehouse', 'finishedGoodsWarehouse'])
             ->findOrFail($id);
 
-        return view('manufacturing_orders.show', compact('order'));
+        return view('manufacturing.orders.show', compact('order'));
     }
 
     public function edit($id)
@@ -104,7 +104,7 @@ class ManufacturingOrderController extends Controller
         $boms = Bom::where('is_active', 1)->get();
         $warehouses = Warehouse::all();
 
-        return view('manufacturing_orders.edit', compact('order', 'boms', 'warehouses'));
+        return view('manufacturing.orders.edit', compact('order', 'boms', 'warehouses'));
     }
 
     public function destroy($id)

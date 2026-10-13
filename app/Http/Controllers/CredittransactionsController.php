@@ -14,6 +14,7 @@ use App\Models\expenses;
 use App\Models\supllier;
 use App\Models\DailyRecord;
 use App\Models\Cost_centers;
+use App\Services\JournalEntry;
 use Illuminate\Http\Request;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization as LaravelLocalization;
 use Illuminate\Support\Facades\DB; // هذا هو السطر الذي كان ينقصك وحل مشكلة الخطأ
@@ -24,7 +25,7 @@ class CredittransactionsController extends Controller
 public function general_budget()
 {
 
-    return view('acountes.general_budget_search');
+    return view('accounting.budget.general_budget_search');
 }
 public function budgetsheet(Request $request)
 {
@@ -98,7 +99,7 @@ public function budgetsheet(Request $request)
     $branches = DB::table('branchs')->get();
 
     // 5. إرسال البيانات إلى واجهة العرض (Blade)
-    return view('acountes.budgetsheet', compact('assets', 'liabilities', 'equity', 'branches', 'date', 'branch'));
+    return view('accounting.budget.budgetsheet', compact('assets', 'liabilities', 'equity', 'branches', 'date', 'branch'));
 }
     /**
      * دالة موحدة لعكس حركات السند وتصفير تأثيرها على الأرصدة قبل الحذف أو التعديل
@@ -152,6 +153,7 @@ public function budgetsheet(Request $request)
         DB::beginTransaction();
         try {
             $sent_count = $request->sent_abd_count;
+            JournalEntry::begin('receipt_voucher', $sent_count);
 
             // 1. تصفير وعكس الأرصدة القديمة بأمان
             $this->reverseVoucherBalances('sent_abd_count', $sent_count);
@@ -161,6 +163,11 @@ public function budgetsheet(Request $request)
 
             // 3. تسجيل البيانات الجديدة وتحديث الأرصدة
             $total_receipt_amount = 0;
+            $journal_no = JournalEntry::currentNumber([
+                'sent_abd_count' => $sent_count,
+                'date_export' => $request->date ?? now()->format('Y-m-d'),
+                'user_id' => $user_id,
+            ]);
 
             // الطرف الدائن (الحسابات الفرعية)
             foreach ($request->items as $item) {
@@ -178,6 +185,7 @@ public function budgetsheet(Request $request)
                     ]);
 
                     DB::table('credittransactions')->insert([
+                        'dely_record' => $journal_no,
                         'sent_abd_count' => $sent_count,
                         'customer_id' => $sub_account->id,
                         'debtor' => 0,
@@ -207,6 +215,7 @@ public function budgetsheet(Request $request)
                 ]);
 
                 DB::table('credittransactions')->insert([
+                    'dely_record' => $journal_no,
                     'sent_abd_count' => $sent_count,
                     'customer_id' => $main_account->id,
                     'debtor' => $total_receipt_amount,
@@ -223,6 +232,8 @@ public function budgetsheet(Request $request)
                     'recive_amount' => $total_receipt_amount,
                 ]);
             }
+
+            JournalEntry::refreshTotals($journal_no);
 
             DB::commit();
             return response()->json(['status' => 'success', 'message' => 'تم التحديث بنجاح', 'count' => $sent_count]);
@@ -264,6 +275,7 @@ public function budgetsheet(Request $request)
                 ->first();
 
             $sent_abd_count = $recent_record ? $recent_record->sent_abd_count + 1 : 1;
+            JournalEntry::begin('receipt_voucher', $sent_abd_count);
             $total_receipt_amount = 0;
             $createTransactionId = 0;
 
@@ -352,6 +364,8 @@ public function budgetsheet(Request $request)
 
         try {
             DB::beginTransaction();
+
+            JournalEntry::begin('receipt_voucher', $request->sent_abd_count);
 
             // إصلاح محاسبي: عكس الحركات والأرصدة القديمة قبل مسحها
             $this->reverseVoucherBalances('sent_abd_count', $request->sent_abd_count);
@@ -472,6 +486,7 @@ public function budgetsheet(Request $request)
         $serf_count = $main_entry->sent_serf_count;
 
         return \DB::transaction(function () use ($request, $serf_count) {
+            JournalEntry::begin('payment_voucher', $serf_count);
             $payment_name = $request->pay_method_type;
 
             // 2. عكس الأرصدة السابقة قبل الحذف
@@ -606,7 +621,15 @@ public function budgetsheet(Request $request)
         
         
         }
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function store_Serf_Decument(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->store_Serf_DecumentBody($request));
+    }
+
+    protected function store_Serf_DecumentBody(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         // 1. معالجة المرفق العام
@@ -633,6 +656,7 @@ public function budgetsheet(Request $request)
 
         // 2. إذا وجد سجل، أضف 1 على الرقم الحالي، وإذا لم يجد (أول عملية) ابدأ برقم 1
         $sent_serf_count = $recent_id ? $recent_id->sent_serf_count + 1 : 1;
+        JournalEntry::begin('payment_voucher', $sent_serf_count);
 
         $all_transactions_data = [];
         $total_document_amount = 0; // متغيّر لتجميع إجمالي السند
@@ -1008,6 +1032,11 @@ public function budgetsheet(Request $request)
             return response()->json([0, "القيد غير متوازن محاسبياً! إجمالي المدين يجب أن يساوي إجمالي الدائن."]);
         }
 
+        // قيود الفواتير والسندات الآلية تُعدل من مستندها فقط
+        if ($dely_record_count > 0 && JournalEntry::isAuto($dely_record_count)) {
+            return response()->json([0, JournalEntry::lockedMessage($dely_record_count)]);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -1035,7 +1064,8 @@ public function budgetsheet(Request $request)
                 $this->reverseTransactionBalances('dely_record', $dely_record_count);
                 credittransactions::where('dely_record', $dely_record_count)->delete();
             } else {
-                $dailyRecord = DailyRecord::create([
+                // رقم القيد من التسلسل الموحد (نفس تسلسل قيود الفواتير والسندات)
+                $dailyRecord = JournalEntry::createManual([
                     'date' => $request->date,
                     'general_notes' => $request->general_notes,
                     'total_debit' => $total_debit,
@@ -1106,7 +1136,13 @@ public function budgetsheet(Request $request)
 
             $dailyRecord = DailyRecord::find($id);
             if (!$dailyRecord) {
+                DB::rollback();
                 return response()->json([0, "عفواً، هذا القيد غير موجود في النظام"]);
+            }
+
+            if ($dailyRecord->is_auto) {
+                DB::rollback();
+                return response()->json([0, JournalEntry::lockedMessage($id)]);
             }
 
             // عكس العمليات المالية بدقة قبل الحذف التام للبيانات
@@ -1129,21 +1165,24 @@ public function budgetsheet(Request $request)
         $accounts = financial_accounts::where('is_parent', 0)->where('active', 1)->get();
         $cost_centers = Cost_centers::all();
         $latest_entries = OpeningEntry::orderBy('id', 'desc')->paginate(3);
-        return view('acountes.Opening_entry', compact('accounts', 'cost_centers'))->with('latest_entries', $latest_entries);
+        return view('accounting.journal.Opening_entry', compact('accounts', 'cost_centers'))->with('latest_entries', $latest_entries);
     }
 
     public function getLatestJournals(Request $request)
     {
         $search = $request->query('search');
-        $records = DailyRecord::when($search, function ($query) use ($search) {
-            return $query->where('id', 'like', "%$search%")
-                ->orWhere('general_notes', 'like', "%$search%");
-        })
+        $records = DailyRecord::hasLines()
+            ->when($search, function ($query) use ($search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('id', 'like', "%$search%")
+                        ->orWhere('general_notes', 'like', "%$search%");
+                });
+            })
             ->orderBy('id', 'desc')
             ->paginate(3);
 
         $records->appends(['search' => $search]);
-        return view('acountes.latest_table', compact('records'))->render();
+        return view('accounting.journal.latest_table', compact('records'))->render();
     }
 
     public function get_details($id)
@@ -1154,7 +1193,10 @@ public function budgetsheet(Request $request)
             return response()->json([
                 'status' => 1,
                 'data' => $entry,
-                'details' => $details
+                'details' => $details,
+                'is_auto' => (bool) $entry->is_auto,
+                'source_label' => $entry->source_label,
+                'locked_message' => $entry->is_auto ? JournalEntry::lockedMessage($id) : null,
             ]);
         }
         return response()->json(['status' => 0]);
@@ -1273,6 +1315,10 @@ public function budgetsheet(Request $request)
      */
     public function get_And_Delete_delyrecord($id)
     {
+        if (JournalEntry::isAuto($id)) {
+            return response()->json(['status' => 'error', 'message' => JournalEntry::lockedMessage($id)], 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -1329,6 +1375,10 @@ public function budgetsheet(Request $request)
      */
     public function getAndUpdate_delyrecord($id)
     {
+        if (JournalEntry::isAuto($id)) {
+            return response()->json(['status' => 'error', 'message' => JournalEntry::lockedMessage($id)], 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -1391,6 +1441,11 @@ public function budgetsheet(Request $request)
             if (!$tx)
                 return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
 
+            if (JournalEntry::isAuto($tx->dely_record)) {
+                DB::rollback();
+                return response()->json(['status' => 'error', 'message' => JournalEntry::lockedMessage($tx->dely_record)], 422);
+            }
+
             $account = financial_accounts::find($tx->customer_id);
             if ($account) {
                 $account->debtor_current -= $tx->debtor;
@@ -1437,6 +1492,11 @@ public function budgetsheet(Request $request)
             $tx = credittransactions::find($request->transactionId);
             if (!$tx)
                 return response()->json(['status' => 'error', 'message' => 'الحركة غير موجودة']);
+
+            if (JournalEntry::isAuto($tx->dely_record)) {
+                DB::rollback();
+                return response()->json(['status' => 'error', 'message' => JournalEntry::lockedMessage($tx->dely_record)], 422);
+            }
 
             // 1. عكس الأرصدة القديمة من الحساب القديم قبل التعديل
             $oldAccount = financial_accounts::find($tx->customer_id);
@@ -1535,7 +1595,7 @@ public function budgetsheet(Request $request)
     public function index()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('acountes.Daily_record');
+        return view('accounting.journal.Daily_record');
     }
 
     public function print_Opening_entry(Request $request)
@@ -1558,7 +1618,7 @@ public function budgetsheet(Request $request)
             ];
         })->toArray();
 
-        return view('acountes.print_Opening_entry', compact('data'))
+        return view('accounting.journal.print_Opening_entry', compact('data'))
             ->with('date', $date)
             ->with('general_note', $OpeningEntry->general_note ?? '')
             ->with('dely_record', $request->record_id_print);
@@ -1582,8 +1642,11 @@ public function budgetsheet(Request $request)
             ];
         })->toArray();
 
-        return view('acountes.print_daily_record', compact('data'))
-            ->with('date', $date)
+        $header = DailyRecord::find($request->record_id_print);
+
+        return view('accounting.journal.print_daily_record', compact('data'))
+            ->with('date', $header->date ?? $date)
+            ->with('main_note', $header->general_notes ?? null)
             ->with('dely_record', $request->record_id_print);
     }
 
@@ -1619,6 +1682,11 @@ public function budgetsheet(Request $request)
      */
     public function save_Daily_record($dely_record_id)
     {
+        // ترحيل قيد آلي مرة أخرى سيكرر أثره على الأرصدة
+        if (JournalEntry::isAuto($dely_record_id)) {
+            return [0, JournalEntry::lockedMessage($dely_record_id)];
+        }
+
         $credittransactions = credittransactions::where('dely_record', $dely_record_id)->get();
 
         $credit_sum = $credittransactions->sum('creditor');
@@ -1770,8 +1838,13 @@ public function budgetsheet(Request $request)
 
         $dely_record_count = $request->record_id;
         if ($request->record_id == 0) {
-            $last_record = credittransactions::where('dely_record', '!=', 0)->orderBy('id', 'desc')->first();
-            $dely_record_count = $last_record ? $last_record->dely_record + 1 : 1;
+            $dely_record_count = JournalEntry::createManual([
+                'date' => ($date && $date != '0') ? $date : now()->toDateString(),
+                'general_notes' => $request->notes_1,
+                'user_id' => auth()->id(),
+            ])->id;
+        } elseif (JournalEntry::isAuto($dely_record_count)) {
+            return response()->json(['status' => 'error', 'message' => JournalEntry::lockedMessage($dely_record_count)], 422);
         }
 
         $createdAt = $date != '0' ? $date . ' ' . substr(Carbon::now(), 12) : Carbon::now();
@@ -1979,7 +2052,7 @@ public function budgetsheet(Request $request)
             ->where('sent_abd_count', $count)
             ->paginate(3);
 
-        return view('sant_abd_ajax', compact('data'));
+        return view('accounting.ajax.sant_abd_ajax', compact('data'));
     }
 
     public function search_by_decoumentNo_send_serf($count)
@@ -1990,7 +2063,7 @@ public function budgetsheet(Request $request)
 
             ->paginate(3);
 
-        return view('sant_serf_ajax', compact('data'));
+        return view('accounting.ajax.sant_serf_ajax', compact('data'));
     }
 
     public function delete_voncher($count)
@@ -2009,7 +2082,7 @@ public function budgetsheet(Request $request)
             ->orderBy('id', 'desc')
             ->paginate(3);
 
-        return view('sant_abd_ajax', compact('data'));
+        return view('accounting.ajax.sant_abd_ajax', compact('data'));
     }
 
     public function getAndUpdatevoncher($count)
@@ -2039,7 +2112,15 @@ public function budgetsheet(Request $request)
         return $data;
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function create(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->createBody($request));
+    }
+
+    protected function createBody(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
@@ -2068,6 +2149,7 @@ public function budgetsheet(Request $request)
         if ($recent_id != null && $sent_abd_count == 1) {
             $sent_abd_count = $recent_id->sent_abd_count + 1;
         }
+        JournalEntry::begin('receipt_voucher', $sent_abd_count);
 
         $customerAccount = financial_accounts::find($clientId);
         $now = Carbon::now();
@@ -2242,7 +2324,15 @@ public function budgetsheet(Request $request)
         return $data;
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function store(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->storeBody($request));
+    }
+
+    protected function storeBody(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
@@ -2272,6 +2362,7 @@ public function budgetsheet(Request $request)
         if ($recent_id != null && $sent_serf_count == 1) {
             $sent_serf_count = $recent_id->sent_serf_count + 1;
         }
+        JournalEntry::begin('payment_voucher', $sent_serf_count);
 
         $now = Carbon::now();
 

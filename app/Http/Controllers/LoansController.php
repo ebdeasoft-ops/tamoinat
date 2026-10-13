@@ -18,7 +18,7 @@ class LoansController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('hr.Loans');  
+        return view('hr.payroll.Loans');  
         //
     }
 
@@ -54,7 +54,7 @@ class LoansController extends Controller
             $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم إضافة السلفة بنجاح':'  Loans created successfully';
                 session()->flash('create_department',$message);
         }
-        return view('hr.Loans');  
+        return view('hr.payroll.Loans');  
     }
 
     /**

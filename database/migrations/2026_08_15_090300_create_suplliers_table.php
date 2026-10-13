@@ -22,6 +22,7 @@ return new class extends Migration
             $table->bigInteger('TaxـNumber')->default(0);
             $table->bigInteger('mantob_account_id')->nullable();
             $table->double('opeing_blance')->default(0);
+            $table->string('invoice_number')->nullable();
             $table->timestamps();
         });
     }

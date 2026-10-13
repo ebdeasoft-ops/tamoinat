@@ -17,7 +17,7 @@ class HrSettingController extends Controller
             'overtime_hour_rate' => 0.00 // القيمة الافتراضية
         ]);
 
-        return view('hr_settings.index', compact('setting'));
+        return view('hr.settings.index', compact('setting'));
     }
 
     // تحديث الإعدادات

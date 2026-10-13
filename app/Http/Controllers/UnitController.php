@@ -10,7 +10,7 @@ class UnitController extends Controller
     public function index()
     {
         $units = Unit::latest()->get();
-        return view('units.index', compact('units'));
+        return view('inventory.units.index', compact('units'));
     }
 
     public function store(Request $request)

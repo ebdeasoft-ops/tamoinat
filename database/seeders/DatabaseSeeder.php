@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // الصلاحيات والأدوار
-            PermissionTableSeeder::class,
+            PermissionSeeder::class,
+            
             AcountsTypesSeeder::class,
 
             // اليوزرز
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
 
             // الفروع
             BranchsSeeder::class,
+            ProductSeeder::class,
 
             // بيانات الشركة والإعدادات
             Campanyinfo::class,

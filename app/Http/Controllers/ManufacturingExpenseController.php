@@ -16,7 +16,7 @@ class ManufacturingExpenseController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('manufacturing_expenses.index', compact('expenses'));
+        return view('manufacturing.expenses.index', compact('expenses'));
     }
 
     public function create()
@@ -25,7 +25,7 @@ class ManufacturingExpenseController extends Controller
             ->with(['finishedProduct'])
             ->get();
 
-        return view('manufacturing_expenses.create', compact('orders'));
+        return view('manufacturing.expenses.create', compact('orders'));
     }
 
     public function store(Request $request)
@@ -71,7 +71,7 @@ class ManufacturingExpenseController extends Controller
     public function show($id)
     {
         $expense = ManufacturingExpense::with(['manufacturingOrder.finishedProduct'])->findOrFail($id);
-        return view('manufacturing_expenses.show', compact('expense'));
+        return view('manufacturing.expenses.show', compact('expense'));
     }
 
     public function edit($id)
@@ -79,7 +79,7 @@ class ManufacturingExpenseController extends Controller
         $expense = ManufacturingExpense::with(['manufacturingOrder.finishedProduct'])->findOrFail($id);
         $orders = ManufacturingOrder::whereIn('status', ['planned', 'in_progress', 'completed'])->get();
 
-        return view('manufacturing_expenses.edit', compact('expense', 'orders'));
+        return view('manufacturing.expenses.edit', compact('expense', 'orders'));
     }
 
     public function update(Request $request, $id)

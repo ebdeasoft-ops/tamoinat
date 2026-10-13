@@ -30,14 +30,14 @@ class SystemSettingController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = system_setting::where('branchs_id',Auth()->user()->branchs_id)->first();
-        return view('system_setting.system_data', compact('data'));
+        return view('settings.system.system_data', compact('data'));
     }
 
  public function onbourding()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = system_setting::where('branchs_id',Auth()->user()->branchs_id)->first();
-        return view('system_setting.onbourding', compact('data'));          //
+        return view('settings.system.onbourding', compact('data'));          //
     }
     /**
      * Show the form for creating a new resource.
@@ -106,12 +106,12 @@ class SystemSettingController extends Controller
                      ]);
 
                      session()->flash('RegisterDone', 'تم الربط مع الزكاة بنجاح شكرا     The link with Zakat has been completed successfully Thank you');
-                     return view('system_setting.onbourding', compact('data'));
+                     return view('settings.system.onbourding', compact('data'));
                  } else {
                      $data = system_setting::where('branchs_id',Auth()->user()->branchs_id)->first();
                  session()->flash('ERROR',$response['message']);
 
-                     return view('system_setting.onbourding', compact('data'));
+                     return view('settings.system.onbourding', compact('data'));
                  }
     }
 
@@ -196,7 +196,7 @@ class SystemSettingController extends Controller
         ]);
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = system_setting::where('branchs_id',Auth()->user()->branchs_id)->first();
-        return view('system_setting.system_data', compact('data'));
+        return view('settings.system.system_data', compact('data'));
     }
     /**
      * Remove the specified resource from storage.

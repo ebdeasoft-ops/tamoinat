@@ -21,7 +21,7 @@ class UserController extends Controller
         // جلب المستخدمين مع الأدوار الخاصة بهم لتجنب مشكلة الـ N+1 Query في الـ View
         $data = User::with('roles')->orderBy('id', 'DESC')->paginate(20);
         
-        return view('users.show_users', compact('data'))
+        return view('admin.users.show_users', compact('data'))
             ->with('i', ($request->input('page', 1) - 1) * 20); // تم تعديل الضرب إلى 20 ليتناسب مع الباجينيشن
     }
 
@@ -33,7 +33,7 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::pluck('name', 'name')->all();
-        return view('users.Add_user', compact('roles'));
+        return view('admin.users.Add_user', compact('roles'));
     }
 
     /**
@@ -92,7 +92,7 @@ public function getEmployeesByBranch($branch_id)
 public function show($id)
     {
         $user = User::findOrFail($id);
-        return view('users.show', compact('user'));
+        return view('admin.users.show', compact('user'));
     }
 
     /**
@@ -109,7 +109,7 @@ public function show($id)
         $roles = Role::where('name', '!=', 'Admin')->pluck('name', 'name')->all();
         $userRole = $user->roles->pluck('name', 'name')->all();
 
-        return view('users.edit', compact('user', 'roles', 'userRole'));
+        return view('admin.users.edit', compact('user', 'roles', 'userRole'));
     }
 
     /**

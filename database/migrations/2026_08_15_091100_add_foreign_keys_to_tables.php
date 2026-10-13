@@ -51,8 +51,8 @@ return new class extends Migration
             $table->foreign('user_id', 'expenses_user_id_foreign')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::table('increaseـor_deduction_employees', function (Blueprint $table) {
-            $table->foreign('employee_id', 'increaseـor_deduction_employees_employee_id_foreign')->references('id')->on('employees')->onDelete('cascade');
+        Schema::table('increase_or_deduction_employees', function (Blueprint $table) {
+            $table->foreign('employee_id', 'increase_or_deduction_employees_employee_id_foreign')->references('id')->on('employees')->onDelete('cascade');
         });
 
         Schema::table('invoices', function (Blueprint $table) {
@@ -145,8 +145,8 @@ return new class extends Migration
             $table->dropForeign('expenses_user_id_foreign');
         });
 
-        Schema::table('increaseـor_deduction_employees', function (Blueprint $table) {
-            $table->dropForeign('increaseـor_deduction_employees_employee_id_foreign');
+        Schema::table('increase_or_deduction_employees', function (Blueprint $table) {
+            $table->dropForeign('increase_or_deduction_employees_employee_id_foreign');
         });
 
         Schema::table('invoices', function (Blueprint $table) {

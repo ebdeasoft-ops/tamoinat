@@ -23,6 +23,7 @@ return new class extends Migration
             $table->bigInteger('user_delivery')->default(0);
             $table->index(['product_id'], 'delivery_product_to_the_customers_product_id_foreign');
             $table->index(['invoice_id'], 'delivery_product_to_the_customers_invoice_id_foreign');
+            $table->integer('userdelivery_id')->nullable();
             $table->timestamps();
         });
     }

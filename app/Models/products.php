@@ -12,10 +12,10 @@ class products extends Model
     protected $fillable = [
         'refnumber',
         'product_name',
-        'purchasingـprice',
+        'purchasing_price',
         'sale_price',
         'numberofpice',
-        'numberـofـsales',
+        'number_of_sales',
         'Status',
         'user_id',
         'Product_Location',

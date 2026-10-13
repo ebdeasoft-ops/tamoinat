@@ -13,7 +13,7 @@ class SalesProfitsExport implements FromView {
 
     public function view(): View {
         // هنا نخبره أن يستخدم ملف الـ Blade المخصص للداتا فقط
-        return view('reports.excel_sales_profits', [
+        return view('reports.sales.excel_sales_profits', [
             'data' => $this->data,
             'start' => $this->start,
             'end' => $this->end

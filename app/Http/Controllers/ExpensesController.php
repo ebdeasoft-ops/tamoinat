@@ -220,7 +220,7 @@ $image->move($folder, $the_file_path
        
         ];
         return $data;
-        return view('acountes.cash expense',compact('data'));
+        return view('accounting.expenses.cash_expense',compact('data'));
     }
 
     /**
@@ -264,7 +264,7 @@ $image->move($folder, $the_file_path
          
         ];
         return $data;
-        return view('acountes.Expensesowner',compact('data'));
+        return view('accounting.expenses.Expensesowner',compact('data'));
 
     }
 

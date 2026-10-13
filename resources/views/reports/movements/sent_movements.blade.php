@@ -86,7 +86,7 @@
                                             <button type="submit"
                                                 class="btn btn-primary flex-fill rounded-pill shadow-sm mb-2 mb-xl-0 ml-1">
                                                 <i class="fas fa-search ml-1"></i> {{ __('home.search') }}
-                                            </button>
+                                            </button>@include('partials.excel-button')
 
                                             <!-- زر إكسيل -->
                                             <a href="{{ route('reports.sent.excel', request()->all()) }}"

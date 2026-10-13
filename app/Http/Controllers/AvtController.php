@@ -18,7 +18,7 @@ class AvtController extends Controller
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('setting.VAT');
+        return view('settings.VAT');
     }
 
     /**
@@ -55,7 +55,7 @@ class AvtController extends Controller
       }
     
       
-      return view('setting.VAT');
+      return view('settings.VAT');
     }
 
     /**
@@ -104,7 +104,7 @@ class AvtController extends Controller
                   }
                 
                   
-                  return view('setting.VAT');
+                  return view('settings.VAT');
 
     }
 
@@ -129,6 +129,6 @@ class AvtController extends Controller
                   }
                 
                   
-                  return view('setting.VAT');
+                  return view('settings.VAT');
     }
 }

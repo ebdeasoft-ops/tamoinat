@@ -85,27 +85,27 @@ class SupprocessesController extends Controller
 
     public function index()
     {
-        return view('supProcesses.addProduct');
+        return view('inventory.products.addProduct');
     }
 
     public function Goupdatecustomer()
     {
-        return view('supProcesses.updatecustomer');
+        return view('customers.updatecustomer');
     }
 
     public function Goupdatesupplier()
     {
-        return view('supProcesses.updatesupplier');
+        return view('suppliers.updatesupplier');
     }
 
     public function show_groups()
     {
-        return view('supProcesses.show_groups');
+        return view('inventory.products.show_groups');
     }
 
     public function expenses_reason()
     {
-        return view('supProcesses.enpenses_reason');
+        return view('accounting.expenses.enpenses_reason');
     }
 
     /**
@@ -802,22 +802,22 @@ class SupprocessesController extends Controller
 
     public function product_movement()
     {
-        return view('supProcesses.product_movement');
+        return view('inventory.transfers.product_movement');
     }
     public function product_damage()
     {
-        return view('supProcesses.product damage');
+        return view('inventory.stock.product_damage');
     }
     public function addnewcustomer()
     {
-        return view('supProcesses.addnewcustomer');
+        return view('customers.addnewcustomer');
     }
     public function addnewsupplier()
     {
-        return view('supProcesses.addnewsupplier');
+        return view('suppliers.addnewsupplier');
     }
     public function stockAdjastment()
     {
-        return view('supProcesses.stockAdjastment');
+        return view('inventory.stock.stockAdjastment');
     }
 }

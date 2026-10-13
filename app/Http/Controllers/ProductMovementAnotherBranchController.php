@@ -187,7 +187,7 @@ public function exportPdf(Request $request)
 
     // جلب الـ branch_id من الرابط، وإذا لم يوجد، يتم استخدام فرع المستخدم الحالي
 
-    return view('supProcesses.send_product_to_branch', compact('draftMovement', 'draftItems', 'branchId'));
+    return view('inventory.transfers.send_product_to_branch', compact('draftMovement', 'draftItems', 'branchId'));
 }
     /**
      * إنشاء أو تحديث أمر تحويل منتجات إلى فرع آخر (صرف من الفرع الحالي)
@@ -205,7 +205,7 @@ public function showMyDrafts(Request $request)
             ->get();
 
         // نقوم بتمرير المسودات ومعرف الفرع إلى صفحة العرض
-        return view('supProcesses.my_drafts_list', compact('myDrafts', 'branchId'));
+        return view('inventory.transfers.my_drafts_list', compact('myDrafts', 'branchId'));
     }
 
 
@@ -551,18 +551,18 @@ public function show(\Illuminate\Http\Request $request)
     {
         $branchId = $request->input('branch_id'); // استقبال الـ branch_id من الرابط
 
-        return view('supProcesses.recive_product_from_another_branch', compact('branchId'));
+        return view('inventory.transfers.recive_product_from_another_branch', compact('branchId'));
     }
     public function print_Transfer_items(Request $request)
     {
         if (!$request->sprint_invoice_number) {
             session()->flash('nodataprint', '');
-            return view('supProcesses.send_product_to_branch');
+            return view('inventory.transfers.send_product_to_branch');
         }
         $invoice = product_movement_another_branch::findOrFail($request->sprint_invoice_number);
         $items = product_movement_another_branch_items::with('product')->where('order_id', $invoice->id)->get();
 
-        return view('supProcesses.print_send_product', ['data' => compact('invoice', 'items')]);
+        return view('inventory.transfers.print_send_product', ['data' => compact('invoice', 'items')]);
     }
 
     public function print_Recive_items(Request $request)
@@ -570,11 +570,11 @@ public function show(\Illuminate\Http\Request $request)
 
         if (!$request->sprint_invoice_number) {
             session()->flash('nodataprint', '');
-            return view('supProcesses.recive_product_from_another_branch');
+            return view('inventory.transfers.recive_product_from_another_branch');
         }
         $invoice = product_movement_another_branch::findOrFail($request->sprint_invoice_number);
         $items = product_movement_another_branch_items::with('product')->where('order_id', $invoice->id)->get();
-        return view('supProcesses.print_recive_product', ['data' => compact('invoice', 'items')]);
+        return view('inventory.transfers.print_recive_product', ['data' => compact('invoice', 'items')]);
     }
 
     /**

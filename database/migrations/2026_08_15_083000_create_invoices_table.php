@@ -62,6 +62,8 @@ return new class extends Migration
             $table->integer('branchs_id_reciver')->default(0);
             $table->integer('status1')->default(0);
             $table->index(['user_id'], 'invoices_user_id_foreign');
+            $table->string('pending_invoice')->nullable();
+            $table->double('vat')->default(0);
             $table->timestamps();
         });
     }

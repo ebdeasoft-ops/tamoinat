@@ -9,6 +9,7 @@ use App\Models\employee;
 class Increaseـor_deduction_employee extends Model
 {
     use HasFactory;
+    protected $table = 'increase_or_deduction_employees';
     protected $fillable = [
         'employee_id',
         'increase',

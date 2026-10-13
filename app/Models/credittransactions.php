@@ -42,6 +42,27 @@ class credittransactions extends Model
     'cost_center'
 
 ];
+    /**
+     * ترقيم القيود: أي سطر محاسبي يُنشأ بدون رقم قيد يأخذ رقم قيد مستنده
+     * من نفس تسلسل القيود اليدوية (راجع App\Services\JournalEntry).
+     */
+    protected static function booted()
+    {
+        static::creating(function (credittransactions $line) {
+            \App\Services\JournalEntry::stamp($line);
+        });
+
+        static::created(function (credittransactions $line) {
+            \App\Services\JournalEntry::refreshTotals($line->dely_record);
+        });
+    }
+
+    /** رأس القيد */
+    public function journal()
+    {
+        return $this->belongsTo(DailyRecord::class, 'dely_record');
+    }
+
     public function cost_center_data()
     {
         return $this->belongsTo(Cost_centers::class,'cost_center');

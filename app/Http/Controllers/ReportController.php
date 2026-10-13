@@ -63,14 +63,14 @@ class ReportController extends Controller
             if ($UserId == '-') {
                 $Invoices = credittransactions::where('note', 'LIKE', '%' . 'سند قبض' . '%')->whereDate('created_at', '>=', $request->start_at)->where('decument_id', 0)->whereDate('created_at', '<=', $request->end_at)->get();
 
-                return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+                return view('reports.customers.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
                 ;
             }
             $Invoices = credittransactions::where('note', 'LIKE', '%' . 'سند قبض' . '%')->where('customer_id', $UserId)->where('decument_id', 0)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
 
 
 
-            return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+            return view('reports.customers.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
             ;
 
         } else {
@@ -78,11 +78,11 @@ class ReportController extends Controller
             if ($UserId == '-') {
                 $Invoices = credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%' . 'سند قبض' . '%')->whereDate('created_at', '>=', $request->start_at)->where('decument_id', 0)->whereDate('created_at', '<=', $request->end_at)->get();
 
-                return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+                return view('reports.customers.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
                 ;
             }
             $Invoices = credittransactions::where('branchs_id', $request->branch)->where('note', 'LIKE', '%' . 'سند قبض' . '%')->where('orginal_id', $UserId)->where('decument_id', 0)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->get();
-            return view('reports.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+            return view('reports.customers.print_credit_collection', compact('Invoices'))->with('customer_id', $UserId)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
             ;
 
 
@@ -121,7 +121,7 @@ class ReportController extends Controller
             return Excel::download(new ExpensesExport($Invoices, $totals), 'expenses_report.xlsx');
         }
 
-        return view('reports.printExpensesReport', compact('Invoices', 'request'));
+        return view('reports.financial.printExpensesReport', compact('Invoices', 'request'));
     }
 
 
@@ -172,7 +172,7 @@ class ReportController extends Controller
 
     public function profitLossReport()
     {
-        return view('reports.profit_loss');
+        return view('reports.financial.profit_loss');
     }
 
     // البحث والفلترة (POST) لتقرير الأرباح والخسائر للمبيعات الضريبية
@@ -210,7 +210,7 @@ class ReportController extends Controller
             ->groupBy('sales.product_id', 'products.Product_Code', 'products.product_name', 'products.average_cost', 'products.purchasingـprice')
             ->get();
 
-        return view('reports.print_profit_loss', [
+        return view('reports.financial.print_profit_loss', [
             'data' => $data,
             'start_at' => $request->start_at,
             'end_at' => $request->end_at,
@@ -220,7 +220,7 @@ class ReportController extends Controller
 
     public function deliveryprofitLossReport()
     {
-        return view('reports.delivery_profit_loss');
+        return view('reports.delivery.delivery_profit_loss');
     }
 
     // البحث والفلترة (POST) للمبيعات بدون ضريبة
@@ -258,7 +258,7 @@ class ReportController extends Controller
             ->groupBy('sales_withoud_taxes.product_id', 'products.Product_Code', 'products.product_name', 'products.average_cost', 'products.purchasingـprice')
             ->get();
 
-        return view('reports.delivery_print_profit_loss', [
+        return view('reports.delivery.delivery_print_profit_loss', [
             'data' => $data,
             'start_at' => $request->start_at,
             'end_at' => $request->end_at,
@@ -400,7 +400,7 @@ class ReportController extends Controller
             return strtotime($a['date']) <=> strtotime($b['date']);
         });
 
-        return view('reports.statement_table_ajax', ['data' => $List_dely_record])
+        return view('reports.financial.statement_table_ajax', ['data' => $List_dely_record])
             ->with('start_at', $start_at)
             ->with('end_at', $end_at)
             ->with('account_name', $financial_accounts->name)
@@ -414,7 +414,7 @@ class ReportController extends Controller
     public function report_delivery_return()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.report_returns_sale_delivery');
+        return view('reports.delivery.report_returns_sale_delivery');
     }
 
     public function search_report_returns_sale_delivery(Request $request)
@@ -430,7 +430,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_report_sales_returen_delivery', compact('Invoices'))
+        return view('reports.delivery.print_report_sales_returen_delivery', compact('Invoices'))
             ->with('branch_Id', $request->branch)
             ->with('start', $request->start_at)
             ->with('end', $request->end_at);
@@ -454,7 +454,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.printReport_delivery_withoud_deatails', compact('Invoices'))
+        return view('reports.delivery.printReport_delivery_withoud_deatails', compact('Invoices'))
             ->with('pay', $request->pay)
             ->with('branch', $request->branch)
             ->with('start', $request->start_at)
@@ -464,13 +464,13 @@ class ReportController extends Controller
     public function sel_product_DELIVERY()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.sell_product_withoud_tax');
+        return view('reports.sales.sell_product_withoud_tax');
     }
 
     public function purchase_product_by_date()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.purchase_product_by_date');
+        return view('reports.purchases.purchase_product_by_date');
     }
 
     public function search_purchase_product_by_date(Request $request)
@@ -503,13 +503,13 @@ class ReportController extends Controller
         }
 
         $products = $productsQuery->get();
-        return view('reports.print_purchase_product_by_date', compact('products'));
+        return view('reports.purchases.print_purchase_product_by_date', compact('products'));
     }
 
     public function SalesPurchaseInPeriode()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.SalesPurchaseInPeriode');
+        return view('reports.sales.SalesPurchaseInPeriode');
     }
 
     public function search_SalesPurchaseInPeriode(Request $request)
@@ -534,7 +534,7 @@ class ReportController extends Controller
     public function sales_product_by_date()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.sales_product_by_date');
+        return view('reports.sales.sales_product_by_date');
     }
 
     public function search_sales_product_by_date(Request $request)
@@ -562,13 +562,13 @@ class ReportController extends Controller
             );
         }
 
-        return view('reports.printsales_product_by_date', compact('products'));
+        return view('reports.sales.printsales_product_by_date', compact('products'));
     }
 
     public function profit_and_lost()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.profit_and_lost');
+        return view('reports.financial.profit_and_lost');
     }
     // جلب أبناء فرع معين عبر الـ AJAX عند الضغط عليه
 
@@ -637,7 +637,7 @@ class ReportController extends Controller
                 return $q->parent_account_number == null || $q->parent_account_number == 0;
             });
 
-        return view('reports.budgetsheet_general', compact(
+        return view('reports.financial.budgetsheet_general', compact(
             'rootAccounts',
             'types',
             'allAccounts',
@@ -748,7 +748,7 @@ class ReportController extends Controller
     public function low_sell()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.low_sell');
+        return view('reports.sales.low_sell');
     }
 
     public function low_sell_search(Request $request)
@@ -843,19 +843,19 @@ class ReportController extends Controller
             $nonTaxFinancialsArray
         ];
 
-        return view('reports.year_sales_report', compact('data'));
+        return view('reports.sales.year_sales_report', compact('data'));
     }
 
     public function cost_center()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.search_cost_center');
+        return view('reports.financial.search_cost_center');
     }
 
     public function sales_and_return()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.sales_and_return');
+        return view('reports.sales.sales_and_return');
     }
 
     /**
@@ -926,7 +926,7 @@ class ReportController extends Controller
             'stockopining' => $financial_accounts_main ? $financial_accounts_main->debtor_opening : 0,
             'stockclosing' => $financial_accounts_main ? $financial_accounts_main->debtor_end : 0,
         ];
-        return view('reports.print_profit_and_lost', compact('data'))
+        return view('reports.financial.print_profit_and_lost', compact('data'))
             ->with('start', $request->start_at)
             ->with('end', $request->end_at)
             ->with('branch', auth()->user()->branchs_id);
@@ -942,7 +942,7 @@ class ReportController extends Controller
             $data = credittransactions::where('cost_center', $request->cost_center)->whereDate('created_at', '>=', $request->start_at)->whereDate('created_at', '<=', $request->end_at)->where('save', 1)->get();
         }
 
-        return view('reports.cost_center', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('cost_center', $request->cost_center);
+        return view('reports.financial.cost_center', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('cost_center', $request->cost_center);
     }
 
     public function search_sales_and_return(Request $request)
@@ -962,19 +962,19 @@ class ReportController extends Controller
             'returnsales' => $Invoicesreturn
         ];
 
-        return view('reports.print_sales_and_return', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('branch_id', $request->branch);
+        return view('reports.sales.print_sales_and_return', compact('data'))->with('start', $request->start_at)->with('end', $request->end_at)->with('branch_id', $request->branch);
     }
 
     public function Customer_debt_restructuring()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.search_Customer_debt_restructuring');
+        return view('reports.customers.search_Customer_debt_restructuring');
     }
 
     public function Supplier_debt_restructuring()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.search_Supplier_debt_restructuring');
+        return view('reports.suppliers.search_Supplier_debt_restructuring');
     }
 
     /**
@@ -1062,7 +1062,7 @@ class ReportController extends Controller
             ];
         }
 
-        return view('reports.Supplier_debt_restructuring', compact('data'));
+        return view('reports.suppliers.Supplier_debt_restructuring', compact('data'));
     }
 
 
@@ -1164,44 +1164,47 @@ class ReportController extends Controller
             ];
         }
 
-        return view('reports.Customer_debt_restructuring', compact('data'));
+        return view('reports.customers.Customer_debt_restructuring', compact('data'));
     }
 
     public function Daily_record_report()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Daily_record_report');
+        return view('reports.financial.Daily_record_report');
     }
 
     public function account_statement()
     {
         // تم تنظيف الكود المعلق القديم (Commented Code) الممتد لـ 80 سطراً لتبقى الدالة نظيفة
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.account_statement');
+        return view('reports.financial.account_statement');
     }
 
     public function Supplier_account_statement()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.supplier_account_statement');
+        return view('reports.suppliers.supplier_account_statement');
     }
 
     public function search_Daily_record_report(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
+        // دفتر اليومية: كل القيود (اليدوية + قيود الفواتير والسندات الآلية) برقم قيدها
         $credittransactions = credittransactions::where('dely_record', '!=', 0)
             ->where('save', '!=', 0)
             ->whereDate('created_at', '>=', $request->start_at)
             ->whereDate('created_at', '<=', $request->end_at)
+            ->with(['journal', 'financial_accounts_data'])
             ->get();
 
         $List_dely_record = [];
 
         foreach ($credittransactions as $item) {
-            $mainRecord = \App\Models\DailyRecord::where('id', $item->dely_record)->first();
+            $mainRecord = $item->journal;
 
             $List_dely_record[] = [
+                'id' => $item->id,
                 'name' => $item->financial_accounts_data->name ?? '-',
                 'method_pay' => __('home.credit'),
                 'debtor' => $item->debtor,
@@ -1213,12 +1216,13 @@ class ReportController extends Controller
             ];
         }
 
-        // فرز مصفوفة القيود اليومية تصاعدياً حسب التاريخ
+        // فرز حسب التاريخ ثم رقم القيد حتى تبقى سطور القيد الواحد متجاورة
         usort($List_dely_record, function ($a, $b) {
-            return strcmp($a['date'], $b['date']);
+            return [substr((string) $a['date'], 0, 10), $a['dely_record'], $a['id']]
+                <=> [substr((string) $b['date'], 0, 10), $b['dely_record'], $b['id']];
         });
 
-        return view('reports.print_daily_record_1', compact('List_dely_record'))
+        return view('reports.financial.print_daily_record_1', compact('List_dely_record'))
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
     }
@@ -1380,7 +1384,7 @@ class ReportController extends Controller
 
         $data = [$credittransactions, $dataInvoices, round($reamingamount, 2)];
 
-        return view('reports.print_supplier_account_statement', compact('data'))
+        return view('reports.suppliers.print_supplier_account_statement', compact('data'))
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at)
             ->with('customerId', $request->UserId)
@@ -1496,7 +1500,7 @@ class ReportController extends Controller
         $productId = $request->productNo ?? '-';
         if ($productId == '-') {
             session()->flash('notfountreturnproduct', __('home.productnotfount'));
-            return view('reports.product_sales_purchases', ['Invoices' => []])
+            return view('reports.sales.product_sales_purchases', ['Invoices' => []])
                 ->with('branch_Id', $request->branch);
         }
 
@@ -1673,7 +1677,7 @@ class ReportController extends Controller
             'end_at' => $endAt
         ];
 
-        return view('reports.print_sales_and_purchases', compact('data'))
+        return view('reports.sales.print_sales_and_purchases', compact('data'))
             ->with('start', $startAt)
             ->with('end', $endAt);
     }
@@ -1869,10 +1873,10 @@ class ReportController extends Controller
         $products = $this->getProductLifecycleData($request);
         if (is_null($products)) {
             session()->flash('notfountreturnproduct', __('home.productnotfount'));
-            return view('reports.product_sales_purchases', ['Invoices' => []])->with('branch_Id', $request->branch);
+            return view('reports.sales.product_sales_purchases', ['Invoices' => []])->with('branch_Id', $request->branch);
         }
 
-        return view('reports.print_sales_and_purchases', compact('products'))->with('start', $request->start_at)->with('end', $request->end_at);
+        return view('reports.sales.print_sales_and_purchases', compact('products'))->with('start', $request->start_at)->with('end', $request->end_at);
     }
 
     public function printInvoicesAllItemsWithReturned($request)
@@ -1892,7 +1896,7 @@ class ReportController extends Controller
             'taxrat' => $avtSaleRate->AVT ?? 0,
         ];
 
-        return view('reports.printInvoicesAllItemsWithReturned', compact('data'));
+        return view('reports.sales.printInvoicesAllItemsWithReturned', compact('data'));
     }
 
     public function Customersـexceededـgraceـperiod()
@@ -1909,7 +1913,7 @@ class ReportController extends Controller
                 $Customersـexceededـgraceـperiod[] = $customer;
             }
         }
-        return view('reports.Customersexceededgraceperiod', compact('Customersـexceededـgraceـperiod'));
+        return view('reports.customers.Customersexceededgraceperiod', compact('Customersـexceededـgraceـperiod'));
     }
 
     public function searchConvertBoxtobankReport(Request $request)
@@ -1918,89 +1922,89 @@ class ReportController extends Controller
             ->whereDate('created_at', '<=', $request->end_at)
             ->get();
 
-        return view('reports.convert_cash_to_bank', compact('data'));
+        return view('reports.banks.convert_cash_to_bank', compact('data'));
     }
 
     // --- واجهات العرض البسيطة (تم تجميعها واختصارها للحفاظ على نظافة الملف) ---
     public function product_sales_purchases()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.product_sales_purchases');
+        return view('reports.sales.product_sales_purchases');
     }
     public function Bank_Transfer()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Bank_Transfer', ['data' => []]);
+        return view('reports.banks.Bank_Transfer', ['data' => []]);
     }
     public function ConvertBoxtobankReport()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.convert_cash_to_bank', ['data' => []]);
+        return view('reports.banks.convert_cash_to_bank', ['data' => []]);
     }
     public function Bank_Statement()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.bankDecument', ['data' => []]);
+        return view('reports.banks.bankDecument', ['data' => []]);
     }
     public function transactionsToMasterBranch()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.transactionsToMasterBranch', ['data' => []]);
+        return view('reports.banks.transactionsToMasterBranch', ['data' => []]);
     }
     public function products_Transfer()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.product_Transfer', ['data' => []]);
+        return view('reports.inventory.product_Transfer', ['data' => []]);
     }
     public function Delivery_notes()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Delivery_notes');
+        return view('reports.delivery.Delivery_notes');
     }
     public function VAT()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.VAT');
+        return view('reports.financial.VAT');
     }
     public function Best_selling_products()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Best_selling_products');
+        return view('reports.sales.Best_selling_products');
     }
     public function budgetsheet()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.budget sheet');
+        return view('reports.financial.budget_sheet');
     }
     public function shift_detailes()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.shift_detailes');
+        return view('reports.sales.shift_detailes');
     }
     public function Supplier_credit_payment()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Supplier_credit_payment');
+        return view('reports.suppliers.Supplier_credit_payment');
     }
     public function Customer_account_statement()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Customer_account_statement');
+        return view('reports.customers.Customer_account_statement');
     }
     public function TransFerCashTothenNextDay()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.TransFerCashTothenNextDay');
+        return view('reports.banks.TransFerCashTothenNextDay');
     }
     public function print_supplierList()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.print_supplierList');
+        return view('reports.suppliers.print_supplierList');
     }
     public function print_customeList()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.print_customeList');
+        return view('reports.customers.print_customeList');
     }
     public function Customerlist()
     {
@@ -2039,100 +2043,100 @@ class ReportController extends Controller
             ], 'debtor')
             ->get();
 
-        return view('reports.customerList', compact('customers'));
+        return view('reports.customers.customerList', compact('customers'));
     }
 
 
     public function customerـpurchases()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.customerpurchases');
+        return view('reports.customers.customerpurchases');
     }
     public function purchasproducttocustomer()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.purchasproducttocustomer');
+        return view('reports.customers.purchasproducttocustomer');
     }
     public function credit_collection()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.credit_collection');
+        return view('reports.customers.credit_collection');
     }
     public function purchasereports()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.purchasereports');
+        return view('reports.purchases.purchasereports');
     }
     public function Purchasesـfromـsuppliers()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Purchases_from_suppliers');
+        return view('reports.purchases.Purchases_from_suppliers');
     }
     public function PurchasesـfromـsuppliersNew()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.purchaseFromSupplierreports');
+        return view('reports.purchases.purchaseFromSupplierreports');
     }
     public function Refundـofـresourceـpurchases()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Refund_of_resource_purchases');
+        return view('reports.purchases.Refund_of_resource_purchases');
     }
     public function Requestـaـquoteـfromـtheـsupplier()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Request_A_quote_from_supplier');
+        return view('reports.purchases.Request_A_quote_from_supplier');
     }
     public function product_sales()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.product_sales');
+        return view('reports.sales.product_sales');
     }
     public function report_returns_sale()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.report_returns_sale');
+        return view('reports.sales.report_returns_sale');
     }
     public function salesـprofits()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.sales_profits');
+        return view('reports.sales.sales_profits');
     }
     public function supplierList()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.supplierList');
+        return view('reports.suppliers.supplierList');
     }
     public function showallBranchs()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('users.show_branchs');
+        return view('admin.branches.show_branchs');
     }
     public function wherehouse()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('users.AddWherehouse');
+        return view('inventory.warehouses.AddWherehouse');
     }
     public function Expenses()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Expenses');
+        return view('reports.financial.Expenses');
     }
     public function Creditsales()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Creditsales');
+        return view('reports.sales.Creditsales');
     }
     public function employeeـsales()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.employeesales');
+        return view('reports.sales.employeesales');
     }
 
     public function stockquantity()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.stockquantity', ['data' => ['display' => 1]])->with('branchdata', '-/==/1');
+        return view('reports.inventory.stockquantity', ['data' => ['display' => 1]])->with('branchdata', '-/==/1');
     }
 
 
@@ -2155,13 +2159,13 @@ class ReportController extends Controller
     public function Requestـoffersـfromـsuppliers()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.Request_offers_from_suppliers');
+        return view('reports.purchases.Request_offers_from_suppliers');
     }
 
     public function report_offer_price_customer()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.report_offer_price_customer', ['Invoices' => null]);
+        return view('reports.sales.report_offer_price_customer', ['Invoices' => null]);
     }
 
     public function show_offer_price_customer(Request $request)
@@ -2179,7 +2183,7 @@ class ReportController extends Controller
             $Invoices = $query->where('customer_id', $userId)->get();
         }
 
-        return view('reports.report_offer_price_customer', compact('Invoices'))->with('userId', $userId);
+        return view('reports.sales.report_offer_price_customer', compact('Invoices'))->with('userId', $userId);
     }
 
     public function search_Delivery_notes(Request $request)
@@ -2196,7 +2200,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.Delivery_notes', compact('Invoices'))->with('supplierId', $supplierId);
+        return view('reports.delivery.Delivery_notes', compact('Invoices'))->with('supplierId', $supplierId);
     }
 
     public function searchtransactionsToMasterBranch(Request $request)
@@ -2216,7 +2220,7 @@ class ReportController extends Controller
             'transactions' => $query->get()
         ];
 
-        return view('reports.print_transactionsToMasterBranch', compact('data'));
+        return view('reports.banks.print_transactionsToMasterBranch', compact('data'));
     }
 
     public function search_Bank_Transfer(Request $request)
@@ -2228,7 +2232,7 @@ class ReportController extends Controller
             ->whereDate('created_at', '<=', $request->end_at)
             ->get();
 
-        return view('reports.Bank_Transfer', compact('data'));
+        return view('reports.banks.Bank_Transfer', compact('data'));
     }
 
     public function search_products_Transfer(Request $request)
@@ -2249,7 +2253,7 @@ class ReportController extends Controller
             "transctions" => $transctions
         ];
 
-        return view('reports.product_Transfer', compact('data'));
+        return view('reports.inventory.product_Transfer', compact('data'));
     }
 
     public function search_TransFerCashTothenNextDay(Request $request)
@@ -2261,7 +2265,7 @@ class ReportController extends Controller
             ->whereDate('created_at', '<=', $request->end_at)
             ->get();
 
-        return view('reports.print_TransFerCashTothenNextDay', compact('data'))
+        return view('reports.banks.print_TransFerCashTothenNextDay', compact('data'))
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
     }
@@ -2340,7 +2344,7 @@ class ReportController extends Controller
             return Excel::download(new StockQuantityExport($products, $totals), 'stock_quantity_report.xlsx');
         }
 
-        return view('reports.printstockquantity', compact('products', 'totals', 'endAt'));
+        return view('reports.inventory.printstockquantity', compact('products', 'totals', 'endAt'));
     }
 
 
@@ -2359,7 +2363,7 @@ class ReportController extends Controller
             })
             ->get();
 
-        return view('reports.shift_detailes', compact('Invoices'))->with('pay', [$request->pay, $request->branch]);
+        return view('reports.sales.shift_detailes', compact('Invoices'))->with('pay', [$request->pay, $request->branch]);
     }
 
     public function search_account_statement(Request $request)
@@ -2489,7 +2493,7 @@ class ReportController extends Controller
         // الترتيب بالتاريخ لضمان عرض الحركات مرتبة زمنياً بشكل صحيح
         $data = collect($List_dely_record)->sortBy('date')->values()->all();
 
-        return view('reports.print_acoount_statment', compact('data'))
+        return view('reports.financial.print_acoount_statment', compact('data'))
             ->with('start_at', $start_at)
             ->with('end_at', $end_at)
             ->with('account_name', $financial_account->name ?? '-')
@@ -2571,7 +2575,7 @@ class ReportController extends Controller
         // الترتيب العكسي للتواريخ باستخدام الكوليكشن وهو أكثر كفاءة وأماناً
         $data = collect($data)->sortByDesc('date')->values()->all();
 
-        return view('reports.printBankStatment', compact('data'))->with('start_at', $start)->with('end_at', $end)->with('branch', $branch);
+        return view('reports.banks.printBankStatment', compact('data'))->with('start_at', $start)->with('end_at', $end)->with('branch', $branch);
     }
 
     public function search_Supplier_credit_payment(Request $request)
@@ -2592,7 +2596,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Supplier_credit_payment', compact('Invoices'))
+        return view('reports.suppliers.print_Supplier_credit_payment', compact('Invoices'))
             ->with('supplierId', $request->supplierId)
             ->with('start_at', $request->start_at)
             ->with('end_at', $request->end_at);
@@ -2739,7 +2743,7 @@ class ReportController extends Controller
 
         $data = [$creditTransactions, $dataInvoices, round($remainingAmount, 2), $dataInvoices];
 
-        return view('reports.print_Customer_account_statement', compact('data'))
+        return view('reports.customers.print_Customer_account_statement', compact('data'))
             ->with([
                 'start_at' => $startAt,
                 'end_at' => $endAt,
@@ -2787,7 +2791,7 @@ class ReportController extends Controller
         // الترتيب من الأكثر مبيعاً للأقل
         $bestselling = collect($bestselling)->sortByDesc('numberofsall')->values()->all();
 
-        return view('reports.Best_selling_products', compact('bestselling'))->with('branch_id', $request->branch)
+        return view('reports.sales.Best_selling_products', compact('bestselling'))->with('branch_id', $request->branch)
             ->with('end_at', $request->end_at)->with('start_at', $request->start_at);
     }
 
@@ -2866,7 +2870,7 @@ class ReportController extends Controller
             'end_at' => $endAt,
         ];
 
-        return view('reports.print_VAT', compact('data'));
+        return view('reports.financial.print_VAT', compact('data'));
     }
 
 
@@ -2907,7 +2911,7 @@ class ReportController extends Controller
         }
 
         $products = $query->get();
-        return view('reports.purchasereports', compact('products'))->with('productNo', $productNo)->with('start_at', $request->start_at . ' 00:00:00')->with('end_at', $request->end_at . ' 23:59:59');
+        return view('reports.purchases.purchasereports', compact('products'))->with('productNo', $productNo)->with('start_at', $request->start_at . ' 00:00:00')->with('end_at', $request->end_at . ' 23:59:59');
     }
 
     public function search_customerـpurchases(Request $request)
@@ -2930,7 +2934,7 @@ class ReportController extends Controller
             })
             ->get();
 
-        return view('reports.customerpurchases', compact('Invoices'))
+        return view('reports.customers.customerpurchases', compact('Invoices'))
             ->with('branch', [$userId, $branch])
             ->with('userid', [$userId, $branch])
             ->with('start_at', $request->start_at, )
@@ -2959,7 +2963,7 @@ class ReportController extends Controller
             })
             ->get();
 
-        return view('reports.purchasproducttocustomer', compact('Saleing'));
+        return view('reports.customers.purchasproducttocustomer', compact('Saleing'));
     }
 
     public function search_Refundـofـresourceـpurchases(Request $request)
@@ -2980,7 +2984,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Refund_of_resource_purchases', compact('Invoices'))->with('branch_id', $branch);
+        return view('reports.purchases.print_Refund_of_resource_purchases', compact('Invoices'))->with('branch_id', $branch);
     }
 
 
@@ -3291,7 +3295,7 @@ class ReportController extends Controller
         ];
 
 
-        return view('reports.print_budget_sheet', compact('data'));
+        return view('reports.financial.print_budget_sheet', compact('data'));
     }
 
 
@@ -3312,7 +3316,7 @@ class ReportController extends Controller
             "items" => product_movement_another_branch_items::where('order_id', $invoiceId)->get()
         ];
 
-        return view('supProcesses.print_send_product', compact('data'));
+        return view('inventory.transfers.print_send_product', compact('data'));
     }
 
     /**
@@ -3415,7 +3419,7 @@ class ReportController extends Controller
             ];
         }
 
-        return view('reports.print_Purchases_from_suppliers', compact('Invoices', 'invoicesDataArray'))
+        return view('reports.purchases.print_Purchases_from_suppliers', compact('Invoices', 'invoicesDataArray'))
             ->with([
                 'pay' => $pay,
                 'branch' => $branch,
@@ -3445,7 +3449,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.Request_A_quote_from_supplier', compact('Invoices'))
+        return view('reports.purchases.Request_A_quote_from_supplier', compact('Invoices'))
             ->with('supplierId', [$supplierId, $request->branch]);
     }
 
@@ -3464,7 +3468,7 @@ class ReportController extends Controller
 
         if ($productId === '-') {
             session()->flash('notfountreturnproduct', __('home.productnotfount'));
-            return view('reports.product_sales', ['Invoices' => []])->with('branch_Id', $request->branch);
+            return view('reports.sales.product_sales', ['Invoices' => []])->with('branch_Id', $request->branch);
         }
 
         $query = sales::where('product_id', $productId)
@@ -3479,7 +3483,7 @@ class ReportController extends Controller
 
         $products = $query->get();
 
-        return view('reports.product_sales', compact('products'))->with('branch_Id', $request->branch)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
+        return view('reports.sales.product_sales', compact('products'))->with('branch_Id', $request->branch)->with('start_at', $request->start_at)->with('end_at', $request->end_at);
     }
 
     /**
@@ -3494,7 +3498,7 @@ class ReportController extends Controller
             ->where('Pay', 'SHABKA')
             ->get();
 
-        return view('reports.networksales', compact('Invoices'));
+        return view('reports.sales.networksales', compact('Invoices'));
     }
 
     /**
@@ -3510,7 +3514,7 @@ class ReportController extends Controller
             ->where('save', 1)
             ->get();
 
-        return view('reports.employeesales', compact('Invoices'))->with('start_at', $request->start_at)->with('end_at', $request->end_at)->with('userId', $request->productname);
+        return view('reports.sales.employeesales', compact('Invoices'))->with('start_at', $request->start_at)->with('end_at', $request->end_at)->with('userId', $request->productname);
     }
 
     /**
@@ -3525,7 +3529,7 @@ class ReportController extends Controller
             ->where('Pay', 'Cash')
             ->get();
 
-        return view('reports.Cashsales', compact('Invoices'));
+        return view('reports.sales.Cashsales', compact('Invoices'));
     }
 
     /**
@@ -3544,7 +3548,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.report_returns_sale', compact('Invoices'))
+        return view('reports.sales.report_returns_sale', compact('Invoices'))
             ->with('branch_Id', $request->branch)
             ->with('start', $request->start_at)
             ->with('end', $request->end_at);
@@ -3562,7 +3566,7 @@ class ReportController extends Controller
             'salesData' => return_sales::where('invoice_id', $request)->get()
         ];
 
-        return view('reports.report_returns_sale_details', compact('data'));
+        return view('reports.sales.report_returns_sale_details', compact('data'));
     }
 
 
@@ -3618,7 +3622,7 @@ class ReportController extends Controller
             'returns' => $returnsQuery->get(),
         ];
 
-        return view('reports.printReportProfitSales', compact('data'))
+        return view('reports.sales.printReportProfitSales', compact('data'))
             ->with([
                 'start' => $start,
                 'end' => $end,
@@ -3638,7 +3642,7 @@ class ReportController extends Controller
             ->where('Pay', 'Credit')
             ->get();
 
-        return view('reports.Creditsales', compact('Invoices'));
+        return view('reports.sales.Creditsales', compact('Invoices'));
     }
 
     /**
@@ -3661,7 +3665,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Supplier_credit_payment', compact('Invoices'))
+        return view('reports.suppliers.print_Supplier_credit_payment', compact('Invoices'))
             ->with('supplierId', $supplierId);
     }
 
@@ -3688,7 +3692,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_shift_detailes', compact('Invoices'))
+        return view('reports.sales.print_shift_detailes', compact('Invoices'))
             ->with('pay', [$pay, $branch]);
     }
 
@@ -3708,7 +3712,7 @@ class ReportController extends Controller
             ->where('save', 1)
             ->get();
 
-        return view('reports.print_report_employee_sales', compact('Invoices'));
+        return view('reports.sales.print_report_employee_sales', compact('Invoices'));
     }
 
     /**
@@ -3730,7 +3734,7 @@ class ReportController extends Controller
 
         $products = $query->get();
 
-        return view('reports.print_purchasereports', compact('products'));
+        return view('reports.purchases.print_purchasereports', compact('products'));
     }
 
     /**
@@ -3758,7 +3762,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Purchases_from_suppliers', compact('Invoices'))
+        return view('reports.purchases.print_Purchases_from_suppliers', compact('Invoices'))
             ->with('pay', $pay);
     }
 
@@ -3782,7 +3786,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Refund_of_resource_purchases', compact('Invoices'));
+        return view('reports.purchases.print_Refund_of_resource_purchases', compact('Invoices'));
     }
 
     /**
@@ -3804,7 +3808,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.printReportoffer_price_customer', compact('Invoices'));
+        return view('reports.sales.printReportoffer_price_customer', compact('Invoices'));
     }
 
     /**
@@ -3829,7 +3833,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Request_A_quote_from_supplier', compact('Invoices'));
+        return view('reports.purchases.print_Request_A_quote_from_supplier', compact('Invoices'));
     }
     public function search_Request_offers_from_suppliers(Request $request)
     {
@@ -3846,7 +3850,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.Request_offers_from_suppliers', compact('Invoices'))->with('supplierId', $supplierId);
+        return view('reports.purchases.Request_offers_from_suppliers', compact('Invoices'))->with('supplierId', $supplierId);
     }
 
     /**
@@ -3868,7 +3872,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_Report_delivery_notes', compact('Invoices'));
+        return view('reports.delivery.print_Report_delivery_notes', compact('Invoices'));
     }
 
     /**
@@ -3891,7 +3895,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_report_order_from_supplier', compact('Invoices'));
+        return view('reports.purchases.print_report_order_from_supplier', compact('Invoices'));
     }
 
     /**
@@ -3917,7 +3921,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.printReportProfitSales', compact('Invoices'));
+        return view('reports.sales.printReportProfitSales', compact('Invoices'));
     }
 
     /**
@@ -3942,7 +3946,7 @@ class ReportController extends Controller
 
         $products = $query->get();
 
-        return view('reports.printReportProductSales', compact('products'));
+        return view('reports.sales.printReportProductSales', compact('products'));
     }
 
     /**
@@ -3975,7 +3979,7 @@ class ReportController extends Controller
             'salesreport' => 'no'
         ];
 
-        return view('reports.print_customer_purchases', compact('data'));
+        return view('reports.customers.print_customer_purchases', compact('data'));
     }
 
     /**
@@ -4004,7 +4008,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.printReportsaleswithoud_deatails', compact('Invoices'))
+        return view('reports.sales.printReportsaleswithoud_deatails', compact('Invoices'))
             ->with(['start' => $start, 'end' => $end]);
     }
 
@@ -4110,7 +4114,7 @@ class ReportController extends Controller
             'salesreport' => $salesreport
         ];
 
-        $view = ($typeinvoise === 'Seles report') ? 'reports.printReportsales' : 'reports.printReportInvoices';
+        $view = ($typeinvoise === 'Seles report') ? 'reports.sales.printReportsales' : 'reports.sales.printReportInvoices';
 
         return view($view, compact('data'));
     }
@@ -4121,7 +4125,7 @@ class ReportController extends Controller
     public function salesReport()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.sales_report');
+        return view('reports.sales.sales_report');
     }
 
     /**
@@ -4204,7 +4208,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.sales_report', compact('Invoices'))
+        return view('reports.sales.sales_report', compact('Invoices'))
             ->with('pay', [$request->pay, $request->branch])
             ->with('customer_id', $request->UserId)
             ->with('startat', $request->start_at)
@@ -4230,7 +4234,7 @@ class ReportController extends Controller
 
         $Invoices = $query->get();
 
-        return view('reports.print_report_sales_returen', compact('Invoices'))
+        return view('reports.sales.print_report_sales_returen', compact('Invoices'))
             ->with(['start' => $start, 'end' => $end]);
     }
 
@@ -4257,7 +4261,7 @@ class ReportController extends Controller
 
         $products = $query->get();
 
-        return view('reports.printstockquantity', compact('products'));
+        return view('reports.inventory.printstockquantity', compact('products'));
     }
 
     /**
@@ -4297,7 +4301,7 @@ class ReportController extends Controller
             ];
         }
 
-        return view('reports.printBest_selling_products', compact('bestselling'))
+        return view('reports.sales.printBest_selling_products', compact('bestselling'))
             ->with('date', [$start_at, $end_at]);
     }
 
@@ -4386,7 +4390,7 @@ class ReportController extends Controller
             'totalvarExpenses' => $totalvarExpenses - round($totalvarExpenses * 100 / 115)
         ];
 
-        return view('reports.print_VAT', compact('data'));
+        return view('reports.financial.print_VAT', compact('data'));
     }
 
     /**
@@ -4395,7 +4399,7 @@ class ReportController extends Controller
     public function updatestockquentity()
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('reports.updatestockquentity');
+        return view('reports.inventory.updatestockquentity');
     }
 
     /**
@@ -4407,7 +4411,7 @@ class ReportController extends Controller
             ->whereDate('created_at', '<=', $request->end_at)
             ->get();
 
-        return view('reports.print_stock_update', compact('stock_update'));
+        return view('reports.inventory.print_stock_update', compact('stock_update'));
     }
 
 
@@ -4424,7 +4428,7 @@ class ReportController extends Controller
             "branch_from" => $branch_from,
             "transctions" => $transctions
         ];
-        return view('reports.print_transction_product', compact('data'));
+        return view('reports.inventory.print_transction_product', compact('data'));
     }
 
 

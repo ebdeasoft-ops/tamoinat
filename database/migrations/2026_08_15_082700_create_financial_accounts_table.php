@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('financial_accounts', function (Blueprint $table) {
-            $table->bigInteger('id');
+            $table->id();
             $table->string('name', 225);
             $table->text('name_en')->nullable();
             $table->integer('account_type');

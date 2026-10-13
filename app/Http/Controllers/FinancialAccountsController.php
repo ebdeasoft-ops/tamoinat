@@ -135,7 +135,7 @@ public function updateDetails(Request $request)
             ];
         }
 
-        return view('ajax_choose_account', compact('finalData'));
+        return view('accounting.ajax.ajax_choose_account', compact('finalData'));
     }
 
     /**
@@ -217,7 +217,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('acountes.accounts');
+        return view('accounting.chart.accounts');
 
         //
     }
@@ -225,7 +225,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('acountes.tree');
+        return view('accounting.chart.tree');
 
         //
     }
@@ -237,7 +237,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = financial_accounts::where('parent_account_number', $searchtext)->paginate(20);
-        return view('ajax_choose_account', compact('data'));
+        return view('accounting.ajax.ajax_choose_account', compact('data'));
 
         //
     }
@@ -247,7 +247,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = financial_accounts::paginate(15);
-        return view('ajax_choose_account', compact('data'));
+        return view('accounting.ajax.ajax_choose_account', compact('data'));
 
         //
     }
@@ -255,7 +255,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('acountes.create_acount');
+        return view('accounting.chart.create_acount');
 
         //
     }
@@ -274,7 +274,7 @@ public function updateDetails(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('acountes.update_acount');
+        return view('accounting.chart.update_acount');
 
         //
 
@@ -458,7 +458,7 @@ public function updateDetails(Request $request)
 
             $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'تم اضافة الحساب المالي بنجاح' : 'Active financial account added';
             session()->flash('create_acount', $message);
-            return view('acountes.create_acount');
+            return view('accounting.chart.create_acount');
 
         } catch (\Exception $ex) {
             $message = LaravelLocalization::getCurrentLocale() == 'ar' ? 'عذرا لم يتم التسجيل نرجو المحاولة مرة اخري' : 'Sorry, you have not registered. Please try again';

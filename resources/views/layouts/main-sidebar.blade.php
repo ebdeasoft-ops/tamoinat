@@ -7,8 +7,8 @@
     --sb-navy-950: #05070c;
     --sb-navy-900: #0a0e18;
     --sb-navy-800: #131a2c;
-    --sb-blue-600: #f97316;
-    --sb-blue-500: #fb923c;
+    --sb-blue-600: #ffffff;
+    --sb-blue-500: #ffffff;
     --sb-slate-300: #cbd5e1;
     --sb-slate-400: #94a3b8;
     --sb-slate-500: #94a3b8;
@@ -196,7 +196,7 @@ html body .app-sidebar {
     outline: none !important;
     box-shadow: none !important;
     background: var(--sb-blue-600) !important;
-    color: var(--sb-white) !important;
+    color: #000 !important;
     font-weight: 700 !important;
 }
 
@@ -349,11 +349,11 @@ html body .app-sidebar {
 .slide.active>.side-menu__item,
 .slide-item.active {
     background: var(--sb-blue-600);
-    color: var(--sb-white) !important;
+    color: #000 !important;
 }
 
 .slide.active>.side-menu__item .side-menu__icon {
-    color: var(--sb-white);
+    color: var(--sb-navy-950);
 }
 
 /* section eyebrow labels — encode grouping, not decoration */
@@ -1367,6 +1367,12 @@ html body .app-sidebar {
                                 <a class="slide-item"
                                     href="{{ url('Best_selling_products') }}">{{ __('report.Best selling products') }}</a>
                             </li>
+                            @endcan
+
+                            @can('History of product sales report')
+                            <li><a class="slide-item" href="{{ url('Cashsales') }}">{{ app()->getLocale() == 'ar' ? 'المبيعات النقدية' : 'Cash sales' }}</a></li>
+                            <li><a class="slide-item" href="{{ url('networksales') }}">{{ app()->getLocale() == 'ar' ? 'مبيعات الشبكة' : 'Network sales' }}</a></li>
+                            <li><a class="slide-item" href="{{ url('Creditsales') }}">{{ app()->getLocale() == 'ar' ? 'المبيعات الآجلة' : 'Credit sales' }}</a></li>
                             @endcan
 
                             @can('Employee sales report')

@@ -15,7 +15,7 @@ class BomController extends Controller
     public function index()
     {
         $boms = Bom::with('finishedProduct', 'items.rawMaterial')->latest()->paginate(15);
-        return view('boms.index', compact('boms'));
+        return view('manufacturing.boms.index', compact('boms'));
     }
 
     public function create()
@@ -26,7 +26,7 @@ class BomController extends Controller
         $groups = products_group::all(); // جلب كل الفئات
         $units = Unit::all();
 
-        return view('boms.create', compact('finishedProducts', 'rawMaterials', 'groups', 'units'));
+        return view('manufacturing.boms.create', compact('finishedProducts', 'rawMaterials', 'groups', 'units'));
     }
 
     public function store(Request $request)
@@ -76,7 +76,7 @@ class BomController extends Controller
     public function show(Bom $bom)
     {
         $bom->load('finishedProduct', 'items.rawMaterial', 'items.unit');
-        return view('boms.show', compact('bom'));
+        return view('manufacturing.boms.show', compact('bom'));
     }
 
     public function edit(Bom $bom)
@@ -86,7 +86,7 @@ class BomController extends Controller
         $rawMaterials = products::all();
         $units = Unit::all();
 
-        return view('boms.edit', compact('bom', 'finishedProducts', 'rawMaterials', 'units'));
+        return view('manufacturing.boms.edit', compact('bom', 'finishedProducts', 'rawMaterials', 'units'));
     }
 
     public function update(Request $request, Bom $bom)

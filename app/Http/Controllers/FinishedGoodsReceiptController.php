@@ -21,7 +21,7 @@ class FinishedGoodsReceiptController extends Controller
         ->latest()
         ->paginate(15);
 
-        return view('finished_goods_receipts.index', compact('receipts'));
+        return view('manufacturing.finished_goods_receipts.index', compact('receipts'));
     }
 
     public function create()
@@ -33,7 +33,7 @@ class FinishedGoodsReceiptController extends Controller
 
         $warehouses = Warehouse::where('is_active', 1)->get();
 
-        return view('finished_goods_receipts.create', compact('orders', 'warehouses'));
+        return view('manufacturing.finished_goods_receipts.create', compact('orders', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -101,7 +101,7 @@ class FinishedGoodsReceiptController extends Controller
             'finishedGoodsWarehouse'
         ])->findOrFail($id);
 
-        return view('finished_goods_receipts.show', compact('receipt'));
+        return view('manufacturing.finished_goods_receipts.show', compact('receipt'));
     }
 
     public function edit($id)
@@ -109,7 +109,7 @@ class FinishedGoodsReceiptController extends Controller
         $receipt = FinishedGoodsReceipt::with(['manufacturingOrder.finishedProduct'])->findOrFail($id);
         $warehouses = Warehouse::where('is_active', 1)->get();
 
-        return view('finished_goods_receipts.edit', compact('receipt', 'warehouses'));
+        return view('manufacturing.finished_goods_receipts.edit', compact('receipt', 'warehouses'));
     }
 
     public function update(Request $request, $id)

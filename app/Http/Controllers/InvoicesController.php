@@ -5,6 +5,7 @@
 namespace App\Http\Controllers; // تأكد من وجود الـ namespace الخاص بك هنا
 
 use Illuminate\Support\Facades\DB;
+use App\Services\JournalEntry;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage; // يُفضل استخدام الـ Facade كاملاً
 use Barryvdh\DomPDF\Facade\Pdf; // أو الكلاس المستعار الخاص بالـ PDF لديك
@@ -307,7 +308,7 @@ class InvoicesController extends Controller
 
         ];
 
-        return view('products.printInvoicesReturnToClientRecentSales_pending', compact('data'));
+        return view('sales.prints.printInvoicesReturnToClientRecentSales_pending', compact('data'));
     }
 
     public function generate_return_sale_pdf($request)
@@ -354,7 +355,7 @@ class InvoicesController extends Controller
 
     public function previousSales_not_sended_Invoices()
     {
-        return view('previousSales_not_sended_Invoices');
+        return view('sales.history.previousSales_not_sended_Invoices');
 
 
     }
@@ -362,7 +363,7 @@ class InvoicesController extends Controller
     public function previousSales_sended_Invoices()
     {
 
-        return view('previousSales_sended_Invoices');
+        return view('sales.history.previousSales_sended_Invoices');
 
     }
 
@@ -370,7 +371,7 @@ class InvoicesController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = invoices::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('sent_to_zatca', 1)->where('status', 0)->orderby('id', 'desc')->paginate(40);
-        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_send_or_not', compact('data'));
     }
 
 
@@ -378,12 +379,12 @@ class InvoicesController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $data = invoices::where('branchs_id', Auth()->user()->branchs_id)->where('save', 1)->where('sent_to_zatca', 0)->where('status', 0)->orderby('id', 'desc')->paginate(40);
-        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_send_or_not', compact('data'));
     }
 
     public function previousSales_not_sended_Invoices_all_branchs()
     {
-        return view('previousSales_not_sended_Invoices_all_branchs');
+        return view('sales.history.previousSales_not_sended_Invoices_all_branchs');
     }
     public function reciptprinter(Request $request)
     {
@@ -395,7 +396,7 @@ class InvoicesController extends Controller
             $products = products::where('branchs_id', Auth()->User()->branchs_id)->paginate(20);
             session()->flash('nodataprint', '');
 
-            return view('products.sales', compact('products'));
+            return view('sales.invoices.sales', compact('products'));
         }
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $avtSaleRate = Avt::find(1);
@@ -420,7 +421,7 @@ class InvoicesController extends Controller
         //     'invoiceData'=>  $InvoiceData,
         // ];
         //return $data;
-        return view('products.reciptprinter', compact('data'));
+        return view('sales.prints.reciptprinter', compact('data'));
     }
 
 
@@ -439,7 +440,7 @@ class InvoicesController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(40);
 
-        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_send_or_not', compact('data'));
     }
 
     public function getquotebybranch($id)
@@ -448,7 +449,7 @@ class InvoicesController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(30);
 
-        return view('searchPreviousQuotes', compact('data'));
+        return view('quotations.customers.searchPreviousQuotes', compact('data'));
     }
 
 
@@ -668,7 +669,8 @@ class InvoicesController extends Controller
                 }
             }
 
-            // 4. بناء القيود المالية الجديدة للفاتورة الحالية
+            // 4. بناء القيود المالية الجديدة للفاتورة الحالية (كلها قيد واحد برقم واحد)
+            JournalEntry::begin('delivery_invoice', $confirminvoice->id);
             if ($cashamount) {
                 $financial_accounts = financial_accounts::where('parent_account_number', 5)->where('branchs_id', $branchId)->first();
                 if ($financial_accounts) {
@@ -870,7 +872,7 @@ class InvoicesController extends Controller
 
         $branches = branchs::orderBy('name')->get();
 
-        return view('index', array_merge($data, [
+        return view('dashboard.index', array_merge($data, [
             'branches' => $branches,
             'selectedBranch' => $branchId,
         ]));
@@ -1238,7 +1240,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'invoiceData' => $InvoiceData,
         ];
 
-        return view('products.delivery_print_return_Invoice_return', compact('data'));
+        return view('delivery.prints.delivery_print_return_Invoice_return', compact('data'));
     }
 
     public function return_sale_delivery(Request $request)
@@ -1254,7 +1256,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $message = LaravelLocalization::getCurrentLocale() == 'ar' ? ' لم يتم العثور علي فاتورة بهذة الرقم' : 'No invoice with this number was found';
             session()->flash('notfountreturnproduct', $message);
             $data = [];
-            return view('products.salesreturned_delivery', compact('data'));
+            return view('delivery.returns.salesreturned_delivery', compact('data'));
         }
 
         $date1 = new DateTime($InvoiceData->created_at);
@@ -1266,7 +1268,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $message = LaravelLocalization::getCurrentLocale() == 'ar' ? ' لم يمكن استرجاع الفاتورة بعد 30 ايام من تاريخ الاصدار ' : 'Refund the invoice after 30 days from the date of issuance';
             session()->flash('notfountreturnproduct', $message);
             $data = [];
-            return view('products.salesreturned_delivery', compact('data'));
+            return view('delivery.returns.salesreturned_delivery', compact('data'));
         } else {
             $data = [
                 "invoicetotal_price" => $InvoiceData->Price - $InvoiceData->discount,
@@ -1278,13 +1280,13 @@ public function searchInvoicesByDateEmployee(Request $request)
             ];
             session()->flash('foundinvoice', ' تم العثور علي فاتورة ');
 
-            return view('products.salesreturned_delivery', compact('data'));
+            return view('delivery.returns.salesreturned_delivery', compact('data'));
         }
     }
 
     public function delivery_product_to_customer()
     {
-        return view('products.sales_withoud_tax');
+        return view('sales.invoices.sales_withoud_tax');
     }
     public function printreturnInvoice($request)
     {
@@ -1305,7 +1307,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'invoiceData' => $InvoiceData,
         ];
 
-        return view('products.printInvoicesToClientReturnSales', compact('data'));
+        return view('sales.prints.printInvoicesToClientReturnSales', compact('data'));
     }
 
 
@@ -1377,6 +1379,8 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'issue_time' => substr($nowTime, 12),
                 ]);
             }
+
+            JournalEntry::begin('delivery_invoice', $confirminvoice->id);
 
             foreach (temp_sales::where('invoice_id', $invoiceId)->get() as $sale) {
                 $productdata = products::find($sale->product_id);
@@ -1763,7 +1767,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'totatextlrihalala' => $decimal != '00' ? NumToArabic::number2Word(round((int) $decimal, 2)) . '   هللة' : 'فقط',
         ];
 
-        return view('products.printInvoicesReturnToClientRecentSales_delivery', compact('data'));
+        return view('delivery.prints.printInvoicesReturnToClientRecentSales_delivery', compact('data'));
     }
 
 
@@ -1775,7 +1779,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $products = products::where('branchs_id', Auth()->User()->branchs_id)->paginate(20);
             session()->flash('nodataprint', '');
 
-            return view('products.sales', compact('products'));
+            return view('sales.invoices.sales', compact('products'));
         }
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
@@ -1821,7 +1825,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'totatextlrihalala' => $decimal != '00' ? NumToArabic::number2Word(round((int) $decimal, 2)) . '   هللة' : 'فقط',
         ];
 
-        return view('products.print_Invoice_withod_tax', compact('data'));
+        return view('sales.prints.print_Invoice_withod_tax', compact('data'));
     }
 
 
@@ -1867,6 +1871,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $saleData = sales_withoud_taxes::findOrFail($request->id);
             $updateProduct = products::findOrFail($saleData->product_id);
             $invoiceData = delivery_to_customer_withoud_tax_invoices::findOrFail($saleData->invoice_id);
+            JournalEntry::begin('delivery_return', $invoiceData->id, false);
 
             $total_cost_value = $updateProduct->purchasingـprice * $request->return_quentity;
             $paymentMethod = $request->pay_return_sale;
@@ -2118,12 +2123,12 @@ public function searchInvoicesByDateEmployee(Request $request)
 
     public function previousSalesUnsentInvoices()
     {
-        return view('previousSales_not_sended_Invoices');
+        return view('sales.history.previousSales_not_sended_Invoices');
     }
 
     public function previousSalesSentInvoices()
     {
-        return view('previousSales_sended_Invoices');
+        return view('sales.history.previousSales_sended_Invoices');
     }
 
     public function getAllInvoicesAjaxSentZatca()
@@ -2137,7 +2142,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             ->orderBy('id', 'desc')
             ->paginate(40);
 
-        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_send_or_not', compact('data'));
     }
 
     public function getAllInvoicesAjaxUnsentZatca()
@@ -2151,7 +2156,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             ->orderBy('id', 'desc')
             ->paginate(40);
 
-        return view('ajax_Recent_Invoices_send_or_not', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_send_or_not', compact('data'));
     }
 
     public function saveUpdateDateInvoice($id, $date)
@@ -2317,6 +2322,9 @@ public function searchInvoicesByDateEmployee(Request $request)
             }
  
             $totalCost = 0;
+
+            // كل سطور الفاتورة = قيد واحد برقم واحد
+            JournalEntry::begin('sales_invoice', $confirmInvoice?->id);
  
             foreach ($request->products as $sale) {
                 $productData = Products::find($sale['product_id']);
@@ -2570,7 +2578,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         temp_invoice::find($invoiceId)->update(['pending_invoice' => 1]);
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.sales');
+        return view('sales.invoices.sales');
 
 
     }
@@ -2580,7 +2588,7 @@ public function searchInvoicesByDateEmployee(Request $request)
 
 
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.sales', compact('invoiceId'));
+        return view('sales.invoices.sales', compact('invoiceId'));
 
 
     }
@@ -2599,7 +2607,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         }
 
         $data = products::where('branchs_id', Auth()->User()->branchs_id)->paginate(20);
-        return view('ajax_search', compact('data'));
+        return view('inventory.ajax.ajax_search', compact('data'));
     }
 
     public function get_invoice_peeding($invoiceId)
@@ -2655,13 +2663,13 @@ public function searchInvoicesByDateEmployee(Request $request)
     public function update_sales_pending($invoiceId)
     {
         LaravelLocalization::setLocale(LaravelLocalization::getCurrentLocale());
-        return view('products.sales_pending', compact('invoiceId'));
+        return view('sales.invoices.sales_pending', compact('invoiceId'));
     }
 
     public function pending_invoice_previes()
     {
         LaravelLocalization::setLocale(LaravelLocalization::getCurrentLocale());
-        return view('previousSalesInvoices_pending');
+        return view('sales.history.previousSalesInvoices_pending');
     }
 
     public function geta_jax_Recent_Invoices_pending()
@@ -2671,7 +2679,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             ->where('pending_invoice', 1)
             ->orderby('id', 'desc')
             ->paginate(20);
-        return view('ajax_Recent_Invoices_pending', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices_pending', compact('data'));
     }
 
     public function updatepaymentconfirmpayment_in_quotation($invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod)
@@ -2770,6 +2778,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             }
 
             // --- المعالجة المحاسبية لشجرة الحسابات عبر الدالة المساعدة بالأسفل ---
+            JournalEntry::begin('sales_invoice', $confirminvoice->id);
             $this->processAccountEntry(5, $cashamount, $confirminvoice->id, $paymentMethod, $currentDateTime, 'debtor');
             $this->processAccountEntry(4, $Bank_transfer + $bankamount, $confirminvoice->id, $paymentMethod, $currentDateTime, 'debtor');
 
@@ -2845,7 +2854,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'totatextlrihalala' => $decimal != 0 ? NumToArabic::number2Word(round((int) $decimal, 2)) . '   هللة' : 'فقط لا غير',
         ];
 
-        return view('products.printInvoicesToClient', compact('data'));
+        return view('sales.prints.printInvoicesToClient', compact('data'));
     }
 
     /**
@@ -3818,6 +3827,8 @@ public function searchInvoicesByDateEmployee(Request $request)
                 return [0];
             }
 
+            JournalEntry::begin('purchase_invoice', $invoiceId);
+
             $branchId = Auth::user()->branchs_id;
             $userId = Auth::user()->id;
             $now = Carbon::now();
@@ -4028,7 +4039,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $invoice->update(['Pay_Method_Name' => $paymentMethod]);
 
             $data = resource_purchases::where('branchs_id', $branchId)->where('save', 1)->orderby('id', 'desc')->paginate(20);
-            return view('ajax_Recent_Invoices_purchases', compact('data'));
+            return view('purchases.ajax.ajax_Recent_Invoices_purchases', compact('data'));
         });
     }
 
@@ -4050,21 +4061,21 @@ public function searchInvoicesByDateEmployee(Request $request)
         // Ordered by id desc for quick retrieval
         $data = offer_price_to_customer::latest('id')->paginate(30);
 
-        return view('PreviousQuotes', compact('data'));
+        return view('quotations.customers.PreviousQuotes', compact('data'));
     }
 
     public function searchPreviousQuotes($id)
     {
         $data = offer_price_to_customer::where('id', $id)->latest('id')->paginate(30);
 
-        return view('searchPreviousQuotes', compact('data'));
+        return view('quotations.customers.searchPreviousQuotes', compact('data'));
     }
 
     public function getquotebycustomer($id)
     {
         $data = offer_price_to_customer::where('customer_id', $id)->latest('id')->paginate(30);
 
-        return view('searchPreviousQuotes', compact('data'));
+        return view('quotations.customers.searchPreviousQuotes', compact('data'));
     }
 
     public function updateinvoicebyid($invoiceNumber)
@@ -4255,7 +4266,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             ->latest('id')
             ->paginate(20);
 
-        return view('ajax_Recent_Invoices', compact('data'));
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
     }
 
 
@@ -4459,7 +4470,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                 ->latest('id')
                 ->paginate(20);
 
-            return view('ajax_Recent_Invoices', compact('data'));
+            return view('sales.ajax.ajax_Recent_Invoices', compact('data'));
         });
     }
 
@@ -4530,6 +4541,9 @@ public function searchInvoicesByDateEmployee(Request $request)
 
         // تشغيل الـ Transaction لضمان عدم حدوث خطأ محاسبي
         DB::transaction(function () use ($invoice, $invoiceId, $cashamount, $bankamount, $creaditamount, $Bank_transfer, $paymentMethod, $another_bank) {
+
+            // نفس رقم قيد الفاتورة: التعديل يعيد بناء سطور نفس القيد
+            JournalEntry::begin('sales_invoice', $invoiceId);
 
             $branchId = auth()->user()->branchs_id;
             $userId = auth()->user()->id;
@@ -4796,7 +4810,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         // خامساً: جلب وإرجاع الجدول بصيغة HTML ليتم تحديث الشاشة فوراً
         // =========================================================
         $data = invoices::where('branchs_id', auth()->user()->branchs_id)->orderBy('id', 'desc')->paginate(20);
-        return view('ajax_Recent_Invoices', compact('data'))->render();
+        return view('sales.ajax.ajax_Recent_Invoices', compact('data'))->render();
     }
 
 
@@ -5049,7 +5063,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         ];
 
         // 6. عرض صفحة الطباعة مع تمرير البيانات النظيفة
-        return view('products.printInvoicesReturnToClientRecentSales', compact('data'));
+        return view('sales.prints.printInvoicesReturnToClientRecentSales', compact('data'));
     }
 
 
@@ -5142,7 +5156,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'invoiceData' => $InvoiceData,
         ];
 
-        return view('products.printInvoicesToCustomer', compact('data'));
+        return view('sales.prints.printInvoicesToCustomer', compact('data'));
     }
 
     public function showInvoice($request)
@@ -5161,7 +5175,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'invoiceData' => $InvoiceData,
         ];
 
-        return view('products.printInvoicesToClient', compact('data'));
+        return view('sales.prints.printInvoicesToClient', compact('data'));
     }
 
     public function changeCustomerInInvoice($orderId, $newUserId)
@@ -5195,7 +5209,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             $products = products::where('branchs_id', Auth()->User()->branchs_id)->paginate(20);
             session()->flash('nodataprint', '');
 
-            return view('products.sales', compact('products'));
+            return view('sales.invoices.sales', compact('products'));
         }
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $avtSaleRate = Avt::find(1);
@@ -5250,7 +5264,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         //     'salesData'=>$saleData ,
         //     'invoiceData'=>  $InvoiceData,
         // ];
-        return view('products.printInvoicesToClient', compact('data'));
+        return view('sales.prints.printInvoicesToClient', compact('data'));
     }
     public function index()
     {
@@ -5258,7 +5272,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         $data = [];
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('products.salesreturned', compact('data'));
+        return view('sales.returns.salesreturned', compact('data'));
     }
 
     public function increaseProduct(Request $request)
@@ -5324,7 +5338,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         if (!$request->show_invoice_number) {
             $products = Products::where('branchs_id', auth()->user()->branchs_id)->paginate(20);
             session()->flash('nodataprint', '');
-            return view('products.Receipt', compact('products'));
+            return view('inventory.receipts.Receipt', compact('products'));
         }
 
         $saleData = sales::where("invoice_id", $request->show_invoice_number)->where('quantity', '!=', 0)->get();
@@ -5338,7 +5352,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             'invoiceData' => $InvoiceData,
         ];
 
-        return view('products.printInvoicesToCustomer', compact('data'));
+        return view('sales.prints.printInvoicesToCustomer', compact('data'));
     }
 
     public function editRecipt(Request $request)
@@ -5413,7 +5427,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             "invoice_id" => $saleData->invoice_id
         ];
         return $data;
-        return view('products.sales', compact('data'));
+        return view('sales.invoices.sales', compact('data'));
     }
 
 
@@ -5440,6 +5454,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         return DB::transaction(function () use ($request, $avtSaleRate, $locale) {
             $invoiceId = $request->invoice_no_delete_All;
             $InvoiceData = invoices::findOrFail($invoiceId);
+            JournalEntry::begin('sales_return', $InvoiceData->id, false);
             $discount_value_invoice = $InvoiceData->discount;
             $paymentMethod = $request->pay_return_sale ?? $InvoiceData->Pay;
 
@@ -5952,7 +5967,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             "invoice_id" => $saleData->invoice_id
         ];
         return $data;
-        return view('products.sales', compact('data'));
+        return view('sales.invoices.sales', compact('data'));
     }
 
 
@@ -5977,7 +5992,7 @@ public function searchInvoicesByDateEmployee(Request $request)
 
             session()->flash('notfountreturnproduct', $message);
             $data = [];
-            return view('products.salesreturned', compact('data'));
+            return view('sales.returns.salesreturned', compact('data'));
         } else {
             $InvoiceData = invoices::find($request->invoice_no);
 
@@ -5991,11 +6006,19 @@ public function searchInvoicesByDateEmployee(Request $request)
             ];
             session()->flash('foundinvoice', __('home.invoice_found'));
 
-            return view('products.salesreturned', compact('data'));
+            return view('sales.returns.salesreturned', compact('data'));
         }
     }
 
+    /**
+     * يتم التنفيذ داخل Transaction واحدة: لو فشلت العملية لا يُحجز رقم قيد ولا تبقى سطور ناقصة.
+     */
     public function update_return_Sale(Request $request)
+    {
+        return \Illuminate\Support\Facades\DB::transaction(fn () => $this->update_return_SaleBody($request));
+    }
+
+    protected function update_return_SaleBody(Request $request)
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
         $avtSaleRate = Avt::find(1);
@@ -6135,6 +6158,7 @@ public function searchInvoicesByDateEmployee(Request $request)
         $userBranchId = auth()->user()->branchs_id;
         $now = Carbon::now();
         $invoiceNote = ' فاتورة مرتجع مبيعات رقم :' . $InvoiceData->id;
+        JournalEntry::begin('sales_return', $InvoiceData->id, false);
 
         $commonTransactionData = [
             'user_id' => $userId,
@@ -6392,7 +6416,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             "invoice_id" => $saleData->invoice_id
         ];
         return $data;
-        return view('products.salesreturned', compact('data'));
+        return view('sales.returns.salesreturned', compact('data'));
     }
 
     /**
@@ -6551,7 +6575,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                 "invoice_id" => null
             ];
 
-            return view('products.Receipt', compact('data'));
+            return view('inventory.receipts.Receipt', compact('data'));
         }
         $product = sales::where('invoice_id', $invoiceNumber)->get();
         //return $product;
@@ -6560,6 +6584,6 @@ public function searchInvoicesByDateEmployee(Request $request)
             "invoice_id" => $invoiceNumber
         ];
 
-        return view('products.Receipt', compact('data'));
+        return view('inventory.receipts.Receipt', compact('data'));
     }
 }

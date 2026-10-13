@@ -37,6 +37,7 @@
             @include('layouts.models')
             @include('layouts.footer')
             @include('layouts.footer-scripts')
+            @include('partials.excel-export')
         </div>
     </div>        
 </body>

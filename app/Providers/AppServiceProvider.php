@@ -15,6 +15,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // دعم الأسماء القديمة للـ views بعد إعادة تنظيم المجلدات
+        $this->app->extend('view.finder', function ($finder, $app) {
+            $new = new \App\View\LegacyViewFinder($app['files'], $app['config']['view.paths']);
+            foreach ($finder->getHints() as $ns => $paths) {
+                $new->replaceNamespace($ns, $paths);
+            }
+            return $new;
+        });
         //
     }
 
@@ -32,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
 
    public function boot(): void
 {
+    // تصدير التقارير إلى Excel مباشرة من نموذج البحث (زر Excel)
+    \App\Support\ExcelReportExporter::register();
+
 
     // تسجيل خط Cairo مع نفس نسخة dompdf اللي فعليًا بتستخدمها PDF::loadHTML()
     // (مش نسخة منفصلة زي قبل كده) + استخدام realpath() لتوحيد الشرطات في المسار

@@ -1,0 +1,124 @@
+AVT Control
+Account statement report
+Account tree
+Account type
+Accounts
+Accounts Reports Section
+Add a new customer
+Add new account
+Add new employee
+Add new product
+Add new supplier
+Additions
+Attendances
+Available quantity
+Best selling product report
+Cash expenses
+Confirm delivery
+Confirm transfer of master branch
+Contracts
+Cost center report
+Credit collection report
+Current stock quantity report
+Custody and Assets
+Customer debt restructuring
+Customer purchases report
+Daily record
+Daily record report
+Daily transactions sheet
+Database backup privilege
+Deliver product to customer shortcut
+Deliver to another supplier
+Deliveries
+Delivery notes report
+Employee
+Employee loans privilege
+Employee sales report
+End of Service
+Expenses report
+Financial accounts
+History of product sales report
+Home
+Human Resource
+Increase or deduction
+Inventory Main Section
+Leaves
+List of customers
+List of users
+Low sell products report
+Not sent sales invoices
+Opening entry
+Pending sales invoices
+Previous deliver invoices
+Previous purchase invoices
+Previous quotes
+Previous sales invoices
+Product damage reports
+Product data change
+Product delivery to a customer
+Product location changent
+Product sales purchases report
+Product sales report
+Products
+Produects
+Profit and lost report
+Purchase orders from suppliers report
+Purchase product by date report
+Purchase product to customer report
+Purchases
+Purchases from suppliers report
+Purchases products
+Purchases report detail
+Purchases report section
+Quotations
+Receipt
+Receipt document
+Receiving a product from another branch
+Recent delivers
+Refund of resource purchases report
+Reports
+Salary document
+Sales
+Sales and return report
+Sales product by date report
+Sales products
+Sales profit
+Sales profits report
+Sales report
+Sales return report
+Sent sales invoices
+Settings Section
+Show groups
+Stock adjustment
+Stocktaking report
+Supplier credit payment report
+Supplier debt restructuring
+System setting
+Technical support
+Transactions to master branch report
+Transfer cash next day
+Transfer of goods report
+Transfer to main branch
+Transferring a product to another branch
+Update customer
+Update stock quantity report
+Update supplier
+User and branches
+Users permissions
+VAT report
+View Previous Purchases
+Voucher
+Year sales report
+Zakat Linkage Section
+Zakat Onboarding Privilege
+add branch
+create a department
+delivery notes
+enpenses_reason
+invoice_purchase_update
+offer price to customer
+product damage
+purchase order to resources
+purchase return
+request price from supplier
+sales return

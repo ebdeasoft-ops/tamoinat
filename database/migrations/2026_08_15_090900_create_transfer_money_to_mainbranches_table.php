@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('branchs_id')->default(1);
             $table->string('Pay_Method_Name', 255);
             $table->integer('status')->default(0);
+            $table->string('bank_transfer')->nullable();
             $table->timestamps();
         });
     }

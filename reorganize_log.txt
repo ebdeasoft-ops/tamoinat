@@ -1,0 +1,69 @@
+===== Sun 10/11/2026 15:01:58.12 ===== 
+[1] Backup to _backup_before_reorg 
+
+
+
+
+[2] Reorganize 
+== وضع التنفيذ ==
+  app/Exports/SalesProfitsExport.php                                            1 تعديل
+  app/Http/Controllers/AcountesController.php                                  25 تعديل
+  app/Http/Controllers/AcountsTypeController.php                                1 تعديل
+  app/Http/Controllers/AdminController.php                                      2 تعديل
+  app/Http/Controllers/ApiController.php                                        2 تعديل
+  app/Http/Controllers/AttendanceController.php                                 3 تعديل
+  app/Http/Controllers/AvtController.php                                        4 تعديل
+  app/Http/Controllers/BomController.php                                        4 تعديل
+  app/Http/Controllers/BranchsController.php                                    2 تعديل
+  app/Http/Controllers/CashWithdrawalFromTheBankController.php                  3 تعديل
+  app/Http/Controllers/ContractController.php                                   4 تعديل
+  app/Http/Controllers/CredittransactionsController.php                        10 تعديل
+  app/Http/Controllers/DeliveryNoteController.php                               2 تعديل
+  app/Http/Controllers/DeliveryProductToTheCustomerController.php               5 تعديل
+  app/Http/Controllers/DliveryController.php                                    7 تعديل
+  app/Http/Controllers/EmployeeController.php                                  12 تعديل
+  app/Http/Controllers/ExpensesController.php                                   2 تعديل
+  app/Http/Controllers/FinancialAccountsController.php                          8 تعديل
+  app/Http/Controllers/FinishedGoodsReceiptController.php                       4 تعديل
+  app/Http/Controllers/HrSettingController.php                                  1 تعديل
+  app/Http/Controllers/InvoicesController.php                                  53 تعديل
+  app/Http/Controllers/LeaveController.php                                      4 تعديل
+  app/Http/Controllers/LoansController.php                                      2 تعديل
+  app/Http/Controllers/ManufacturingExpenseController.php                       4 تعديل
+  app/Http/Controllers/ManufacturingOrderController.php                         4 تعديل
+  app/Http/Controllers/ManufacturingReportController.php                        2 تعديل
+  app/Http/Controllers/MaterialIssueController.php                              4 تعديل
+  app/Http/Controllers/ProductMovementAnotherBranchController.php               7 تعديل
+  app/Http/Controllers/ProductsController.php                                  75 تعديل
+  app/Http/Controllers/ProductsDamageController.php                             2 تعديل
+  app/Http/Controllers/ReportController.php                                   138 تعديل
+  app/Http/Controllers/RoleController.php                                       4 تعديل
+  app/Http/Controllers/SupllierController.php                                   7 تعديل
+  app/Http/Controllers/SupprocessesController.php                              10 تعديل
+  app/Http/Controllers/SystemSettingController.php                              5 تعديل
+  app/Http/Controllers/TransferMoneyToMainbranchController.php                  8 تعديل
+  app/Http/Controllers/UnitController.php                                       1 تعديل
+  app/Http/Controllers/UserController.php                                       4 تعديل
+  app/Http/Controllers/WarehouseController.php                                  1 تعديل
+  routes/web.php                                                                1 تعديل
+  resources/views/products/Receipt.blade.php                                    1 تعديل
+  resources/views/products/salesreturned.blade.php                              1 تعديل
+  resources/views/products/salesreturned_delivery.blade.php                     1 تعديل
+  resources/views/Receipt.blade.php                                             1 تعديل
+إجمالي المراجع المحدَّثة: 442 في 44 ملف
+ملفات ستُنقل: 306
+تمت إضافة شبكة الأمان في AppServiceProvider::register()
+
+تم. الخريطة الكاملة محفوظة في view-moves.json
+الآن شغّل: php artisan view:clear
+EXIT=0 
+[3] view:clear 
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+
+   INFO  Route cache cleared successfully.  
+
+===== DONE ===== 

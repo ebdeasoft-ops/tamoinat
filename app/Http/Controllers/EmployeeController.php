@@ -25,7 +25,7 @@ class EmployeeController extends Controller
          //
          app()->setLocale(LaravelLocalization::getCurrentLocale());
  
-         return view('hr.Add_new_department');
+         return view('hr.employees.Add_new_department');
      }
 
 
@@ -34,7 +34,7 @@ class EmployeeController extends Controller
          //
          app()->setLocale(LaravelLocalization::getCurrentLocale());
  
-         return view('hr.salarydecoument');
+         return view('hr.payroll.salarydecoument');
      }
      
 public function print_decument_salary(Request $request)
@@ -162,14 +162,14 @@ public function print_decument_salary(Request $request)
         ];
     }
 
-    return view('hr.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
+    return view('hr.payroll.employee_salary_list_print', compact('list_salary_data'))->with('month', $request->end_at);
 }
      public function Increaseـor_deduction()
      {
          //
          app()->setLocale(LaravelLocalization::getCurrentLocale());
  
-         return view('hr.IncreaseOr_deduction');
+         return view('hr.payroll.IncreaseOr_deduction');
      }
 
      
@@ -180,7 +180,7 @@ public function print_decument_salary(Request $request)
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        return view('hr.Add_employee');
+        return view('hr.employees.Add_employee');
     }
 
     public function updateEmployee($id)
@@ -188,7 +188,7 @@ public function print_decument_salary(Request $request)
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
        $employee= employee::find($id);
-        return view('hr.update_employee',compact('employee'));
+        return view('hr.employees.update_employee',compact('employee'));
     }
     
     /**
@@ -226,7 +226,7 @@ public function print_decument_salary(Request $request)
         session()->flash('create_employee', $message);
     }
     
-    return view('hr.Add_employee');
+    return view('hr.employees.Add_employee');
 }
 
  
@@ -251,7 +251,7 @@ if( $employee!=null){
     $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم إضافة القسم بنجاح':'  Department created successfully';
         session()->flash('create_department',$message);
 }
-        return view('hr.Add_new_department');
+        return view('hr.employees.Add_new_department');
     }
 
 
@@ -283,7 +283,7 @@ if( $employee!=null){
         $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم إضافة مكافأة بنجاح ':' Add bonus successfully ';
             session()->flash('create_department',$message);
     }
-            return view('hr.IncreaseOr_deduction');
+            return view('hr.payroll.IncreaseOr_deduction');
         }
         
         else{
@@ -299,7 +299,7 @@ if( $employee!=null){
         $message=LaravelLocalization::getCurrentLocale()=='ar'?'تم إضافة الخصم بنجاح ':'The discount has been added successfully';
             session()->flash('create_department',$message);
     }
-            return view('hr.IncreaseOr_deduction');
+            return view('hr.payroll.IncreaseOr_deduction');
         }
     }
 
@@ -320,7 +320,7 @@ if( $employee!=null){
     {
         //
         app()->setLocale(LaravelLocalization::getCurrentLocale());
-        return view('hr.show_employee');
+        return view('hr.employees.show_employee');
     }
 
     /**
@@ -375,7 +375,7 @@ if( $employee!=null){
     
     $employee = employee::where('personal_identification', $request->personal_identification)->first();
     
-    return view('hr.update_employee', compact('employee'));
+    return view('hr.employees.update_employee', compact('employee'));
 }
     /**
      * Remove the specified resource from storage.

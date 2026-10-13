@@ -2,5 +2,5 @@
 /node_modules
 /public/storage
 /storage/*.key
-.env
+//.env
 .DS_Store

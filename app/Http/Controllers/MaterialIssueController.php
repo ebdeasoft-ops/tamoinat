@@ -19,7 +19,7 @@ class MaterialIssueController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('material_issues.index', compact('issues'));
+        return view('manufacturing.material_issues.index', compact('issues'));
     }
 
     public function create()
@@ -31,7 +31,7 @@ class MaterialIssueController extends Controller
 
     $warehouses = Warehouse::where('is_active', 1)->get();
 
-    return view('material_issues.create', compact('orders', 'warehouses'));
+    return view('manufacturing.material_issues.create', compact('orders', 'warehouses'));
 }
 
     public function store(Request $request)
@@ -125,7 +125,7 @@ class MaterialIssueController extends Controller
             'items.rawMaterial'
         ])->findOrFail($id);
 
-        return view('material_issues.show', compact('issue'));
+        return view('manufacturing.material_issues.show', compact('issue'));
     }
 
 
@@ -145,7 +145,7 @@ class MaterialIssueController extends Controller
 
         $warehouses = Warehouse::where('is_active', 1)->get();
 
-        return view('material_issues.edit', compact('issue', 'warehouses'));
+        return view('manufacturing.material_issues.edit', compact('issue', 'warehouses'));
     }
 
     public function update(Request $request, $id)
