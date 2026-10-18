@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
 
             // الفروع
             BranchsSeeder::class,
-            ProductSeeder::class,
+            SupermarketProductsSeeder::class,
 
             // بيانات الشركة والإعدادات
             Campanyinfo::class,

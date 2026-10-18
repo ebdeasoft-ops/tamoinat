@@ -201,7 +201,7 @@ $logo=camplogo;
                                     $totalprice = 0;
                                     $totalAddedValue = 0;
                                     $avtSaleRate = App\Models\Avt::find(1);
-                                    $avtSale = $avtSaleRate->AVT;
+                                    $avtSale = \App\Support\SaleTax::forInvoice($data['invoiceData']->id ?? 0);
                                     $discountoninvoice=0;
                                     $totalss=0;
                                     $totaldiscount=0;
@@ -254,7 +254,7 @@ $logo=camplogo;
                                         </tr>
                                         <tr>
                                             <?php
-                                                              $avt = App\Models\Avt::find(1);
+                                                              $avt = (object) ['AVT' => $avtSale];
 
                                             ?>
                         <th class="tx-18">ضريبة القيمة المضافة({{$avt->AVT*100}}%) -VALUE ADDED TAX ({{$avt->AVT*100}}%)

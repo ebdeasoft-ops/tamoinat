@@ -216,7 +216,7 @@ $logo=camplogo;
                                     <?php
 
                                     $avtSaleRate = App\Models\Avt::find(1);
-                                    $avtSaleRate = $avtSaleRate->AVT;
+                                    $avtSaleRate = $data['taxrat'];
 
                                     function ConvertToHEX($value)
                                     {

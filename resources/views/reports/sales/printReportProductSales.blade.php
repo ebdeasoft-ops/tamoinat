@@ -121,6 +121,7 @@ $logo=camplogo;
                                         $startat = '';
                                         $endat = ''; ?>
                                         @foreach ($products as $invoice)
+                                            @php $saleavt = \App\Support\SaleTax::forLine($invoice); @endphp
                                         <?php $i++;
                                         $productId = $invoice->productData->id;
                                         $totaladdedvalue += (($invoice->Unit_Price * $invoice->quantity) - $invoice->Discount_Value) * $saleavt;

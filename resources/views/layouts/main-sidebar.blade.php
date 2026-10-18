@@ -618,6 +618,12 @@ html body .app-sidebar {
                     <li>
                         <a class="slide-item" href="{{ url('/goToSale') }}">{{ __('home.sales') }}</a>
                     </li>
+                    <li>
+                        <a class="slide-item" href="{{ url('/pos') }}">{{ app()->getLocale() == 'ar' ? 'شاشة البيع السريع' : 'Quick sales screen' }}</a>
+                    </li>
+                    <li>
+                        <a class="slide-item" href="{{ url('/shifts') }}">{{ app()->getLocale() == 'ar' ? 'ورديات الكاشير' : 'Cashier shifts' }}</a>
+                    </li>
                     @endcan
 
                     @can('sales return')

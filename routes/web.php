@@ -48,7 +48,9 @@ use App\Http\Controllers\{
     WarehouseController,
     ContractController,
     EndOfServiceController,
-    CustodyController
+    CustodyController,
+    PosController,
+    CashierShiftController
 };
 /*
 |--------------------------------------------------------------------------
@@ -868,6 +870,22 @@ Route::middleware([
         Route::get('reports/sent/pdf', 'exportPdf')->name('reports.sent.pdf');
         Route::get('reports/recive/excel', 'exportReceivedExcel')->name('reports.recive.excel');
         Route::get('reports/recive/pdf', 'exportReceivedPdf')->name('reports.recive.pdf');
+    });
+
+    // شاشة المبيعات السريعة (POS) — الحفظ على نفس مسار save_invoice_sale
+    Route::controller(PosController::class)->group(function () {
+        Route::get('/pos', 'index')->name('pos.index');
+        Route::get('/pos/products', 'products')->name('pos.products');
+        Route::get('/pos/receipt/{id}', 'receipt')->whereNumber('id')->name('pos.receipt');
+    });
+
+    // ورديات الكاشير (فتح / إغلاق / تقرير)
+    Route::controller(CashierShiftController::class)->group(function () {
+        Route::get('/shifts', 'index')->name('shifts.index');
+        Route::get('/shifts/status', 'status')->name('shifts.status');
+        Route::post('/shifts/open', 'open')->name('shifts.open');
+        Route::post('/shifts/{id}/close', 'close')->whereNumber('id')->name('shifts.close');
+        Route::get('/shifts/{id}', 'show')->whereNumber('id')->name('shifts.show');
     });
 
     Route::controller(UserController::class)->group(function () {

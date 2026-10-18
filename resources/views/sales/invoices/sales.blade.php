@@ -231,7 +231,7 @@
     transform: scale(1.04);
 }
 
-.pro-sales-page #saveInvoice, .pro-sales-page #saveAsDraft {
+.pro-sales-page .pay-save-btn, .pro-sales-page #saveAsDraft {
     border: none !important;
     border-radius: var(--radius-sm) !important;
     font-weight: 700 !important;
@@ -241,11 +241,19 @@
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
-.pro-sales-page #saveInvoice:hover, .pro-sales-page #saveAsDraft:hover {
+.pro-sales-page .pay-save-btn:hover, .pro-sales-page #saveAsDraft:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
     filter: brightness(1.05);
 }
+
+.pro-sales-page #saveInvoice { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.pro-sales-page #saveInvoice[hidden] { display: none !important; }
+.pro-sales-page .pay-save-btn { color: #fff !important; min-width: 130px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.pro-sales-page .pay-save-btn.pay-cash { background: #059669 !important; }
+.pro-sales-page .pay-save-btn.pay-card { background: #2563eb !important; }
+.pro-sales-page .pay-save-btn.pay-split { background: #d97706 !important; }
+.pro-sales-page .pay-save-btn small { font-weight: 500; opacity: .85; font-size: 11px; }
 
 .pro-sales-page .invoice-actions-bar {
     background: var(--surface);
@@ -481,7 +489,8 @@ td .d-flex {
         justify-content: center;
     }
 
-    .pro-sales-page #saveInvoice,
+    .pro-sales-page #saveInvoice { width: 100%; flex-direction: column; }
+    .pro-sales-page .pay-save-btn,
     .pro-sales-page #saveAsDraft {
         width: 100%;
         margin: 4px 0 !important;
@@ -829,11 +838,21 @@ td .d-flex {
 
                             <br>
 
-                            <button type="button" id="saveInvoice" style="background-color: #419BB2"
-                                class="btn btn-success p-1">
-                                {{ __('home.invoice_save') }}
-                                <i class="fas fa-check-circle"></i>
-                            </button>
+                            {{-- حفظ الفاتورة حسب طريقة الدفع --}}
+                            <div id="saveInvoice">
+                                <button type="button" class="btn p-1 pay-save-btn pay-cash" data-pay="Cash">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    {{ app()->getLocale() == 'ar' ? 'حفظ نقدي' : 'Save · Cash' }} <small>(Ctrl)</small>
+                                </button>
+                                <button type="button" class="btn p-1 pay-save-btn pay-card" data-pay="Shabka">
+                                    <i class="fas fa-credit-card"></i>
+                                    {{ app()->getLocale() == 'ar' ? 'حفظ شبكة' : 'Save · Card' }} <small>(Shift)</small>
+                                </button>
+                                <button type="button" class="btn p-1 pay-save-btn pay-split" data-pay="Partition">
+                                    <i class="fas fa-divide"></i>
+                                    {{ app()->getLocale() == 'ar' ? 'تجزئة المبلغ' : 'Split payment' }}
+                                </button>
+                            </div>
 
                             &nbsp;
 
@@ -854,24 +873,7 @@ td .d-flex {
              <center>
                 <div class="justify-content-center" id="printdiv">
 
-                    <a id="send_whats_app" target="_blank" title="WhatsApp">
-                        <i class="bx bxl-whatsapp"></i>
-                    </a>
-
-                    <a id="generate_pdf" class="btn btn-success" target="_blank">
-                        <i class="fa-solid fa-download ml-1"></i>
-                        {{ __('home.dwonloadpdf') }}
-                    </a>
-
-                    <button type="button" id="printReciept" class="btn btn-success">
-                        <svg class="svg-icon-buttons" viewBox="0 0 20 20" style="width: 18px;">
-                            <path
-                                d="M17.453,12.691V7.723 M1.719,12.691V7.723 M18.281,12.691V7.723 M12.691,12.484H7.309c-0.228,0-0.414,0.187-0.414,0.414s0.187,0.414,0.414,0.414h5.383c0.229,0,0.414-0.187,0.414-0.414S12.92,12.484,12.691,12.484 M16.625,6.066h-1.449V3.168c0-0.228-0.186-0.414-0.414-0.414H5.238c-0.228,0-0.414,0.187-0.414,0.414v2.898H3.375c-0.913,0-1.656,0.743-1.656,1.656v4.969c0,0.913,0.743,1.656,1.656,1.656h1.449v2.484c0,0.228,0.187,0.414,0.414,0.414h9.523c0.229,0,0.414-0.187,0.414-0.414v-2.484h1.449c0.912,0,1.656-0.743,1.656-1.656V7.723C18.281,6.81,17.537,6.066,16.625,6.066 M5.652,3.582h8.695v2.484H5.652V3.582zM14.348,16.418H5.652v-4.969h8.695V16.418z">
-                            </path>
-                        </svg>
-                        {{ __('home.print') }}
-                    </button>
-
+                    {{-- اتشالوا: واتساب / تحميل PDF / طباعة A4 — الطباعة من زر طابعة الرول فقط --}}
                     <button type="button" id="reciptprinter" class="btn btn-success">
                         <i class="fa-solid fa-print ml-1"></i>
                         {{ __('home.reciptprinter') }}
@@ -1349,7 +1351,7 @@ td .d-flex {
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('home.cancel') }}</button>
-                <button data-dismiss="modal" class="btn btn-danger">{{ __('home.confirm') }}</button>
+                <button type="button" id="partitionConfirm" class="btn btn-danger">{{ app()->getLocale() == 'ar' ? 'تأكيد وحفظ الفاتورة' : 'Confirm & save invoice' }}</button>
             </div>
         </div>
     </div>
@@ -1404,7 +1406,7 @@ function createProductRow(index, options = {}) {
                 <input type="hidden" name="products[${index}][product_id]" class="product-id" value="${d.product_id}">
                 <input type="hidden" class="form-control product-available_quentity" value="${d.available_quantity}">
                 <input type="hidden" name="products[${index}][discound]" class="product-discound" value="0">
-                <input type="hidden" name="products[${index}][tax_rate]" class="product-tax-rate" value="${$('#avtValue').val() || 0.15}">
+                <input type="hidden" name="products[${index}][tax_rate]" class="product-tax-rate" value="${isNaN(parseFloat($('#avtValue').val())) ? 0.15 : parseFloat($('#avtValue').val())}">
                 <input type="hidden" name="products[${index}][tax]" class="product-tax" value="${Number(d.tax).toFixed(2)}">
             </td>
 
@@ -2017,37 +2019,10 @@ function createnewcustomerajax() {
 
 }
 $("#reciptprinter").click(function(e) {
-    var url = " {{ URL::to('reciptprinter') }}";
-    var token_search = $("#token_search").val();
-    $.ajax({
-        url: url,
-        type: 'post',
-        cache: false,
-        dataType: 'html',
-        data: {
-            _token: token_search,
-            show_invoice_number: $('#show_invoice_number').val(),
-        },
-        success: function(data) {
-            console.log(data)
-            const winUrl = URL.createObjectURL(
-                new Blob([data], {
-                    type: "text/html"
-                })
-            );
-            const win = window.open(
-                winUrl,
-                "win",
-                `width=800,height=400,screenX=200,screenY=200`
-            );
-
-        },
-        error: function(response) {
-            console.log(response)
-            alert("{{ __('home.sorryerror') }}")
-
-        }
-    });
+    // إيصال حراري 80mm (نفس إيصال شاشة البيع السريع) ويفتح نافذة الطباعة تلقائياً
+    var id = parseInt($('#show_invoice_number').val(), 10);
+    if (!(id >= 1)) return;
+    window.open("{{ url('/pos/receipt') }}/" + id + "?print=1", "_blank");
 });
 $(document).ready(function() {
 
@@ -2132,10 +2107,53 @@ $(document).ready(function() {
     if (quickScan) quickScan.focus();
 
 })
-$(document).on('click', '#saveInvoice', function() {
-    $('#invoice_action').val('save');
+// تحديد طريقة الدفع قبل الحفظ (لازم نفك تعطيل الخيارات، لأن الخيار المعطّل مابيتبعتش مع الفورم)
+function setPaymentType(type) {
+    $('#payment_type').prop('disabled', false).find('option').show().prop('disabled', false);
+    $('#payment_type').val(type);
+}
 
-    $('#formdata').submit();
+function saveWithPayment(type) {
+    if ($('#productsTableBody tr').length === 0) {
+        Swal.fire({ icon: 'warning', title: 'تنبيه | Attention', text: 'عذراً، لا يمكن حفظ فاتورة فارغة.', confirmButtonText: 'حسناً | OK' });
+        return;
+    }
+    setPaymentType(type);
+    $('#invoice_action').val('save');
+    $('#formdata').trigger('submit');
+}
+
+// أزرار الحفظ: نقدي / شبكة / تجزئة المبلغ
+$(document).on('click', '.pay-save-btn', function() {
+    var type = $(this).data('pay');
+    if (type === 'Partition') {
+        if ($('#productsTableBody tr').length === 0) { saveWithPayment('Partition'); return; }
+        // يفتح نافذة التجزئة (نقدي + شبكة + تحويل) وبعد التأكيد يتحفظ
+        $('#bankamount').val(0); $('#bank_transfer').val(0);
+        if ($('#paymentmethod').val() === 'Partition') {
+            $('#paymentmethod_MODALE').modal('show');
+            document.getElementById('totalvalue').innerHTML = document.getElementById('grandTotal').value * 1;
+        } else {
+            $('#paymentmethod').val('Partition').trigger('change');
+        }
+        calcCash();
+        setTimeout(function () { $('#bankamount').trigger('focus').select(); }, 300);
+        return;
+    }
+    saveWithPayment(type);
+});
+
+$(document).on('click', '#partitionConfirm', function() {
+    calcCash();
+    var total = parseFloat(document.getElementById('grandTotal').value) || 0;
+    var bank = parseFloat($('#bankamount').val()) || 0;
+    var transfer = parseFloat($('#bank_transfer').val()) || 0;
+    if (bank < 0 || transfer < 0 || bank + transfer > total + 0.001) {
+        Swal.fire({ icon: 'warning', title: 'تنبيه | Attention', text: 'مبلغ الشبكة والتحويل أكبر من إجمالي الفاتورة', confirmButtonText: 'حسناً | OK' });
+        return;
+    }
+    $('#paymentmethod_MODALE').modal('hide');
+    saveWithPayment('Partition');
 });
 
 // زر المسودة
@@ -2169,7 +2187,7 @@ function quickSaveWithPayment(type) {
     if (!quickSaveShortcutAllowed()) return;
     if ($('#productsTableBody tr').length === 0) return; // مفيش أصناف اتضافت لسه
 
-    $('#payment_type').prop('disabled', false).val(type);
+    setPaymentType(type);
     $('#invoice_action').val('save');
     $('#formdata').trigger('submit');
 }
@@ -2482,7 +2500,9 @@ function calculateTotals() {
         taxTotal = 0,
         grand = 0;
 
-    let avtsale = parseFloat($('#avtValue').val()) || 0.15;
+    // 0% ضريبة لازم تفضل 0 (الـ || كانت بتحوّل الصفر لـ 15%)
+    let avtsale = parseFloat($('#avtValue').val());
+    if (isNaN(avtsale)) avtsale = 0.15;
 
     document.querySelectorAll('#productsTableBody tr').forEach(r => {
         let price = parseFloat(r.querySelector('.product-price').value) || 0;

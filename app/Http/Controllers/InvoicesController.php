@@ -2174,6 +2174,48 @@ public function searchInvoicesByDateEmployee(Request $request)
     /**
      * دالة مساعدة لمنع التكرار (DRY) تقوم بحساب وتجهيز بيانات الدفع
      */
+    /**
+     * الحساب المحاسبي للعميل (orginal_type = 1).
+     * لو العميل مالوش حساب (زي "عميل نقدي" في قاعدة بيانات جديدة) يتعمل له حساب تحت حساب العملاء
+     * بنفس طريقة إضافة عميل جديد، بدل ما الفاتورة تفشل.
+     */
+    private function customerFinancialAccount($customerId, $customerData = null)
+    {
+        $account = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
+        if ($account) {
+            return $account;
+        }
+
+        $customerData = $customerData ?: customers::find($customerId);
+        $name = $customerData->name ?? 'عميل نقدي CASH CUSTOMER';
+
+        $parentAccount = financial_accounts::find(2);
+        $parentAccountNumber = $parentAccount ? $parentAccount->account_number : 12;
+        $maxAccountNumber = financial_accounts::where('parent_account_number', 2)->max('account_number');
+        $nextAccountNumber = $maxAccountNumber ? $maxAccountNumber + 1 : $parentAccountNumber . '1';
+
+        return financial_accounts::create([
+            'name' => $name,
+            'account_type' => 1,
+            'parent_account_number' => 2,
+            'account_number' => $nextAccountNumber,
+            'start_balance' => 0,
+            'current_balance' => 0,
+            'start_balance_status' => 3,
+            'other_table_FK' => null,
+            'notes' => null,
+            'added_by' => Auth::id() ?? 1,
+            'updated_by' => null,
+            'com_code' => 1,
+            'date' => Carbon::now('Asia/Riyadh'),
+            'active' => 1,
+            'is_parent' => 0,
+            'orginal_id' => $customerId,
+            'orginal_type' => 1,
+            'tax_no' => $customerData->tax_no ?? 0,
+        ]);
+    }
+
     private function preparePaymentData(Request $request)
     {
         $cashAmount = 0;
@@ -2402,7 +2444,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'debtor' => $pData['cashamount'],
                 ]);
  
-                $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
+                $customerAccount = $this->customerFinancialAccount($customerId, $customerData);
                 CreditTransactions::create([
                     'user_id' => Auth::id(),
                     'customer_id' => $customerAccount->id,
@@ -2435,7 +2477,7 @@ public function searchInvoicesByDateEmployee(Request $request)
                     'debtor' => $totalBank,
                 ]);
  
-                $customerAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
+                $customerAccount = $this->customerFinancialAccount($customerId, $customerData);
                 CreditTransactions::create([
                     'user_id' => Auth::id(),
                     'customer_id' => $customerAccount->id,
@@ -2531,7 +2573,7 @@ public function searchInvoicesByDateEmployee(Request $request)
             if ($pData['creaditamount'] != 0) {
                 $customerData->increment('Balance', $pData['creaditamount']);
  
-                $customerFinancialAccount = financial_accounts::where('orginal_type', 1)->where('orginal_id', $customerId)->first();
+                $customerFinancialAccount = $this->customerFinancialAccount($customerId, $customerData);
                 $customerFinancialAccount->update([
                     'current_balance' => $customerFinancialAccount->current_balance + $pData['creaditamount'],
                     'debtor_current' => $customerFinancialAccount->debtor_current + $pData['creaditamount'],

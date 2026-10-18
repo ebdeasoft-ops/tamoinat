@@ -213,7 +213,7 @@
                                         <td data-target="numberofpice">
                                             <?php
                                             $avt = App\Models\Avt::find(1);
-                                            $saleavt = $avt->AVT;
+                                            $saleavt = \App\Support\SaleTax::forInvoice($product->id);
                                             ?>
                                             {{ round(($product->Price-$product->discount) + (($product->Price-$product->discount)*$saleavt),2) }}
                                         </td>

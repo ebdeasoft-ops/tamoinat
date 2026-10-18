@@ -144,6 +144,7 @@
                         
                         $avt = App\Models\Avt::find(1);
                         $taxRate = $avt ? $avt->AVT : 0.15;
+                        \App\Support\SaleTax::preloadInvoices($Invoices);
                     @endphp
 
                     <div class="table-responsive">
@@ -163,6 +164,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($Invoices as $product)
+                                    @php $taxRate = \App\Support\SaleTax::forInvoice($product->id); @endphp
                                     @php
                                         $currentInvoicePrice = ($product->cashamount + $product->bankamount + $product->Bank_transfer + $product->creaditamount);
                                         

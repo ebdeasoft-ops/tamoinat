@@ -125,6 +125,7 @@
                             $totalprice = 0;
                             $avt = App\Models\Avt::find(1);
                             $saleavt = $avt ? $avt->AVT : 0;
+                            \App\Support\SaleTax::preloadInvoices($Invoices);
                             $totaladdedvalue = 0;
                             $totaldiscount = 0;
                             $startat = '';
@@ -148,6 +149,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($Invoices as $product)
+                                        @php $saleavt = \App\Support\SaleTax::forInvoice($product->id); @endphp
                                         @php
                                             $totaladdedvalue += ($product->Price - $product->discount) * $saleavt;
                                             $totalprice += ($product->Price - $product->discount);

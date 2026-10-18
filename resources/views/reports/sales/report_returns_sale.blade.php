@@ -219,6 +219,7 @@
 
                         <tbody>
                             @foreach ($invoiceIds as $invoiceid)
+                                @php $saleavt = \App\Support\SaleTax::forInvoice($invoiceid); @endphp
                                 <?php
                                     $datainvoice = App\Models\invoices::find($invoiceid);
                                     $InvoicesCollection = App\Models\return_sales::where('invoice_id', $invoiceid)->whereDate('created_at', '>=', $start)->whereDate('created_at', '<=', $end)->get();

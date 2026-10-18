@@ -120,6 +120,7 @@
                         
                         $avt = App\Models\Avt::find(1);
                         $saleavt = $avt ? $avt->AVT : 0;
+                        \App\Support\SaleTax::preloadInvoices($Invoices);
                     @endphp
 
                     <div class="table-responsive">
@@ -139,6 +140,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($Invoices as $product)
+                                    @php $saleavt = \App\Support\SaleTax::forInvoice($product->id); @endphp
                                     @php
                                         $totaldiscount += $product->discount;
                                         

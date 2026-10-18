@@ -222,6 +222,7 @@
                     </thead>
                     <tbody>
                         @foreach($Invoices as $invoiceId => $items)
+                            @php $saleavt = \App\Support\SaleTax::forLine(collect(is_iterable($items) ? $items : [$items])->first() ?? (object) ['invoice_id' => $invoiceId]); @endphp
                             @php
                                 $i++;
                                 $invoiceQty = 0;

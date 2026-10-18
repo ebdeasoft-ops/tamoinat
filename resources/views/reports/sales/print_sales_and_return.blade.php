@@ -140,6 +140,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($data['invoices'] as $product)
+                                    @php $saleavt = \App\Support\SaleTax::forInvoice($product->id); @endphp
                                     @php
                                         $price = ($product->cashamount + $product->bankamount + $product->Bank_transfer + $product->creaditamount);
                                         
@@ -233,6 +234,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($invoiceIds as $index => $invoiceid)
+                                        @php $saleavt = \App\Support\SaleTax::forInvoice($invoiceid); @endphp
                                         @php
                                             $datainvoice = App\Models\invoices::find($invoiceid);
                                             $returnItems = App\Models\return_sales::where('invoice_id', $invoiceid)

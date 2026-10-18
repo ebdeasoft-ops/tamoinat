@@ -164,7 +164,7 @@ $logo=camplogo;
                                 $endat = $invoice->created_at;
                                 $count++;
                                 $avt = App\Models\Avt::find(1);
-                                $saleavt = $avt->AVT;
+                                $saleavt = \App\Support\SaleTax::forInvoice($invoice->id);
                                 $totalwithoudTax = 0;
 
                                 ?>

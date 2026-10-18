@@ -5,29 +5,23 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * استيراد منتجات السوبر ماركت من database/seeders/data/products.csv
+ * إلى جدول products بأسماء أعمدة مشروع التموينات (product_name, branchs_id, numberofpice ...).
+ */
 class SupermarketProductsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $csvPath = database_path('seeders/data/products.csv');
-
-        // Check fallback location if not found in database_path
         if (!file_exists($csvPath)) {
-            $altPath = 'C:/Users/DELL/Downloads/products_202609141300.csv';
-            if (file_exists($altPath)) {
-                $csvPath = $altPath;
-            } else {
-                $this->command?->error("Products CSV file not found at: {$csvPath}");
-                return;
-            }
+            $this->command?->error("Products CSV file not found at: {$csvPath}");
+            return;
         }
 
         $this->command?->info("Starting supermarket products seeding from: {$csvPath}");
-
         $start = microtime(true);
+
         $file = fopen($csvPath, 'r');
         if (!$file) {
             $this->command?->error("Failed to open CSV file: {$csvPath}");
@@ -35,136 +29,126 @@ class SupermarketProductsSeeder extends Seeder
         }
 
         $header = fgetcsv($file);
-        $colMap = array_flip($header);
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);   // BOM
+        $col = array_flip($header);
+        $get = function (array $row, string $key, $default = null) use ($col) {
+            if (!isset($col[$key]) || !array_key_exists($col[$key], $row)) {
+                return $default;
+            }
+            $v = trim((string) $row[$col[$key]]);
+            return $v === '' ? $default : $v;
+        };
+        $num = fn ($v, $d = 0) => is_numeric($v) ? (float) $v : $d;
 
         $now = now()->toDateTimeString();
-        $batch = [];
-        $batchSize = 1000;
-        $totalInserted = 0;
 
-        // Ensure default branch exists
-        $defaultBranchId = DB::table('branches')->value('id');
-        if (!$defaultBranchId) {
-            $defaultBranchId = DB::table('branches')->insertGetId([
+        // الفرع والمستخدم الافتراضي (لازم BranchsSeeder و UserSeeder يشتغلوا قبله)
+        $branchId = DB::table('branchs')->value('id');
+        if (!$branchId) {
+            $branchId = DB::table('branchs')->insertGetId([
                 'name' => 'الفرع الرئيسي',
-                'location' => 'الرياض',
-                'name_en' => 'Main Branch',
-                'type' => 'main',
+                'place' => 'الرياض',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+        $userId = DB::table('users')->value('id') ?? 1;
+
+        // الفئة الافتراضية
+        $groupId = DB::table('products_groups')->value('id');
+        if (!$groupId) {
+            $groupId = DB::table('products_groups')->insertGetId([
+                'group_ar' => 'فئة عامة',
+                'group_en' => 'General',
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
         }
 
-        // Ensure default product group exists
-        $defaultGroupId = DB::table('productgroup')->value('id');
-        if (!$defaultGroupId) {
-            $defaultGroupId = DB::table('productgroup')->insertGetId([
-                'group_ar' => 'فئة عامة',
-                'group_en' => 'General Group',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-        }
+        // لو أسعار البيع شاملة الضريبة (config/pos.php) نخزن السعر النهائي اللي العميل بيدفعه
+        $pricesIncludeVat = (bool) config('pos.prices_include_vat', true);
+
+        $updateCols = [
+            'product_name', 'branchs_id', 'purchasing_price', 'sale_price', 'numberofpice', 'Status',
+            'Product_Location', 'Product_Code', 'Added_Value', 'number_of_sales', 'name_en', 'notes', 'unit',
+            'minmum_quantity_stock_alart', 'opening_blance', 'average_cost', 'Wholesale_price', 'product_group', 'updated_at',
+        ];
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        $batch = [];
+        $total = 0;
+        $flush = function () use (&$batch, &$total, $updateCols) {
+            if (!$batch) {
+                return;
+            }
+            DB::table('products')->upsert($batch, ['id'], $updateCols);
+            $total += count($batch);
+            $batch = [];
+            $this->command?->info("Seeded {$total} products...");
+        };
+
         while (($row = fgetcsv($file)) !== false) {
-            if (empty($row) || !isset($row[$colMap['name']])) {
+            $name = $get($row, 'name');
+            if ($name === null) {
                 continue;
             }
 
-            $id = !empty($row[$colMap['id']]) ? (int)$row[$colMap['id']] : null;
-            $name = trim($row[$colMap['name']]);
-            if ($name === '') {
-                continue;
+            $salePrice = $num($get($row, 'sale_price'));
+            $tax = $num($get($row, 'tax_value'));
+
+            if ($pricesIncludeVat) {
+                // السعر النهائي = السعر + الضريبة المسجلة، مع تقريب الكسور الشاذة (2.99 / 3.01 → 3.00)
+                $final = round($salePrice + $tax, 2);
+                $cents = (int) round(fmod($final, 1.0) * 100);
+                if (in_array($cents, [49, 99, 24, 74], true)) {
+                    $final += 0.01;
+                } elseif (in_array($cents, [51, 1, 26, 76], true)) {
+                    $final -= 0.01;
+                }
+                $salePrice = round($final, 2);
             }
 
-            $branchId = !empty($row[$colMap['branch_id']]) ? (int)$row[$colMap['branch_id']] : $defaultBranchId;
-            $purchasePrice = is_numeric($row[$colMap['purchase_price']] ?? null) ? (float)$row[$colMap['purchase_price']] : 0.0;
-            $salePrice = is_numeric($row[$colMap['sale_price']] ?? null) ? (float)$row[$colMap['sale_price']] : 0.0;
-            $stockQuantity = is_numeric($row[$colMap['stock_quantity']] ?? null) ? (float)$row[$colMap['stock_quantity']] : 0.0;
-            $status = !empty($row[$colMap['status']]) ? trim($row[$colMap['status']]) : 'active';
-            $code = !empty($row[$colMap['code']]) ? trim($row[$colMap['code']]) : null;
-            $taxValue = is_numeric($row[$colMap['tax_value']] ?? null) ? (float)$row[$colMap['tax_value']] : 0.0;
-            $totalSold = is_numeric($row[$colMap['total_sold']] ?? null) ? (int)$row[$colMap['total_sold']] : 0;
-            $nameEn = !empty($row[$colMap['name_en']]) ? trim($row[$colMap['name_en']]) : null;
-            $notes = !empty($row[$colMap['notes']]) ? trim($row[$colMap['notes']]) : null;
-            $unit = !empty($row[$colMap['unit']]) ? trim($row[$colMap['unit']]) : 'piece';
-            $lowStockAlert = is_numeric($row[$colMap['low_stock_alert_quantity']] ?? null) ? (int)$row[$colMap['low_stock_alert_quantity']] : 10;
-            $location = !empty($row[$colMap['location']]) ? trim($row[$colMap['location']]) : null;
-            $openingBalance = is_numeric($row[$colMap['opening_balance']] ?? null) ? (float)$row[$colMap['opening_balance']] : 0.0;
-            $averageCost = is_numeric($row[$colMap['average_cost']] ?? null) ? (float)$row[$colMap['average_cost']] : 0.0;
-            $wholesalePrice = is_numeric($row[$colMap['wholesale_price']] ?? null) ? (float)$row[$colMap['wholesale_price']] : 0.0;
-            $groupId = !empty($row[$colMap['product_group_id']]) ? (int)$row[$colMap['product_group_id']] : $defaultGroupId;
-
-            $priceWithTax = $taxValue > 0 ? round($salePrice + $taxValue, 2) : round($salePrice * 1.15, 2);
-            $cents = (int) round(fmod($priceWithTax, 1.0) * 100);
-            if ($cents < 0) $cents += 100;
-            if (in_array($cents, [49, 99, 24, 74])) $priceWithTax += 0.01;
-            elseif (in_array($cents, [51, 1, 26, 76])) $priceWithTax -= 0.01;
-            $priceWithTax = round($priceWithTax, 2);
-
-            $record = [
-                'id' => $id,
-                'name' => $name,
-                'branch_id' => $branchId,
-                'purchase_price' => $purchasePrice,
-                'sale_price' => $salePrice,
-                'price_with_tax' => $priceWithTax,
-                'stock_quantity' => $stockQuantity,
-                'status' => $status,
-                'created_by' => null,
+            $batch[] = [
+                'id' => is_numeric($get($row, 'id')) ? (int) $get($row, 'id') : null,
+                'product_name' => mb_substr($name, 0, 255),
+                'branchs_id' => $branchId,
+                'purchasing_price' => max(0, $num($get($row, 'purchase_price'))),
+                'sale_price' => max(0, $salePrice),
+                'numberofpice' => $num($get($row, 'stock_quantity')),
+                'Status' => $get($row, 'status', 'active'),
+                'user_id' => $userId,
                 'deleted_at' => null,
-                'location' => $location,
-                'code' => $code,
-                'tax_value' => $taxValue,
-                'total_sold' => $totalSold,
-                'name_en' => $nameEn,
-                'notes' => $notes,
-                'unit' => $unit,
-                'low_stock_alert_quantity' => $lowStockAlert,
-                'parent_product_id' => null,
-                'reference_number' => null,
-                'opening_balance' => $openingBalance,
-                'average_cost' => $averageCost,
-                'wholesale_price' => $wholesalePrice,
+                'Product_Location' => $get($row, 'location', '-'),
+                'Product_Code' => $get($row, 'code', ''),
+                'Added_Value' => $tax,
+                'number_of_sales' => (int) $num($get($row, 'total_sold')),
+                'name_en' => mb_substr((string) $get($row, 'name_en', $name), 0, 255),
+                'notes' => $get($row, 'notes', '-'),
+                'unit' => $get($row, 'unit', 'piece'),
+                'minmum_quantity_stock_alart' => (int) $num($get($row, 'low_stock_alert_quantity'), 10),
+                'main_product' => 0,
+                'refnumber' => null,
+                'opening_blance' => $num($get($row, 'opening_balance')),
+                'average_cost' => $num($get($row, 'average_cost')),
+                'Wholesale_price' => $num($get($row, 'wholesale_price')),
                 'photo' => null,
-                'product_mix_id' => null,
-                'product_group_id' => $groupId,
+                'products_mix' => 0,
+                'product_group' => $groupId,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
 
-            $batch[] = $record;
-
-            if (count($batch) >= $batchSize) {
-                DB::table('products')->upsert($batch, ['id'], [
-                    'name', 'branch_id', 'purchase_price', 'sale_price', 'price_with_tax', 'stock_quantity',
-                    'status', 'location', 'code', 'tax_value', 'total_sold', 'name_en',
-                    'notes', 'unit', 'low_stock_alert_quantity', 'opening_balance',
-                    'average_cost', 'wholesale_price', 'product_group_id', 'updated_at'
-                ]);
-                $totalInserted += count($batch);
-                $batch = [];
-                $this->command?->info("Seeded {$totalInserted} products...");
+            if (count($batch) >= 1000) {
+                $flush();
             }
         }
-
-        if (!empty($batch)) {
-            DB::table('products')->upsert($batch, ['id'], [
-                'name', 'branch_id', 'purchase_price', 'sale_price', 'price_with_tax', 'stock_quantity',
-                'status', 'location', 'code', 'tax_value', 'total_sold', 'name_en',
-                'notes', 'unit', 'low_stock_alert_quantity', 'opening_balance',
-                'average_cost', 'wholesale_price', 'product_group_id', 'updated_at'
-            ]);
-            $totalInserted += count($batch);
-            $this->command?->info("Seeded {$totalInserted} products...");
-        }
+        $flush();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         fclose($file);
 
         $elapsed = round(microtime(true) - $start, 2);
-        $this->command?->info("Completed seeding {$totalInserted} products in {$elapsed} seconds!");
+        $this->command?->info("Completed seeding {$total} products in {$elapsed} seconds!");
     }
 }

@@ -1883,9 +1883,10 @@ class ReportController extends Controller
     {
         app()->setLocale(LaravelLocalization::getCurrentLocale());
 
-        $avtSaleRate = Avt::find(1);
         $saleData = sales::where("invoice_id", $request)->get();
         $InvoiceData = invoices::find($request);
+        // نسبة الضريبة وقت بيع الفاتورة (مش النسبة الحالية في الإعدادات)
+        $avtSaleRate = (object) ['AVT' => \App\Support\SaleTax::forInvoice($request)];
 
         $data = [
             "invoicetotal_price" => $InvoiceData->Price - $InvoiceData->discount,
@@ -2683,7 +2684,7 @@ class ReportController extends Controller
         foreach ($previousReturnSales as $return) {
             if ($return->invoice && $return->invoice->customer_id == $customerId && $return->invoice->Pay == "Credit") {
                 $baseAmount = ($return->return_Unit_Price * $return->return_quantity) - $return->discountvalue - $return->discountoninvoice;
-                $vatAmount = $baseAmount * $saleAvt;
+                $vatAmount = $baseAmount * \App\Support\SaleTax::forLine($return);
                 $remainingAmount -= ($baseAmount + $vatAmount);
             }
         }
@@ -2695,7 +2696,7 @@ class ReportController extends Controller
         foreach ($returnSales as $return) {
             if ($return->invoice && $return->invoice->customer_id == $customerId) {
                 $baseAmount = ($return->return_Unit_Price * $return->return_quantity) - $return->discountvalue - $return->discountoninvoice;
-                $vatAmount = $baseAmount * $saleAvt;
+                $vatAmount = $baseAmount * \App\Support\SaleTax::forLine($return);
 
                 $dataInvoices[] = [
                     'id' => $return->invoice_id,
@@ -3139,7 +3140,7 @@ class ReportController extends Controller
                     }
                 }
 
-                $totalWithTax = $valuewithoudtax + ($valuewithoudtax * $saleavt);
+                $totalWithTax = $valuewithoudtax + ($valuewithoudtax * \App\Support\SaleTax::forInvoice($id));
 
                 match ($cominvoice->payment_return) {
                     'Cash' => $returnsalescash += $totalWithTax,
@@ -4345,8 +4346,9 @@ class ReportController extends Controller
         $returnsales = $returnSalesQuery->get();
 
         // 2. الحسابات الرياضية للمبيعات والمصاريف
+        \App\Support\SaleTax::preloadInvoices($invoices);
         foreach ($invoices as $invoice) {
-            $totalVatSales += ($invoice->Price - $invoice->discount) * $saleavt;
+            $totalVatSales += ($invoice->Price - $invoice->discount) * \App\Support\SaleTax::forInvoice($invoice->id);
         }
 
         foreach ($expenses as $expense) {
@@ -4371,7 +4373,7 @@ class ReportController extends Controller
         // 4. حسابات ضريبة مرتجعات المبيعات
         $countofreturnsaleslist = [];
         foreach ($returnsales as $returnInvoice) {
-            $salesreturntax += (($returnInvoice->return_Unit_Price * $returnInvoice->return_quantity) - $returnInvoice->discountvalue - $returnInvoice->discountoninvoice) * $saleavt;
+            $salesreturntax += (($returnInvoice->return_Unit_Price * $returnInvoice->return_quantity) - $returnInvoice->discountvalue - $returnInvoice->discountoninvoice) * \App\Support\SaleTax::forLine($returnInvoice);
             $countofreturnsaleslist[$returnInvoice->invoice_id] = true;
         }
 

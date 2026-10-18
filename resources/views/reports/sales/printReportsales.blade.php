@@ -239,7 +239,7 @@
                                 <div class="col-md-4 text-center mb-3">
                                     <?php
                                     $price = $invoice->cashamount + $invoice->Bank_transfer + $invoice->bankamount + $invoice->creaditamount;
-                                    $avt = App\Models\Avt::find(1);
+                                    $avt = (object) ['AVT' => \App\Support\SaleTax::forInvoice($invoice->id)];
 
                                     $price_befor_tax = $price * 100 / (100 + ($avt->AVT * 100));
                                     $invoicetotal_addedvalue = ($price_befor_tax) * $avt->AVT;
