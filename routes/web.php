@@ -50,7 +50,8 @@ use App\Http\Controllers\{
     EndOfServiceController,
     CustodyController,
     PosController,
-    CashierShiftController
+    CashierShiftController,
+    ProductQuickEditController
 };
 /*
 |--------------------------------------------------------------------------
@@ -886,6 +887,12 @@ Route::middleware([
         Route::post('/shifts/open', 'open')->name('shifts.open');
         Route::post('/shifts/{id}/close', 'close')->whereNumber('id')->name('shifts.close');
         Route::get('/shifts/{id}', 'show')->whereNumber('id')->name('shifts.show');
+    });
+
+    // تعديل سريع للمنتج بالباركود من صفحة المخزون
+    Route::controller(ProductQuickEditController::class)->group(function () {
+        Route::get('/products/quick-lookup', 'lookup')->name('products.quick.lookup');
+        Route::post('/products/quick-update/{id}', 'update')->whereNumber('id')->name('products.quick.update');
     });
 
     Route::controller(UserController::class)->group(function () {
