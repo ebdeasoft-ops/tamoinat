@@ -1830,7 +1830,13 @@ document.addEventListener('keydown', function(evt) {
 
     if (interval)
         clearInterval(interval);
-    if (evt.code == 'Enter') {
+    if (evt.code == 'Enter' || evt.key == 'Enter') {
+        // الـ Enter اللي بيبعته قارئ الباركود مايضغطش على الزرار/الرابط اللي عليه التركيز
+        // (زي "منتج جديد" بعد الرجوع من تابة إنشاء المنتج) — بيتعامل كباركود بس
+        var focusedEl = document.activeElement;
+        if (barcode && focusedEl && !/^(INPUT|TEXTAREA|SELECT)$/.test(focusedEl.tagName)) {
+            evt.preventDefault();
+        }
         if (barcode)
             if ($('#saveinvice').val() == 1) {
                 $('#invoice_number').val('')
@@ -1868,6 +1874,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+// بعد فتح "منتج جديد" (أو أي رابط/زرار) التركيز يرجع لحقل الباركود، وكمان لما ترجع للتابة دي
+document.addEventListener('click', function (e) {
+    var el = e.target.closest('a[target="_blank"], button');
+    if (el && !el.closest('.modal')) setTimeout(function () { el.blur(); }, 0);
+});
+window.addEventListener('focus', function () {
+    var qs = document.getElementById('quick_scan');
+    if (qs && !$('.modal.show, .modal.in').length) setTimeout(function () { qs.focus(); }, 50);
 });
 
 function executeProductSearch() {

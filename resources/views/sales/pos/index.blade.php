@@ -881,6 +881,10 @@
     loadProducts(true);
     focusScan();
     loadShift(function () { if (!shift.open) openShiftModal(); });
+    // لما ترجع للشاشة من تابة تانية (زي إنشاء منتج جديد) التركيز يرجع لحقل الباركود
+    window.addEventListener('focus', function () {
+        if (!document.querySelector('.pos-modal.show')) focusScan();
+    });
 })();
 </script>
 @endsection

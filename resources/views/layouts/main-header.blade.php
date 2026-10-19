@@ -650,6 +650,12 @@
             tick(); setInterval(tick, 15000);
         }
 
+        // الروابط اللي بتفتح تابة جديدة (زي "منتج جديد") ماتفضلش عليها التركيز،
+        // عشان Enter بتاع قارئ الباركود مايفتحهاش تاني لما ترجع للشاشة
+        document.querySelectorAll('.sb-header a[target="_blank"]').forEach(function (a) {
+            a.addEventListener('click', function () { setTimeout(function () { a.blur(); }, 0); });
+        });
+
         // اسم كل تبويب يظهر عند المرور لما الشاشة صغيرة والأسماء مخفية
         document.querySelectorAll('.sb-header .shortcut-item-link').forEach(function (a) {
             var l = a.querySelector('.shortcut-label');
