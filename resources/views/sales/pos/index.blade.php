@@ -148,6 +148,27 @@
     .pos-modal .ok-icon { width:56px; height:56px; border-radius:50%; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 10px; }
     .pos-modal .zatca { text-align:center; font-size:12.5px; color:var(--muted); margin-bottom:14px; }
 
+    /* خط أتقل وأوضح في الشاشة كلها */
+    .pos { font-weight: 600; color: #0f172a; }
+    .pos-prod .nm { font-weight: 800; font-size: 15px; }
+    .pos-prod .meta { color: #475569; font-weight: 600; font-size: 12.5px; }
+    .pos-price { font-weight: 800; font-size: 13px; }
+    .pos-cat { font-weight: 700; font-size: 14.5px; color: #1e293b; }
+    .pos-cart table { font-size: 14px; }
+    .pos-cart .pn { font-weight: 800; font-size: 14px; }
+    .pos-cart .pp, .pos-cart .pp input { font-weight: 700; color: #475569; }
+    .pos-cart thead th { font-weight: 800; color: #1e293b; }
+    .pos-qty input { font-weight: 800; }
+    .pos-totals .ln { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .pos-totals .grand b { font-size: 17px; font-weight: 800; }
+    .pos-totals .grand span { font-size: 22px; font-weight: 900; }
+    .pos-paid .ttl, .pos-cust label { font-weight: 800; }
+    .pos-quick button, .pos-btn-soft { font-weight: 800; font-size: 14px; }
+    .pos-hint { font-weight: 600; color: #475569; }
+    .pos-empty { font-weight: 600; color: #64748b; }
+    .pos-scan input { font-weight: 700; }
+    .pos-prod-head input { font-weight: 600; }
+
     /* الوردية */
     .pos-shift { display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 14px; border-radius:999px; border:0; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap; font-family:inherit; }
     .pos-shift.off { background:#f59e0b; color:#1f2937; }

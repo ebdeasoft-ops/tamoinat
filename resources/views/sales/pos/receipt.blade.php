@@ -58,6 +58,15 @@
         .qr { display: flex; justify-content: center; margin: 8px 0 2px; }
         .qr svg { width: 34mm; height: 34mm; }
         .thanks { font-weight: 700; font-size: 12px; }
+        /* خط أتقل وأوضح على الطابعة الحرارية */
+        .paper { font-weight: 700; color: #000; font-size: 12.5px; }
+        .paper .muted { color: #000; font-weight: 600; font-size: 11.5px; }
+        .paper td, .paper .kv, .paper .tot { font-weight: 700; }
+        .paper td.nm, .paper .kv b, .paper .tot b, .paper th { font-weight: 800; }
+        .paper .co { font-size: 17px; font-weight: 900; }
+        .paper .grand { font-size: 18px; font-weight: 900; }
+        .paper td { border-bottom-color: #555; }
+        .paper .sep { border-top-width: 1.5px; }
         @media print {
             body { background: #fff; }
             .tools { display: none !important; }
