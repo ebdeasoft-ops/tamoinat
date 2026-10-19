@@ -881,6 +881,27 @@
     loadProducts(true);
     focusScan();
     loadShift(function () { if (!shift.open) openShiftModal(); });
+    // قارئ الباركود لازم يكتب في خانة الباركود دايماً: لو التركيز على زرار (زي نقدي/شبكة بعد الضغط عليه بالماوس)
+    // الحروف بتتحوّل لخانة الباركود، والـ Enter مايضغطش على الزرار (كان بيفتح نافذة الحفظ)
+    document.querySelectorAll('.pos-pay button, #pos-save, .pos-cat, .pos-quick button, #pos-exact, #pos-shift, #pos-menu-btn, #pos-add-customer').forEach(function (b) {
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); });   // الضغط بالماوس مايسحبش التركيز من خانة الباركود
+    });
+    document.addEventListener('keydown', function (e) {
+        if (document.querySelector('.pos-modal.show') || e.ctrlKey || e.altKey || e.metaKey) return;
+        var a = document.activeElement, tag = a ? a.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (a && a.isContentEditable)) return;
+        if ($('.select2-container--open').length) return;
+        if (e.key && e.key.length === 1) {
+            e.preventDefault();
+            scan.focus();
+            scan.value += e.key;
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (scan.value.trim()) { var v = scan.value; scan.value = ''; handleBarcode(v); }
+            focusScan();
+        }
+    }, true);
+
     // لما ترجع للشاشة من تابة تانية (زي إنشاء منتج جديد) التركيز يرجع لحقل الباركود
     window.addEventListener('focus', function () {
         if (!document.querySelector('.pos-modal.show')) focusScan();

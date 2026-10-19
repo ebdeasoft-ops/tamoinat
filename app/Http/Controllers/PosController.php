@@ -60,15 +60,26 @@ class PosController extends Controller
             });
         }
 
-        $page = $query->orderBy('product_name')
+        // المنتجات اللي أسماؤها ناقصة (زي "-" أو "????") تيجي في آخر القائمة
+        $page = $query->orderByRaw("CASE WHEN product_name REGEXP '^[-.;?\\'\" ]' OR product_name = '' THEN 1 ELSE 0 END")
+            ->orderBy('product_name')
             ->paginate(40, ['id', 'product_name', 'name_en', 'Product_Code', 'sale_price', 'numberofpice', 'unit']);
 
         $isAr = LaravelLocalization::getCurrentLocale() === 'ar';
+        // اسم صالح = فيه حرفين أو رقمين على الأقل ومش علامات استفهام (بيانات مستوردة تالفة)
+        $valid = fn ($n) => $n && !str_contains($n, '??') && preg_match('/[\p{L}\p{N}]{2,}/u', $n);
+        $label = function ($p) use ($isAr, $valid) {
+            $first = $isAr ? $p->product_name : ($p->name_en ?: $p->product_name);
+            $second = $isAr ? $p->name_en : $p->product_name;
+            if ($valid($first)) return $first;
+            if ($valid($second)) return $second;
+            return ($isAr ? 'منتج بدون اسم' : 'Unnamed product') . ' (' . $p->Product_Code . ')';
+        };
 
         return response()->json([
             'data' => collect($page->items())->map(fn ($p) => [
                 'id'    => $p->id,
-                'name'  => ($isAr ? $p->product_name : ($p->name_en ?: $p->product_name)) ?: '-',
+                'name'  => $label($p),
                 'code'  => $p->Product_Code,
                 'price' => (float) $p->sale_price,
                 'qty'   => (float) $p->numberofpice,
