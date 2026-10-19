@@ -175,6 +175,16 @@ class SupprocessesController extends Controller
             'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
         ]);
 
+        // لو رقم القطعة مستخدم قبل كده، المنتج مش هيتسجل — نوضح ده بدل ما نقول "تمت العملية" والسعر مايتحفظش
+        if ($request->filled('product_code')
+            && products::where('Product_Code', $request->product_code)->where('branchs_id', auth()->user()->branchs_id)->exists()) {
+            return redirect()->back()->withInput()->withErrors([
+                'product_code' => app()->getLocale() == 'ar'
+                    ? 'رقم القطعة ' . $request->product_code . ' مسجل لمنتج تاني بالفعل — عدّل سعر المنتج الموجود من صفحة المنتجات أو استخدم رقم مختلف'
+                    : 'Product code ' . $request->product_code . ' already exists — edit the existing product or use another code',
+            ]);
+        }
+
         $photo = 'productunKnown.png';
         if ($request->hasFile('Item_img')) {
             $photo = $this->uploadImage('assets/admin/uploads', $request->file('Item_img'));
