@@ -41,7 +41,7 @@ class ProductQuickEditController extends Controller
     /** البحث بالباركود / رقم القطعة / الرقم البديل في فرع المستخدم */
     public function lookup(Request $request)
     {
-        abort_unless(auth()->user()->can('Produects') || auth()->user()->can('Product data change'), 403);
+        abort_unless(auth()->user()->can('Produects') || auth()->user()->can('Product data change') || auth()->user()->can('Add new product'), 403);
 
         $code = trim((string) $request->input('code', ''));
         if ($code === '') {

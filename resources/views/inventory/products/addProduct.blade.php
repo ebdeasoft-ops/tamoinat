@@ -226,7 +226,8 @@
                                         <label for="product_code" class="control-label">
                                             <span class="field-icon"><i class="fa fa-barcode"></i></span>
                                             {{ __('supprocesses.product_code') }}</label>
-                                        <input type="text" class="form-control" id="product_code" name="product_code" dir="ltr" onkeyup="convertToNumber()" title="{{ __('supprocesses.product_code') }}">
+                                        <input type="text" class="form-control" id="product_code" name="product_code" dir="ltr" onkeyup="convertToNumber()" title="{{ __('supprocesses.product_code') }}" value="{{ old('product_code') }}" autocomplete="off">
+                                        <div class="code-dup-msg" id="code_dup_msg"></div>
                                     </div>
                                 </div>
                             </div>
@@ -759,4 +760,64 @@ function translateNameToEnglish(){}
 </script>
 
 
+<style>
+    .code-dup-msg { display:none; margin-top:6px; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:700; line-height:1.6; }
+    .code-dup-msg.dup { display:block; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+    .code-dup-msg.ok { display:block; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+    .code-dup-msg a { color:#1d4ed8; text-decoration:underline; }
+    #product_code.is-dup { border-color:#ef4444 !important; box-shadow:0 0 0 3px rgba(239,68,68,.15) !important; }
+</style>
+<script>
+// منع تسجيل نفس رقم القطعة (الباركود) أكتر من مرة: فحص فوري أول ما الكود يتكتب أو يتمسح
+(function () {
+    var isAr = @json(app()->getLocale() == 'ar');
+    var lookupUrl = @json(url('/products/quick-lookup'));
+    var stockUrl = @json(url('/showAllProducts'));
+    var input = document.getElementById('product_code');
+    var box = document.getElementById('code_dup_msg');
+    if (!input || !box) return;
+    var form = input.form, saveBtn = form ? form.querySelector('[type=submit]') : null;
+    var dup = false, timer = null, lastChecked = null, req = 0;
+
+    function setState(state, text) {
+        dup = state === 'dup';
+        box.className = 'code-dup-msg' + (state ? ' ' + state : '');
+        box.innerHTML = text || '';
+        input.classList.toggle('is-dup', dup);
+        if (saveBtn) saveBtn.disabled = dup;
+    }
+
+    function check() {
+        var code = (input.value || '').trim();
+        if (code === lastChecked) return;
+        lastChecked = code;
+        if (!code) { setState('', ''); return; }
+        var my = ++req;
+        $.getJSON(lookupUrl, { code: code }).done(function (r) {
+            if (my !== req) return;
+            if (r.found && r.product && String(r.product.Product_Code) === code) {
+                var name = $('<div>').text(r.product.product_name).html();
+                setState('dup', (isAr ? '⚠ رقم القطعة ده مسجل بالفعل للمنتج: ' : '⚠ This code already belongs to: ') + '<b>' + name + '</b>'
+                    + ' — ' + (isAr ? 'سعر البيع ' : 'sale price ') + Number(r.product.sale_price).toFixed(2)
+                    + '<br><a href="' + stockUrl + '" target="_blank">' + (isAr ? 'افتح المخزون وامسح الباركود لتعديل المنتج الموجود' : 'Open stock and scan the barcode to edit the existing product') + '</a>');
+            } else {
+                setState('ok', isAr ? '✓ رقم القطعة متاح' : '✓ Code is available');
+            }
+        });
+    }
+
+    input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(check, 350); });
+    input.addEventListener('change', check);
+    // Enter من قارئ الباركود: يفحص الكود وينقل لخانة الاسم بدل ما يحفظ الفورم
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); check(); var n = document.getElementById('product_name_ar'); if (n && !n.value) n.focus(); }
+    });
+    if (form) form.addEventListener('submit', function (e) {
+        if (dup) { e.preventDefault(); input.focus(); box.scrollIntoView({ block: 'center' }); }
+    });
+
+    // أول ما الصفحة تفتح، التركيز على خانة رقم القطعة علشان الباركود يتمسح فيها
+    setTimeout(function () { if (!input.value) input.focus(); else check(); }, 300);
+})();
+</script>
 @endsection
