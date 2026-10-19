@@ -154,6 +154,10 @@
     .sb-header .shortcut-chip-blue    { background: #eff6ff; color: #2563eb; }
     .sb-header .shortcut-chip-amber   { background: #fffbeb; color: #d97706; }
     .sb-header .shortcut-chip-violet  { background: #f5f3ff; color: #7c3aed; }
+    /* زر "منتج جديد" (يفتح في تابة جديدة) */
+    .sb-header .shortcut-chip-add { background: #2563eb; color: #fff; }
+    .sb-header .shortcut-item-link.shortcut-add { color: #1d4ed8 !important; }
+    .sb-header .shortcut-item-link.shortcut-add:hover { background: #eff6ff; }
 
     /* الشاشات الأصغر: التبويبات أيقونات فقط (الاسم يظهر عند المرور) */
     @media (max-width: 1499px) {
@@ -416,6 +420,17 @@
                                     <i class="fas fa-box-open"></i>
                                 </span>
                                 <span class="shortcut-label">{{ app()->getLocale() == 'ar' ? 'المخزون' : 'Inventory' }}</span>
+                            </a>
+                        </li>
+                    @endcan
+
+                    @can('Add new product')
+                        <li>
+                            <a class="shortcut-item-link shortcut-add" href="{{ url('/addnewProduct') }}" target="_blank" rel="noopener">
+                                <span class="shortcut-icon-chip shortcut-chip-add">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span class="shortcut-label">{{ app()->getLocale() == 'ar' ? 'منتج جديد' : 'New product' }}</span>
                             </a>
                         </li>
                     @endcan

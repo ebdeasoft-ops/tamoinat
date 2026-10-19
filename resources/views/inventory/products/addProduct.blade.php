@@ -308,6 +308,26 @@
                                     </div>
                                 </div>
 
+                                {{-- سعر الشراء وسعر البيع (الكمية بتبدأ صفر وبتزيد من فواتير المشتريات / الجرد) --}}
+                                <div class="row mb-2">
+                                    <div class="col-lg-3 mb-3 addproduct-field">
+                                        <label for="purchasing_price" class="control-label">
+                                            <span class="field-icon"><i class="fa fa-shopping-cart"></i></span>
+                                            {{ app()->getLocale() == 'ar' ? 'سعر الشراء' : 'Purchase price' }} <span class="required-star">*</span></label>
+                                        <input type="number" step="0.01" min="0" class="form-control" id="purchasing_price" name="purchasing_price" value="{{ old('purchasing_price', 0) }}" dir="ltr" required>
+                                    </div>
+                                    <div class="col-lg-3 mb-3 addproduct-field">
+                                        <label for="sale_price" class="control-label">
+                                            <span class="field-icon"><i class="fa fa-tag"></i></span>
+                                            {{ app()->getLocale() == 'ar' ? 'سعر البيع' : 'Sale price' }} <span class="required-star">*</span></label>
+                                        <input type="number" step="0.01" min="0" class="form-control" id="sale_price" name="sale_price" value="{{ old('sale_price') }}" dir="ltr" required>
+                                        @if (config('pos.prices_include_vat', true))
+                                            <small class="addproduct-hint">{{ app()->getLocale() == 'ar' ? 'السعر النهائي اللي العميل بيدفعه (شامل الضريبة)' : 'Final price the customer pays (VAT included)' }}</small>
+                                        @endif
+                                    </div>
+                                    <input type="hidden" name="numberofpice" value="0">
+                                </div>
+
                                 {{-- تظهر بس لو المنتج ده مرتبط بمنتج أب (كرتون) من قائمة MAINproduct --}}
                                 <div class="row mb-2" id="division_unit_count_row" style="display:none;">
                                     <div class="col-lg-3 mb-3 addproduct-field">
@@ -332,8 +352,8 @@
                                     <div class="col-lg-3 mb-3 addproduct-field" style="direction: ltr !important;">
                                         <label for="product_location" class="control-label" style="direction: rtl;">
                                             <span class="field-icon"><i class="fa fa-map-marker-alt"></i></span>
-                                            {{ __('supprocesses.product_location') }} <span class="required-star">*</span></label>
-                                        <input dir="ltr" style="direction:LTR !important ;text-align:start!important;" type="text" class="form-control" id="product_location" name="product_location" title="{{ __('supprocesses.product_location') }}" required>
+                                            {{ __('supprocesses.product_location') }}</label>
+                                        <input dir="ltr" style="direction:LTR !important ;text-align:start!important;" type="text" class="form-control" id="product_location" name="product_location" title="{{ __('supprocesses.product_location') }}" value="{{ old('product_location', '-') }}">
                                     </div>
                                     <div class="col-lg-3 mb-3 addproduct-field">
                                         <label for="minmum_quantity_stock_alart" class="control-label">

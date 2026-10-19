@@ -166,10 +166,12 @@ class SupprocessesController extends Controller
         $request->validate([
             'product_name_ar' => 'required',
             'Section' => 'required',
-            'product_location' => 'required',
+            'product_location' => 'nullable|string',
             'type' => 'nullable|string',
             'brand' => 'nullable|string',
             'minmum_quantity_stock_alart' => 'required|numeric',
+            'purchasing_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
             'Item_img' => 'nullable|mimes:png,jpg,jpeg|max:2000',
         ]);
 
@@ -193,9 +195,12 @@ class SupprocessesController extends Controller
                         'name_en' => $request->product_name_en ?? '',
                         'branchs_id' => $branch->id,
                         'user_id' => auth()->user()->id,
-                        'Product_Location' => $request->product_location,
+                        'Product_Location' => $request->filled('product_location') ? $request->product_location : '-',
                         'Product_Code' => $productCode,
                         'Status' => 1,
+                        'purchasing_price' => (float) $request->purchasing_price,
+                        'sale_price' => (float) $request->sale_price,
+                        'numberofpice' => 0,   // المنتج الجديد كميته صفر، وبتزيد من المشتريات أو الجرد
                         'notes' => $request->product_notes ?? "-",
                         'unit' => $request->unit,
                         'type' => $request->type,
@@ -265,7 +270,7 @@ class SupprocessesController extends Controller
                     'type' => $request->type,
                     'brand' => $request->brand,
                     'minmum_quantity_stock_alart' => $request->minmum_quantity_stock_alart,
-                    'purchasingـprice' => $request->cost_price, // تم الإبقاء على مسمى عمود قاعدة بياناتك الحالي
+                    'purchasing_price' => $request->cost_price, // اسم العمود الصحيح (كان مكتوب بحرف "ـ" فكان بيتجاهل)
                     'sale_price' => $request->sale_price_create,
                     'numberofpice' => $request->numberofpice,
                 ]);
