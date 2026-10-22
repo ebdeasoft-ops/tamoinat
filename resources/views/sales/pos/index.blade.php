@@ -468,6 +468,16 @@
     var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
     var beep = function (ok) { try { new Audio(ok ? '/sounds/done.mp3' : '/sounds/error.mp3').play().catch(function(){}); } catch (e) {} };
 
+    // ------------------------------------------------ كشف إدخال قارئ الباركود
+    // القارئ يكتب بسرعة كبيرة (أقل من 40ms بين الضغطات). نستخدم ذلك لمنع أي مفتاح زائد
+    // يرسله القارئ بعد الكود (Enter ثاني / Tab / F-key) من فتح نافذة الحفظ أو تأكيدها.
+    var lastKeyT = 0, fastKey = false, confirmOpenedAt = 0;
+    document.addEventListener('keydown', function (e) {
+        var now = Date.now();
+        fastKey = (now - lastKeyT) < 40;
+        lastKeyT = now;
+    }, true);
+
     // ------------------------------------------------ الإجماليات (نفس حساب شاشة الفواتير)
     var r2 = function (n) { return Math.round((Number(n) || 0) * 100) / 100; };
     // حساب السطر: لو الأسعار شاملة الضريبة، سعر المنتج هو اللي العميل بيدفعه مهما كانت نسبة الضريبة
@@ -592,8 +602,9 @@
 
     var scan = el('pos-barcode');
     function focusScan() { setTimeout(function () { scan.focus(); }, 0); }
+    // Enter أو Tab (بعض القارئات ترسل Tab في آخر الكود) = إدخال الباركود
     scan.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); var v = scan.value; scan.value = ''; handleBarcode(v); }
+        if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); var v = scan.value; scan.value = ''; handleBarcode(v); }
     });
 
     // ------------------------------------------------ قائمة المنتجات
@@ -793,6 +804,7 @@
         var showChange = payType === 'Cash' && !isNaN(paid) && paid > 0;
         el('cf-change-row').style.display = showChange ? 'flex' : 'none';
         if (showChange) el('cf-change').textContent = money(paid - Math.round(t.grand * 100) / 100) + ' ' + CFG.cur;
+        confirmOpenedAt = Date.now();
         openModal('pos-confirm');
         el('cf-yes').focus();
     }
@@ -859,14 +871,23 @@
 
     document.querySelectorAll('.pos-pay button').forEach(function (b) { b.addEventListener('click', function () { askSave(b.dataset.pay); }); });
     el('pos-save').addEventListener('click', function () { askSave(); });
-    el('cf-yes').addEventListener('click', doSave);
+    // منع الضغط المزدوج / الضغط التلقائي فور فتح نافذة التأكيد
+    el('cf-yes').addEventListener('click', function () {
+        if (Date.now() - confirmOpenedAt < 600) return;
+        doSave();
+    });
     el('cf-no').addEventListener('click', function () { closeModal('pos-confirm'); focusScan(); });
     el('done-new').addEventListener('click', newInvoice);
 
     // ------------------------------------------------ اختصارات لوحة المفاتيح
     document.addEventListener('keydown', function (e) {
         if (modalOpen('pos-confirm')) {
-            if (e.key === 'Enter') { e.preventDefault(); doSave(); }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // تجاهل Enter القادم من القارئ أو بعد فتح النافذة مباشرة
+                if (fastKey || e.repeat || Date.now() - confirmOpenedAt < 600) return;
+                doSave();
+            }
             else if (e.key === 'Escape') { e.preventDefault(); closeModal('pos-confirm'); focusScan(); }
             return;
         }
@@ -889,6 +910,7 @@
             if (e.key === 'Enter') { e.preventDefault(); el('nc-save').click(); }
             return;
         }
+        if (fastKey) return;   // أي مفتاح وظيفي يأتي بسرعة القارئ يتجاهل
         if (e.key === 'F1') { e.preventDefault(); askSave('Cash'); }
         else if (e.key === 'F2') { e.preventDefault(); askSave('Shabka'); }
         else if (e.key === 'F9' || ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S'))) { e.preventDefault(); askSave(); }
@@ -916,7 +938,7 @@
             e.preventDefault();
             scan.focus();
             scan.value += e.key;
-        } else if (e.key === 'Enter') {
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             if (scan.value.trim()) { var v = scan.value; scan.value = ''; handleBarcode(v); }
             focusScan();
