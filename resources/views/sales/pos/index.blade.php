@@ -308,7 +308,7 @@
             <div id="cf-change-row" style="display:none"><span>{{ $t('الباقي للعميل', 'Change') }}</span><b id="cf-change"></b></div>
         </div>
         <div class="acts">
-            <button type="button" class="b-ok" id="cf-yes">{{ $t('حفظ (Enter)', 'Save (Enter)') }}</button>
+            <button type="button" class="b-ok" id="cf-yes">{{ $t('حفظ', 'Save') }}</button>
             <button type="button" class="b-cancel" id="cf-no">{{ $t('إلغاء (Esc)', 'Cancel (Esc)') }}</button>
         </div>
     </div>
@@ -322,7 +322,7 @@
         <div class="zatca" id="done-zatca"></div>
         <div class="acts">
             <a class="b-blue" id="done-print" target="_blank" href="#">{{ $t('طباعة الفاتورة (P)', 'Print receipt (P)') }}</a>
-            <button type="button" class="b-ok" id="done-new">{{ $t('فاتورة جديدة (Enter)', 'New invoice (Enter)') }}</button>
+            <button type="button" class="b-ok" id="done-new">{{ $t('فاتورة جديدة (Esc)', 'New invoice (Esc)') }}</button>
         </div>
     </div>
 </div>
@@ -334,7 +334,7 @@
         <div class="note">{{ $t('لا يمكن البيع بدون وردية مفتوحة. أدخل النقدية الموجودة في الصندوق الآن.', 'You need an open shift to sell. Enter the cash currently in the drawer.') }}</div>
         <div class="fld"><label>{{ $t('النقدية الافتتاحية', 'Opening cash') }} ({{ $cur }})</label><input type="number" step="0.01" min="0" id="so-cash" value="0"></div>
         <div class="acts">
-            <button type="button" class="b-ok" id="so-save">{{ $t('فتح الوردية (Enter)', 'Open shift (Enter)') }}</button>
+            <button type="button" class="b-ok" id="so-save">{{ $t('فتح الوردية', 'Open shift') }}</button>
             <button type="button" class="b-cancel" id="so-cancel">{{ $t('لاحقاً', 'Later') }}</button>
         </div>
         <a class="lnk" href="{{ url('/shifts') }}">{{ $t('سجل الورديات', 'Shifts history') }}</a>
@@ -476,6 +476,22 @@
         var now = Date.now();
         fastKey = (now - lastKeyT) < 40;
         lastKeyT = now;
+    }, true);
+
+    // ------------------------------------------------ إلغاء استجابة Enter نهائياً
+    // Enter لا يضغط أي زر ولا يؤكد أي نافذة. الاستثناء الوحيد: خانة الباركود (لإدخال الكود فقط).
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        var t = e.target;
+        if (t && t.id === 'pos-barcode') return;
+        if (t && (t.tagName === 'BUTTON' || t.tagName === 'A' || (t.closest && t.closest('.pos-modal')))) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }
+    }, true);
+    // نفس الشيء للمسطرة (Space) على الأزرار عشان ما تضغطش زر بالغلط
+    document.addEventListener('keyup', function (e) {
+        if (e.key === ' ' && e.target && e.target.tagName === 'BUTTON') { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
 
     // ------------------------------------------------ الإجماليات (نفس حساب شاشة الفواتير)
@@ -882,23 +898,16 @@
     // ------------------------------------------------ اختصارات لوحة المفاتيح
     document.addEventListener('keydown', function (e) {
         if (modalOpen('pos-confirm')) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                // تجاهل Enter القادم من القارئ أو بعد فتح النافذة مباشرة
-                if (fastKey || e.repeat || Date.now() - confirmOpenedAt < 600) return;
-                doSave();
-            }
-            else if (e.key === 'Escape') { e.preventDefault(); closeModal('pos-confirm'); focusScan(); }
+            if (e.key === 'Escape') { e.preventDefault(); closeModal('pos-confirm'); focusScan(); }
             return;
         }
         if (modalOpen('pos-done')) {
-            if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); newInvoice(); }
+            if (e.key === 'Escape') { e.preventDefault(); newInvoice(); }
             else if (e.key === 'p' || e.key === 'P' || e.key === 'F9') { e.preventDefault(); el('done-print').click(); }
             return;
         }
         if (modalOpen('pos-shift-open')) {
-            if (e.key === 'Enter') { e.preventDefault(); el('so-save').click(); }
-            else if (e.key === 'Escape') { e.preventDefault(); el('so-cancel').click(); }
+            if (e.key === 'Escape') { e.preventDefault(); el('so-cancel').click(); }
             return;
         }
         if (modalOpen('pos-shift-close')) {
@@ -907,7 +916,6 @@
         }
         if (modalOpen('pos-cust-modal')) {
             if (e.key === 'Escape') { closeModal('pos-cust-modal'); focusScan(); }
-            if (e.key === 'Enter') { e.preventDefault(); el('nc-save').click(); }
             return;
         }
         if (fastKey) return;   // أي مفتاح وظيفي يأتي بسرعة القارئ يتجاهل
